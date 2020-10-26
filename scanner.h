@@ -83,6 +83,9 @@ typedef enum
   KEYWORD_STRING, // 15
   KEYWORD_INT, // 16
   KEYWORD_FLOAT64, // 17
+
+  // EMPTY, FOR INIT
+  KEYWORD_EMPTY // 18
 } Keyword;
 
 /**
