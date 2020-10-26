@@ -11,11 +11,19 @@
 #define STR_ERROR   1
 #define STR_SUCCESS 0
 
+/*
+ * EDIT by xhorky32
+ *  -> strAddChar, strCopyString: better realloc (with void* temp;) covering cases when realloc fails
+ *  -> strInit: calloc instead of malloc in
+ *  -> strFree: "resets" s->str to NULL (for checking purposes)
+ */
+
 int strInit(string *s)
 // funkce vytvori novy retezec
 {
-   if ((s->str = (char*) malloc(STR_LEN_INC)) == NULL)
+   if ((s->str = (char*) calloc(STR_LEN_INC,1)) == NULL)
       return STR_ERROR;
+
    s->str[0] = '\0';
    s->length = 0;
    s->allocSize = STR_LEN_INC;
@@ -26,6 +34,7 @@ void strFree(string *s)
 // funkce uvolni retezec z pameti
 {
    free(s->str);
+   s->str = NULL;
 }
 
 void strClear(string *s)
@@ -41,11 +50,14 @@ int strAddChar(string *s1, char c)
    if (s1->length + 1 >= s1->allocSize)
    {
       // pamet nestaci, je potreba provest realokaci
-      if ((s1->str = (char*) realloc(s1->str, s1->length + STR_LEN_INC)) == NULL)
+      void *temp;
+      temp = realloc(s1->str, s1->length + STR_LEN_INC);
+      if (temp == NULL)
       {
         printf("failed\n");
         return STR_ERROR;
       }
+      s1->str = temp;
      s1->allocSize = s1->length + STR_LEN_INC;
    }
    s1->str[s1->length] = c;
@@ -61,8 +73,14 @@ int strCopyString(string *s1, string *s2)
    if (newLength >= s1->allocSize)
    {
       // pamet nestaci, je potreba provest realokaci
-      if ((s1->str = (char*) realloc(s1->str, newLength + 1)) == NULL)
-         return STR_ERROR;
+      void *temp;
+       temp = realloc(s1->str, newLength + 1);
+      if (temp == NULL) {
+          printf("realloc failed\n");
+          //free(s1->str);
+          return STR_ERROR;
+      }
+      s1->str = temp;
       s1->allocSize = newLength + 1;
    }
    strcpy(s1->str, s2->str);

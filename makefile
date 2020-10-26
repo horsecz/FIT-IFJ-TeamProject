@@ -1,5 +1,5 @@
 CC=gcc
-CCFLAGS=-Wall -Wextra -Werror
+CCFLAGS=-Wall -Wextra -Werror -g
 
 OUT=compilerIFJ2020
 CODEFILE=inputFile.go

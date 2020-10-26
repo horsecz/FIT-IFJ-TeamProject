@@ -30,8 +30,13 @@ int main(int argc, char **argv)
   else setSourceFile(src);
 
   // create token
-  Token *token = malloc(sizeof(Token));
+  Token *token = (Token*) malloc(sizeof(Token));
+  if (token == NULL) {
+      printf("Unable to alloc token.");
+      return 1; // todo <- set right error code
+  }
   token->type = TYPE_EMPTY;
+  token->attribute.keyword = KEYWORD_EMPTY;
 
   int holdResponse;
 
@@ -51,6 +56,11 @@ int main(int argc, char **argv)
       printf("Error in scanner, exiting...\n");
       return holdResponse;
     }
+
+      // this fixes all missing frees() except one + adds 5 another which creates new errors
+      if (&token->attribute.string.str != NULL)
+          strFree(&token->attribute.string);
+
   }
 
   // close read file & unset source file
