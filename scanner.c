@@ -466,32 +466,6 @@ int getToken (Token *token)
         break;
       /****** END DATA TYPES ******/
 
-      case STATE_DECLARATIVE_ASSIGN:
-        if (c == '=')
-        {
-          printf("[:=] ");
-          token->type = TYPE_DECLARATIVE_ASSIGN;
-          return 0;
-        }
-        else
-        {
-          printf("Didn't get '=' for declarative assign ':=', exiting...");
-          return 1;
-        }
-      case STATE_NOT_EQUALS:
-        if (c == '=')
-        {
-          printf("[!=] ");
-          token->type = TYPE_NOT_EQUALS;
-          return 0;
-        }
-        else
-        {
-          printf("Did not get '=' after '!', exiting...");
-          return 1;
-        }
-        break;
-
       /******   COMMENTS SECTION   ******/
       case STATE_LINE_COMMENT:
         if (c == '\n' || c == EOF)
@@ -522,6 +496,31 @@ int getToken (Token *token)
         break;
       /****** END COMMENTS SECTION ******/
 
+      case STATE_DECLARATIVE_ASSIGN:
+        if (c == '=')
+        {
+          printf("[:=] ");
+          token->type = TYPE_DECLARATIVE_ASSIGN;
+          return 0;
+        }
+        else
+        {
+          printf("Didn't get '=' for declarative assign ':=', exiting...");
+          return 1;
+        }
+      case STATE_NOT_EQUALS:
+        if (c == '=')
+        {
+          printf("[!=] ");
+          token->type = TYPE_NOT_EQUALS;
+          return 0;
+        }
+        else
+        {
+          printf("Did not get '=' after '!', exiting...");
+          return 1;
+        }
+        break;
       case STATE_GREATER_OR_EQUAL:
         if (c == '=')
         {
