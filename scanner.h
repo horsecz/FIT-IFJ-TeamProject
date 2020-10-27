@@ -39,17 +39,15 @@ typedef enum
 
   STATE_DIGIT, // step before INT / FLOAT
   STATE_DIGIT_NEGATIVE,
-  STATE_INT,
-  STATE_FLOAT,
+  // STATE_FLOAT, not implemented
 
   STATE_STRING,
   STATE_STRING_SKIP, // used when '\' is read in string
 
-  STATE_ASSIGN,
   STATE_DECLARATIVE_ASSIGN,
   STATE_NOT_EQUALS,
 
-  STATE_BOOLEAN, // BOOLEAN EXTENSION
+  // STATE_BOOLEAN, not implemented
 } State;
 
 /**

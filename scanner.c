@@ -147,16 +147,11 @@ int getToken (Token *token)
     switch (state)
     {
       case STATE_START:
-        /** DONE **/
         if (c == EOF)
         {
           printf("[EOF]\n");
           token->type = TYPE_EOF;
           return 0;
-        }
-        else if (c == '/')
-        {
-          state = STATE_DIVIDE;
         }
         else if (c == '+')
         {
@@ -169,6 +164,10 @@ int getToken (Token *token)
         else if (c == '*')
         {
           state = STATE_MULTIPLY;
+        }
+        else if (c == '/')
+        {
+          state = STATE_DIVIDE;
         }
         else if (c == '_' || isalpha(c))
         {
@@ -191,31 +190,16 @@ int getToken (Token *token)
           }
 
           // set new character to string
-          strAddChar(&token->attribute.string, c);
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 3;
+          }
         }
-        else if (c == '(')
+        else if (isdigit(c))
         {
-          printf("[(] ");
-          token->type = TYPE_LEFT_BRACKET;
-          return 0;
-        }
-        else if (c == ')')
-        {
-          printf("[)] ");
-          token->type = TYPE_RIGHT_BRACKET;
-          return 0;
-        }
-        else if (c == '{')
-        {
-          token->type = TYPE_LEFT_CURLY_BRACKET;
-          printf("[{]");
-          return 0;
-        }
-        else if (c == '}')
-        {
-          token->type = TYPE_RIGHT_CURLY_BRACKET;
-          printf("[}] ");
-          return 0;
+          state = STATE_DIGIT;
+          token->attribute.integer = (int) c - 48;
         }
         else if (c == '"')
         {
@@ -233,6 +217,36 @@ int getToken (Token *token)
         {
           state = STATE_DECLARATIVE_ASSIGN;
         }
+        /** WILL !func or !var EXIST ???? **/
+        else if (c == '!')
+        {
+          state = STATE_NOT_EQUALS;
+        }
+
+        else if (c == '(')
+        {
+          printf("[(] ");
+          token->type = TYPE_LEFT_BRACKET;
+          return 0;
+        }
+        else if (c == ')')
+        {
+          printf("[)] ");
+          token->type = TYPE_RIGHT_BRACKET;
+          return 0;
+        }
+        else if (c == '{')
+        {
+          printf("[{]");
+          token->type = TYPE_LEFT_CURLY_BRACKET;
+          return 0;
+        }
+        else if (c == '}')
+        {
+          token->type = TYPE_RIGHT_CURLY_BRACKET;
+          printf("[}] ");
+          return 0;
+        }
         else if (c == ',')
         {
           printf("[,] ");
@@ -242,9 +256,10 @@ int getToken (Token *token)
         else if (c == '=')
         {
           printf("[=] ");
-          token->type = TYPE_DECLARATIVE_ASSIGN;
+          token->type = TYPE_ASSIGN;
           return 0;
         }
+        /** WILL <= >= BE USED???? **/
         else if (c == '<')
         {
           printf("[<] ");
@@ -263,17 +278,7 @@ int getToken (Token *token)
           token->type = TYPE_SEMICOLON;
           return 0;
         }
-        else if (c == '!')
-        {
-          state = STATE_NOT_EQUALS;
-        }
-        /** END DONE **/
-        else if (isdigit(c))
-        {
-          state = STATE_DIGIT;
-          token->attribute.integer = (int) c - 48;
-        }
-        // done
+
         else if (isspace(c))
         {
           if (c == '\n')
@@ -283,28 +288,141 @@ int getToken (Token *token)
         }
         else
         {
-          printf("\n");
+          printf("Invalid character read, exiting...");
           return 1;
         }
         break;
 
-      case STATE_NOT_EQUALS:
-        if (c == '=')
-        {
-          token->type = TYPE_NOT_EQUALS;
-          return 0;
-        }
-        else return 1;
-        break;
-      case STATE_DECLARATIVE_ASSIGN:
-        if (c == '=')
-        {
-          printf("[:=] ");
-          token->type = TYPE_DECLARATIVE_ASSIGN;
-          return 0;
-        }
-        else return 1;
+      /******   OPERATORS SECTION   ******/
+      /** STATE PLUS + MINUS NEEDS TO SAVE NUMBER TO CORRESPONDING VARIABLE **/
 
+      /** WILL INCREMENTATION AND DECREMENTATION BE IMPLEMENTED???? **/
+      /** IS += -= *= and /= VALID OPERATION???? **/
+      case STATE_PLUS:
+        if (isdigit(c))
+        {
+          state = STATE_DIGIT;
+          token->attribute.integer = (int) c - 48;
+        }
+        else
+        {
+          printf("[+] ");
+
+          if (c == '\n')
+            printf("\n");
+          else
+            ungetc(c, sourceFile);
+
+          token->type = TYPE_PLUS;
+          return 0;
+        }
+        break;
+      case STATE_MINUS:
+        if (isdigit(c))
+        {
+          state = STATE_DIGIT_NEGATIVE;
+          token->attribute.integer = (int) (c - 48) * (-1);
+        }
+        else
+        {
+          if (c == '\n')
+            printf("[-] ");
+          else
+            ungetc(c, sourceFile);
+
+          token->type = TYPE_MINUS;
+          return 0;
+        }
+        break;
+      case STATE_MULTIPLY:
+      {
+        printf("[*] ");
+        if (c != '\n')
+          ungetc(c, sourceFile);
+
+        token->type = TYPE_MULTIPLY;
+        return 0;
+      }
+      case STATE_DIVIDE:
+        if (c == '/')
+        {
+          state = STATE_LINE_COMMENT;
+        }
+        else if (c == '*')
+        {
+          state = STATE_MULTI_LINE_COMMENT_START;
+        }
+        else
+        {
+          if (c == '\n')
+            ungetc(c, sourceFile);
+
+          token->type = TYPE_DIVIDE;
+          return 0;
+        }
+        break;
+      /****** END OPERATORS SECTION ******/
+
+      /******   ID/KEY SECTION   ******/
+      case STATE_IDENTIFIER:
+        if (isalpha(c) || isdigit(c))
+        {
+          // check whether adding of char was successful
+          if (!strAddChar(&token->attribute.string, c)) continue;
+          else
+          {
+            strFree(&token->attribute.string);
+            printf("Unable to realloc token's attribute string.\n");
+            return 3;
+          }
+        }
+        else
+        {
+          if (c == '\n')
+            printf("ID[%s]\n", strGetStr(&token->attribute.string));
+          else
+            ungetc(c, sourceFile);
+
+          token->type = TYPE_IDENTIFIER;
+          return 0;
+        }
+      case STATE_IDENTIFIER_OR_KEYWORD:
+        if (isalpha(c) || isdigit(c))
+        {
+          // check whether adding of char was successful
+          if (!strAddChar(&token->attribute.string, c)) continue;
+          else
+          {
+            strFree(&token->attribute.string);
+            printf("Unable to realloc token's attribute string.\n");
+            return 3;
+          }
+        }
+        else
+        {
+          /** CHECK IF KEYWORD OR IDENTIFIER **/
+          int code = isReservedKeyword(&token->attribute.string);
+          if (code != 0)
+          {
+            printf("KEY[%s] ", strGetStr(&token->attribute.string));
+            setTokenKeyword(token, code);
+          }
+          else
+          {
+            printf("ID[%s] ", strGetStr(&token->attribute.string));
+            token->type = TYPE_IDENTIFIER;
+          }
+
+          if (c == '\n')
+            printf("\n");
+          else
+            ungetc(c, sourceFile);
+
+          return 0;
+        }
+      /****** END ID/KEY SECTION ******/
+
+      /******    DATA TYPES    ******/
       case STATE_STRING:
         if (c == '"')
         {
@@ -322,12 +440,6 @@ int getToken (Token *token)
           }
           state = STATE_STRING_SKIP;
         }
-        else if (c == EOF)
-        {
-          strFree(&token->attribute.string);
-          printf("String didn't end with trailing \".\n");
-          return 1;
-        }
         else
         {
           // check whether adding of char was successful
@@ -341,25 +453,18 @@ int getToken (Token *token)
         }
         break;
       case STATE_STRING_SKIP:
-        if (c == EOF)
+      {
+        // check whether adding of char was successful
+        if (strAddChar(&token->attribute.string, c))
         {
           strFree(&token->attribute.string);
-          printf("String didn't end with trailing \".\n");
-          return 1;
+          printf("Unable to realloc token's attribute string.\n");
+          return 3;
         }
-        else
-        {
-          // check whether adding of char was successful
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
-            return 3;
-          }
 
-          state = STATE_STRING;
-        }
+        state = STATE_STRING;
         break;
+      }
       case STATE_DIGIT:
         if (isdigit(c))
         {
@@ -404,163 +509,32 @@ int getToken (Token *token)
           return 1;
         }
         break;
+      /****** END DATA TYPES ******/
 
-      /******   OPERATORS SECTION   ******/
-      /** STATE PLUS + MINUS NEEDS TO SAVE NUMBER TO CORRESPONDING VARIABLE **/
-      case STATE_PLUS:
-        if (isspace(c) || c == EOF || c == '\n')
+      case STATE_DECLARATIVE_ASSIGN:
+        if (c == '=')
         {
-          printf("[+] ");
-          if (c == '\n')
-            printf("\n");
-
-          token->type = TYPE_PLUS;
+          printf("[:=] ");
+          token->type = TYPE_DECLARATIVE_ASSIGN;
           return 0;
-        }
-        else if (isdigit(c))
-        {
-          state = STATE_DIGIT;
-          token->attribute.integer = (int) c - 48;
         }
         else
         {
+          printf("Didn't get '=' for declarative assign ':=', exiting...");
+          return 1;
+        }
+      case STATE_NOT_EQUALS:
+        if (c == '=')
+        {
+          token->type = TYPE_NOT_EQUALS;
+          return 0;
+        }
+        else
+        {
+          printf("Did not get '=' after '!', exiting...");
           return 1;
         }
         break;
-      case STATE_MINUS:
-        if (isspace(c) || c == EOF || c == '\n')
-        {
-          printf("[-] ");
-          if (c == '\n')
-            printf("\n");
-
-          token->type = TYPE_MINUS;
-          return 0;
-        }
-        else if (isdigit(c))
-        {
-          state = STATE_DIGIT_NEGATIVE;
-          token->attribute.integer = (int) (c - 48) * (-1);
-        }
-        else
-        {
-          return 1;
-        }
-        break;
-      case STATE_MULTIPLY:
-        if (isspace(c) || c == EOF || c == '\n')
-        {
-          printf("[*] ");
-          if (c == '\n')
-            printf("\n");
-
-          token->type = TYPE_MULTIPLY;
-          return 0;
-        }
-        else
-        {
-          return 1;
-        }
-      case STATE_DIVIDE:
-        if (c == '/')
-        {
-          state = STATE_LINE_COMMENT;
-        }
-        else if (c == '*')
-        {
-          state = STATE_MULTI_LINE_COMMENT_START;
-        }
-        else if (isspace(c) || c == EOF || c == '\n')
-        {
-          printf("[/] ");
-          if (c == '\n')
-            printf("\n");
-
-          token->type = TYPE_DIVIDE;
-          return 0;
-        }
-        else
-        {
-          return 1;
-        }
-        break;
-      /****** END OPERATORS SECTION ******/
-
-      /******   ID/KEY SECTION   ******/
-      case STATE_IDENTIFIER:
-        if (isalpha(c) || isdigit(c))
-        {
-          // check whether adding of char was successful
-          if (!strAddChar(&token->attribute.string, c)) continue;
-          else
-          {
-            strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
-            return 3;
-          }
-        }
-        else if (isspace(c) || c == '\n' || c == EOF || ispunct(c))
-        {
-          if (ispunct(c))
-          {
-            ungetc(c, sourceFile);
-          }
-
-          printf("ID[%s] ", strGetStr(&token->attribute.string));
-          if (c == '\n')
-            printf("\n");
-
-          token->type = TYPE_IDENTIFIER;
-          return 0;
-        }
-        else
-        {
-          strClear(&token->attribute.string);
-          return 1;
-        }
-      case STATE_IDENTIFIER_OR_KEYWORD:
-        if (isalpha(c) || isdigit(c))
-        {
-          // check whether adding of char was successful
-          if (!strAddChar(&token->attribute.string, c)) continue;
-          else
-          {
-            strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
-            return 3;
-          }
-        }
-        else if (isspace(c) || c == '\n' || c == EOF || ispunct(c))
-        {
-          if (ispunct(c))
-          {
-            ungetc(c, sourceFile);
-          }
-
-          /** CHECK IF KEYWORD OR IDENTIFIER **/
-          int code = isReservedKeyword(&token->attribute.string);
-          if (code != 0)
-          {
-            printf("KEY[%s] ", strGetStr(&token->attribute.string));
-            setTokenKeyword(token, code);
-          }
-          else
-          {
-            printf("ID[%s] ", strGetStr(&token->attribute.string));
-            token->type = TYPE_IDENTIFIER;
-          }
-
-          if (c == '\n')
-            printf("\n");
-
-          return 0;
-        }
-        else
-        {
-          strClear(&token->attribute.string);
-          return 1;
-        }
-      /****** END ID/KEY SECTION ******/
 
       /******   COMMENTS SECTION   ******/
       case STATE_LINE_COMMENT:
@@ -581,7 +555,7 @@ int getToken (Token *token)
       case STATE_MULTI_LINE_COMMENT_END:
         if (c == '/' || c == EOF)
         {
-          printf("[Multi line comment]\n");
+          printf("[Multi line comment]");
 
           token->type = TYPE_EMPTY;
           return 0;
@@ -592,11 +566,6 @@ int getToken (Token *token)
         }
         break;
       /****** END COMMENTS SECTION ******/
-
-      // PART OF SWITCH, DON'T DELETE
-      default:
-        printf("Uncaught state!");
-        return 1;
     }
   }
 }
