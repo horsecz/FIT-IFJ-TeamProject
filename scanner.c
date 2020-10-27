@@ -186,14 +186,14 @@ int getToken (Token *token)
           {
             token->type = TYPE_EMPTY;
             printf("Internal error when allocating string, exiting...\n");
-            return 3;
+            return 99;
           }
 
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
             printf("Unable to realloc token's attribute string.\n");
-            return 3;
+            return 99;
           }
         }
         else if (isdigit(c))
@@ -208,7 +208,7 @@ int getToken (Token *token)
           {
             token->type = TYPE_EMPTY;
             printf("Internal error when allocating string, exiting...\n");
-            return 3;
+            return 99;
           }
 
           state = STATE_STRING;
@@ -373,7 +373,7 @@ int getToken (Token *token)
           {
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
-            return 3;
+            return 99;
           }
         }
         else
@@ -391,11 +391,10 @@ int getToken (Token *token)
         {
           // check whether adding of char was successful
           if (!strAddChar(&token->attribute.string, c)) continue;
-          else
-          {
+          else {
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
-            return 3;
+            return 99;
           }
         }
         else
@@ -436,7 +435,7 @@ int getToken (Token *token)
           {
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
-            return 3;
+            return 99;
           }
           state = STATE_STRING_SKIP;
         }
@@ -448,7 +447,7 @@ int getToken (Token *token)
           {
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
-            return 3;
+            return 99;
           }
         }
         break;
@@ -459,7 +458,7 @@ int getToken (Token *token)
         {
           strFree(&token->attribute.string);
           printf("Unable to realloc token's attribute string.\n");
-          return 3;
+          return 99;
         }
 
         state = STATE_STRING;
