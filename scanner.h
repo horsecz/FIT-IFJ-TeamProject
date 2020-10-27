@@ -75,15 +75,14 @@ typedef enum
   KEYWORD_CASE, // 11
   KEYWORD_DEFAULT, // 12
   KEYWORD_FOR, // 13
-  KEYWORD_RANGE, // 14 (used in for-range loop)
 
   // DATA TYPES
-  KEYWORD_STRING, // 15
-  KEYWORD_INT, // 16
-  KEYWORD_FLOAT64, // 17
+  KEYWORD_STRING, // 14
+  KEYWORD_INT, // 15
+  KEYWORD_FLOAT64, // 16
 
   // EMPTY, FOR INIT
-  KEYWORD_EMPTY // 18
+  KEYWORD_EMPTY // 17
 } Keyword;
 
 /**
