@@ -112,15 +112,12 @@ void setTokenKeyword (Token *token, int keywordType)
       token->attribute.keyword = KEYWORD_FOR;
       break;
     case 14:
-      token->attribute.keyword = KEYWORD_RANGE;
-      break;
-    case 15:
       token->attribute.keyword = KEYWORD_STRING;
       break;
-    case 16:
+    case 15:
       token->attribute.keyword = KEYWORD_INT;
       break;
-    case 17:
+    case 16:
       token->attribute.keyword = KEYWORD_FLOAT64;
       break;
   }
@@ -146,6 +143,7 @@ int getToken (Token *token)
     // enter deterministic automaton
     switch (state)
     {
+      // TODO: Retezcovy literal specifikace escape sequence
       case STATE_START:
         if (c == EOF)
         {
@@ -258,18 +256,13 @@ int getToken (Token *token)
           token->type = TYPE_ASSIGN;
           return 0;
         }
-        /** WILL <= >= BE USED???? **/
         else if (c == '<')
         {
-          printf("[<] ");
-          token->type = TYPE_LESSER;
-          return 0;
+          state = STATE_LESSER_OR_EQUAL;
         }
         else if (c == '>')
         {
-          printf("[>] ");
-          token->type = TYPE_GREATER;
-          return 0;
+          state = STATE_GREATER_OR_EQUAL;
         }
         else if (c == ';')
         {
@@ -305,12 +298,7 @@ int getToken (Token *token)
         else
         {
           printf("[+] ");
-
-          if (c == '\n')
-            printf("\n");
-          else
-            ungetc(c, sourceFile);
-
+          ungetc(c, sourceFile);
           token->type = TYPE_PLUS;
           return 0;
         }
@@ -323,11 +311,8 @@ int getToken (Token *token)
         }
         else
         {
-          if (c == '\n')
-            printf("[-] ");
-          else
-            ungetc(c, sourceFile);
-
+          printf("[-] ");
+          ungetc(c, sourceFile);
           token->type = TYPE_MINUS;
           return 0;
         }
@@ -335,9 +320,7 @@ int getToken (Token *token)
       case STATE_MULTIPLY:
       {
         printf("[*] ");
-        if (c != '\n')
-          ungetc(c, sourceFile);
-
+        ungetc(c, sourceFile);
         token->type = TYPE_MULTIPLY;
         return 0;
       }
@@ -352,9 +335,7 @@ int getToken (Token *token)
         }
         else
         {
-          if (c == '\n')
-            ungetc(c, sourceFile);
-
+          ungetc(c, sourceFile);
           token->type = TYPE_DIVIDE;
           return 0;
         }
@@ -376,11 +357,8 @@ int getToken (Token *token)
         }
         else
         {
-          if (c == '\n')
-            printf("ID[%s]\n", strGetStr(&token->attribute.string));
-          else
-            ungetc(c, sourceFile);
-
+          printf("ID[%s]", strGetStr(&token->attribute.string));
+          ungetc(c, sourceFile);
           token->type = TYPE_IDENTIFIER;
           return 0;
         }
@@ -410,11 +388,7 @@ int getToken (Token *token)
             token->type = TYPE_IDENTIFIER;
           }
 
-          if (c == '\n')
-            printf("\n");
-          else
-            ungetc(c, sourceFile);
-
+          ungetc(c, sourceFile);
           return 0;
         }
       /****** END ID/KEY SECTION ******/
@@ -471,9 +445,7 @@ int getToken (Token *token)
         else
         {
           ungetc(c, sourceFile);
-
           printf("INT[%lld] ", (long long) token->attribute.integer);
-
           token->type = TYPE_INT;
           return 0;
         }
@@ -487,10 +459,7 @@ int getToken (Token *token)
         else
         {
           ungetc(c, sourceFile);
-
           printf("INT[%lld] ", (long long) token->attribute.integer);
-          if (c == '\n') printf("\n");
-
           token->type = TYPE_INT;
           return 0;
         }
@@ -512,6 +481,7 @@ int getToken (Token *token)
       case STATE_NOT_EQUALS:
         if (c == '=')
         {
+          printf("[!=] ");
           token->type = TYPE_NOT_EQUALS;
           return 0;
         }
@@ -542,7 +512,6 @@ int getToken (Token *token)
         if (c == '/' || c == EOF)
         {
           printf("[Multi line comment]");
-
           token->type = TYPE_EMPTY;
           return 0;
         }
@@ -552,6 +521,35 @@ int getToken (Token *token)
         }
         break;
       /****** END COMMENTS SECTION ******/
+
+      case STATE_GREATER_OR_EQUAL:
+        if (c == '=')
+        {
+          printf("[>=] ");
+          token->type = TYPE_GREATER_OR_EQUAL;
+          return 0;
+        }
+        else
+        {
+          printf("[>] ");
+          ungetc(c, sourceFile);
+          token->type = TYPE_GREATER;
+          return 0;
+        }
+      case STATE_LESSER_OR_EQUAL:
+        if (c == '=')
+        {
+          printf("[<=] ");
+          token->type = TYPE_LESSER_OR_EQUAL;
+          return 0;
+        }
+        else
+        {
+          printf("[<] ");
+          ungetc(c, sourceFile);
+          token->type = TYPE_LESSER;
+          return 0;
+        }
     }
   }
 }
