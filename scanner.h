@@ -213,7 +213,7 @@ void setTokenKeyword (Token *token, int keywordType);
  * @return 0 if successfully returned token,
  *         1 if lexical error,
  *         2 if token equals NULL,
- *         3 if internal problem
+ *         99 if internal problem
  */
 int getToken (Token *token);
 #endif //IFJ_PROJ_SCANNER_H

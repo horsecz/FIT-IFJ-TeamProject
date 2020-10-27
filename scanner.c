@@ -222,7 +222,6 @@ int getToken (Token *token)
         {
           state = STATE_NOT_EQUALS;
         }
-
         else if (c == '(')
         {
           printf("[(] ");
@@ -278,7 +277,6 @@ int getToken (Token *token)
           token->type = TYPE_SEMICOLON;
           return 0;
         }
-
         else if (isspace(c))
         {
           if (c == '\n')
@@ -470,20 +468,14 @@ int getToken (Token *token)
           token->attribute.integer *= 10;
           token->attribute.integer += (int) c - 48;
         }
-        else if (isspace(c) || c == EOF || c == '\n' || ispunct(c))
+        else
         {
-          if (ispunct(c))
-            ungetc(c, sourceFile);
+          ungetc(c, sourceFile);
 
           printf("INT[%lld] ", (long long) token->attribute.integer);
-          if (c == '\n') printf("\n");
 
           token->type = TYPE_INT;
           return 0;
-        }
-        else
-        {
-          return 1;
         }
         break;
       case STATE_DIGIT_NEGATIVE:
@@ -492,20 +484,15 @@ int getToken (Token *token)
           token->attribute.integer *= 10;
           token->attribute.integer -= (int) c - 48;
         }
-        else if (isspace(c) || c == EOF || c == '\n' || ispunct(c))
+        else
         {
-          if (ispunct(c))
-            ungetc(c, sourceFile);
+          ungetc(c, sourceFile);
 
           printf("INT[%lld] ", (long long) token->attribute.integer);
           if (c == '\n') printf("\n");
 
           token->type = TYPE_INT;
           return 0;
-        }
-        else
-        {
-          return 1;
         }
         break;
       /****** END DATA TYPES ******/
