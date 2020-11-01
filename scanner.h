@@ -11,7 +11,7 @@
 #ifndef IFJ_PROJ_SCANNER_H
 #define IFJ_PROJ_SCANNER_H
 
-// incldude for int_64t support
+// include for int_64t support
 #include <stdint.h>
 // include files for working with dynamic string
 #include "str.c"
