@@ -56,14 +56,18 @@ int isReservedKeyword (string *str)
     return 12;
   else if (strCmpConstStr(str, "for") == 0)
     return 13;
-  else if (strCmpConstStr(str, "range") == 0)
-    return 14;
   else if (strCmpConstStr(str, "string") == 0)
-    return 15;
+    return 14;
   else if (strCmpConstStr(str, "int") == 0)
-    return 16;
+    return 15;
   else if (strCmpConstStr(str, "float64") == 0)
+    return 16;
+  else if (strCmpConstStr(str, "bool") == 0)
     return 17;
+  else if (strCmpConstStr(str, "true") == 0)
+    return 18;
+  else if (strCmpConstStr(str, "false") == 0)
+    return 19;
   else return 0;
 }
 
@@ -120,6 +124,14 @@ void setTokenKeyword (Token *token, int keywordType)
     case 16:
       token->attribute.keyword = KEYWORD_FLOAT64;
       break;
+    case 17:
+      token->attribute.keyword = KEYWORD_BOOL;
+      break;
+    case 18:
+      token->attribute.keyword = KEYWORD_TRUE;
+      break;
+    case 19:
+      token->attribute.keyword = KEYWORD_FALSE;
   }
 }
 
