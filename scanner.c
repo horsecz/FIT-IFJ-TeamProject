@@ -674,17 +674,8 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
-
-          // change from string to int and clear string
-          int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
-          strClear(&token->attribute.string);
-          strFree(&token->attribute.string);
-          token->attribute.integer = tmp;
-
-          printf("INT[%lld] ", (long long) token->attribute.integer);
-          token->type = TYPE_INT;
-          return 0;
+          printf("Invalid format for number with exponent, exiting...\n");
+          return 1;
         }
         break;
       case STATE_DIGIT_WITH_EXP_AND_OP:
@@ -780,17 +771,8 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
-
-          // change from string to int and clear string
-          int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
-          strClear(&token->attribute.string);
-          strFree(&token->attribute.string);
-          token->attribute.integer = tmp;
-
-          printf("INT[%lld] ", (long long) token->attribute.integer);
-          token->type = TYPE_INT;
-          return 0;
+          printf("Invalid format for number with exponent, exiting...\n");
+          return 1;
         }
         break;
       case STATE_DIGIT_NEGATIVE_WITH_EXP_AND_OP:
@@ -869,17 +851,8 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
-
-          // change from string to float and clear string
-          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
-          strClear(&token->attribute.string);
-          strFree(&token->attribute.string);
-          token->attribute.float64 = tmp;
-
-          printf("FLOAT[%f] ", token->attribute.float64);
-          token->type = TYPE_FLOAT64;
-          return 0;
+          printf("Invalid format for float with exponent, exiting...\n");
+          return 1;
         }
         break;
       case STATE_FLOAT_WITH_EXP_AND_OP:
@@ -958,17 +931,8 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
-
-          // change from string to float and clear string
-          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
-          strClear(&token->attribute.string);
-          strFree(&token->attribute.string);
-          token->attribute.float64 = tmp;
-
-          printf("FLOAT[%f] ", token->attribute.float64);
-          token->type = TYPE_FLOAT64;
-          return 0;
+          printf("Invalid format for float with exponent, exiting...\n");
+          return 1;
         }
         break;
       case STATE_FLOAT_NEGATIVE_WITH_EXP_AND_OP:
@@ -1038,7 +1002,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Didn't get '=' for declarative assign ':=', exiting...");
+          printf("Didn't get '=' for declarative assign ':=', exiting...\n");
           return 1;
         }
       case STATE_NOT_EQUALS:
@@ -1095,7 +1059,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Didn't get '&' for AND, exiting...");
+          printf("Didn't get '&' for AND, exiting...\n");
           return 1;
         }
       case STATE_OR:
@@ -1107,7 +1071,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Didn't get '|' for OR, exiting...");
+          printf("Didn't get '|' for OR, exiting...\n");
           return 1;
         }
       /****** END BOOLEAN EXTENSION ******/
