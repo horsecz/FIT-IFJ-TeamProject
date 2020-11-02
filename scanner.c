@@ -311,12 +311,18 @@ int getToken (Token *token)
       /** STATE PLUS + MINUS NEEDS TO SAVE NUMBER TO CORRESPONDING VARIABLE **/
 
       /** WILL INCREMENTATION AND DECREMENTATION BE IMPLEMENTED???? **/
-      /** IS += -= *= and /= VALID OPERATION???? **/
+      /** ADDED UNARY EXTENSION **/
       case STATE_PLUS:
         if (isdigit(c))
         {
           state = STATE_DIGIT;
           token->attribute.integer = (int) c - 48;
+        }
+        else if (c == '=')
+        {
+          printf("[+=] ");
+          token->type = TYPE_PLUS_ASSIGN;
+          return 0;
         }
         else
         {
@@ -332,6 +338,12 @@ int getToken (Token *token)
           state = STATE_DIGIT_NEGATIVE;
           token->attribute.integer = (int) (c - 48) * (-1);
         }
+        else if (c == '=')
+        {
+          printf("[-=] ");
+          token->type = TYPE_MINUS_ASSIGN;
+          return 0;
+        }
         else
         {
           printf("[-] ");
@@ -341,12 +353,19 @@ int getToken (Token *token)
         }
         break;
       case STATE_MULTIPLY:
-      {
-        printf("[*] ");
-        ungetc(c, sourceFile);
-        token->type = TYPE_MULTIPLY;
-        return 0;
-      }
+        if (c == '=')
+        {
+          printf("[*=] ");
+          token->type = TYPE_MULTIPLY_ASSIGN;
+          return 0;
+        }
+        else
+        {
+          printf("[*] ");
+          ungetc(c, sourceFile);
+          token->type = TYPE_MULTIPLY;
+          return 0;
+        }
       case STATE_DIVIDE:
         if (c == '/')
         {
@@ -355,6 +374,12 @@ int getToken (Token *token)
         else if (c == '*')
         {
           state = STATE_MULTI_LINE_COMMENT_START;
+        }
+        else if (c == '=')
+        {
+          printf("[/=] ");
+          token->type = TYPE_DIVIDE_ASSIGN;
+          return 0;
         }
         else
         {
@@ -380,7 +405,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("ID[%s]", strGetStr(&token->attribute.string));
+          printf("ID[%s] ", strGetStr(&token->attribute.string));
           ungetc(c, sourceFile);
           token->type = TYPE_IDENTIFIER;
           return 0;
