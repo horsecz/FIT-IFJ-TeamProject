@@ -234,7 +234,7 @@ int getToken (Token *token)
         }
         else if (c == '{')
         {
-          printf("[{]");
+          printf("[{] ");
           token->type = TYPE_LEFT_CURLY_BRACKET;
           return 0;
         }
@@ -273,8 +273,11 @@ int getToken (Token *token)
         else if (isspace(c))
         {
           if (c == '\n')
-            printf("\n");
-
+          {
+            printf("[EOL]\n");
+            token->type = TYPE_EOL;
+            return 0;
+          }
           continue;
         }
         else
@@ -470,7 +473,8 @@ int getToken (Token *token)
       case STATE_LINE_COMMENT:
         if (c == '\n' || c == EOF)
         {
-          printf("[Line Comment]\n");
+          printf("[Line Comment] ");
+          ungetc(c, sourceFile);
 
           token->type = TYPE_EMPTY;
           return 0;
@@ -485,7 +489,7 @@ int getToken (Token *token)
       case STATE_MULTI_LINE_COMMENT_END:
         if (c == '/' || c == EOF)
         {
-          printf("[Multi line comment]");
+          printf("[Multi line comment] ");
           token->type = TYPE_EMPTY;
           return 0;
         }
