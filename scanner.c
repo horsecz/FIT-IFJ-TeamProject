@@ -503,6 +503,11 @@ int getToken (Token *token)
       case STATE_DIGIT:
         if (isdigit(c))
         {
+          if (token->attribute.integer == 0)
+          {
+            printf("No leading zeros are supported, exiting...\n");
+            return 1;
+          }
           token->attribute.integer *= 10;
           token->attribute.integer += (int) c - 48;
         }
@@ -517,6 +522,11 @@ int getToken (Token *token)
       case STATE_DIGIT_NEGATIVE:
         if (isdigit(c))
         {
+          if (token->attribute.integer == 0)
+          {
+            printf("No leading zeros are supported, exiting...\n");
+            return 1;
+          }
           token->attribute.integer *= 10;
           token->attribute.integer -= (int) c - 48;
         }
@@ -580,7 +590,7 @@ int getToken (Token *token)
           token->type = TYPE_NOT_EQUALS;
           return 0;
         }
-        // BOOLEAN EXTENSION [without it should return 1 for missing '='
+        // BOOLEAN EXTENSION [without it should return 1 for missing '=']
         else
         {
           printf("[!] ");
