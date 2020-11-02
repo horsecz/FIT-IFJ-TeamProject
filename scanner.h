@@ -218,6 +218,23 @@ int isReservedKeyword (string *str);
 void setTokenKeyword (Token *token, int keywordType);
 
 /**
+ * @brief Checks whether character @c c escaped by '\' is valid by GO
+ *
+ * @param c
+ * @return 1 - valid
+ *         0 - invalid
+ */
+int isValidEscapeCharacter (char c);
+
+/**
+ * @brief Gets escape sequence by @c c
+ *
+ * @param c
+ * @return character containing escape sequence
+ */
+char getEscapeSequence (char c);
+
+/**
  * @brief Reads char after char from @var sourceFile
  *
  * @param token

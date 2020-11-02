@@ -135,6 +135,52 @@ void setTokenKeyword (Token *token, int keywordType)
   }
 }
 
+int isValidEscapeCharacter (char c)
+{
+  switch (c)
+  {
+    case 'a':
+    case 'b':
+    case 'f':
+    case 'n':
+    case 'r':
+    case 't':
+    case 'v':
+    case '\\':
+    case '"':
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+char getEscapeSequence (char c)
+{
+  switch (c)
+  {
+    case 'a':
+      return '\a';
+    case 'b':
+      return '\b';
+    case 'f':
+      return '\f';
+    case 'n':
+      return '\n';
+    case 'r':
+      return '\r';
+    case 't':
+      return '\t';
+    case 'v':
+      return '\v';
+    case '\\':
+      return '\\';
+    case '"':
+      return '\"';
+    default:
+      return '\0';
+  }
+}
+
 int getToken (Token *token)
 {
   if (token == NULL)
@@ -522,13 +568,6 @@ int getToken (Token *token)
         }
         else if (c == 92)
         {
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
-            return 99;
-          }
           state = STATE_STRING_SKIP;
         }
         else
@@ -546,16 +585,24 @@ int getToken (Token *token)
         break;
       case STATE_STRING_SKIP:
       {
-        // check whether adding of char was successful
-        if (strAddChar(&token->attribute.string, c))
+        if (isValidEscapeCharacter(c))
         {
-          strClear(&token->attribute.string);
-          strFree(&token->attribute.string);
-          printf("Unable to realloc token's attribute string.\n");
-          return 99;
-        }
+          // check whether adding of char was successful
+          if (strAddChar(&token->attribute.string, getEscapeSequence(c)))
+          {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
 
-        state = STATE_STRING;
+          state = STATE_STRING;
+        }
+        else
+        {
+          printf("Get invalid escape sequence, exiting...");
+          return 1;
+        }
         break;
       }
 
