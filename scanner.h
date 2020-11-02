@@ -49,7 +49,10 @@ typedef enum
 
   STATE_LESSER_OR_EQUAL,
   STATE_GREATER_OR_EQUAL,
-  // STATE_BOOLEAN, not implemented
+
+  // BOOLEAN EXTENSION
+  STATE_AND,
+  STATE_OR,
 } State;
 
 /**

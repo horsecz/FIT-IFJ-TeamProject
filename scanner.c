@@ -227,7 +227,6 @@ int getToken (Token *token)
         {
           state = STATE_DECLARATIVE_ASSIGN;
         }
-        /** WILL !func or !var EXIST ???? **/
         else if (c == '!')
         {
           state = STATE_NOT_EQUALS;
@@ -291,6 +290,15 @@ int getToken (Token *token)
             return 0;
           }
           continue;
+        }
+        // BOOLEAN EXTENSION
+        else if (c == '&')
+        {
+          state = STATE_AND;
+        }
+        else if (c == '|')
+        {
+          state = STATE_OR;
         }
         else
         {
@@ -547,10 +555,12 @@ int getToken (Token *token)
           token->type = TYPE_NOT_EQUALS;
           return 0;
         }
+        // BOOLEAN EXTENSION [without it should return 1 for missing '='
         else
         {
-          printf("Did not get '=' after '!', exiting...");
-          return 1;
+          printf("[!] ");
+          token->type = TYPE_NOT;
+          return 0;
         }
         break;
       case STATE_GREATER_OR_EQUAL:
@@ -581,6 +591,33 @@ int getToken (Token *token)
           token->type = TYPE_LESSER;
           return 0;
         }
+
+      /******   BOOLEAN EXTENSION   ******/
+      case STATE_AND:
+        if (c == '&')
+        {
+          printf("[&&] ");
+          token->type = TYPE_AND;
+          return 0;
+        }
+        else
+        {
+          printf("Didn't get '&' for AND, exiting...");
+          return 1;
+        }
+      case STATE_OR:
+        if (c == '|')
+        {
+          printf("[||] ");
+          token->type = TYPE_OR;
+          return 0;
+        }
+        else
+        {
+          printf("Didn't get '|' for OR, exiting...");
+          return 1;
+        }
+      /****** END BOOLEAN EXTENSION ******/
     }
   }
 }
