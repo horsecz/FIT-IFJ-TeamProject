@@ -25,11 +25,11 @@ typedef enum
 {
   STATE_START,
 
-  /** THOSE 4 STATES HAVE UNNARY EXTENSION ALREADY **/
-  STATE_PLUS, // could be plus operator, positive number or plus equal
-  STATE_MINUS, // could be minus operator, negative number or minus equal
-  STATE_MULTIPLY, // could be multiplication operator or multiply equal
-  STATE_DIVIDE, // could result in [multi] line comment, division operator or divide euqal
+  /** THOSE 4 STATES HAVE UNARY EXTENSION ALREADY **/
+  STATE_PLUS, // could be plus operator, positive number or plus assign
+  STATE_MINUS, // could be minus operator, negative number or minus assign
+  STATE_MULTIPLY, // could be multiplication operator or multiply assign
+  STATE_DIVIDE, // could result in [multi] line comment, division operator or divide assign
 
   STATE_LINE_COMMENT,
   STATE_MULTI_LINE_COMMENT_START,
