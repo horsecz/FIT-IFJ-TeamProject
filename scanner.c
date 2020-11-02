@@ -347,7 +347,7 @@ int getToken (Token *token)
 
       /******   ID/KEY SECTION   ******/
       case STATE_IDENTIFIER:
-        if (isalpha(c) || isdigit(c))
+        if (isalpha(c) || isdigit(c) || c == '_')
         {
           // check whether adding of char was successful
           if (!strAddChar(&token->attribute.string, c)) continue;
@@ -366,11 +366,27 @@ int getToken (Token *token)
           return 0;
         }
       case STATE_IDENTIFIER_OR_KEYWORD:
-        if (isalpha(c) || isdigit(c))
+        if (isalpha(c))
         {
           // check whether adding of char was successful
           if (!strAddChar(&token->attribute.string, c)) continue;
-          else {
+          else
+          {
+            strFree(&token->attribute.string);
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else if (isdigit(c) || c == '_')
+        {
+          // check whether adding of char was successful
+          if (!strAddChar(&token->attribute.string, c))
+          {
+            state = STATE_IDENTIFIER;
+            continue;
+          }
+          else
+          {
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
