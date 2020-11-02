@@ -1,4 +1,5 @@
 //Program3:Pracesretezciavestavenymifunkcemi
+/* kek */
 package main
 func main() {
     s1 := "Totojenejakytext"
