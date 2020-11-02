@@ -208,8 +208,22 @@ int getToken (Token *token)
         }
         else if (isdigit(c))
         {
+          // initialize new string and check if it was successful
+          if (strInit(&token->attribute.string))
+          {
+            token->type = TYPE_EMPTY;
+            printf("Internal error when allocating string, exiting...\n");
+            return 99;
+          }
+
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
           state = STATE_DIGIT;
-          token->attribute.integer = (int) c - 48;
         }
         else if (c == '"')
         {
@@ -316,7 +330,26 @@ int getToken (Token *token)
         if (isdigit(c))
         {
           state = STATE_DIGIT;
-          token->attribute.integer = (int) c - 48;
+
+          // initialize new string and check if it was successful
+          if (strInit(&token->attribute.string))
+          {
+            token->type = TYPE_EMPTY;
+            printf("Internal error when allocating string, exiting...\n");
+            return 99;
+          }
+
+          // set new characters to string
+          if (strAddChar(&token->attribute.string, '+'))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
         }
         else if (c == '=')
         {
@@ -336,7 +369,26 @@ int getToken (Token *token)
         if (isdigit(c))
         {
           state = STATE_DIGIT_NEGATIVE;
-          token->attribute.integer = (int) (c - 48) * (-1);
+
+          // initialize new string and check if it was successful
+          if (strInit(&token->attribute.string))
+          {
+            token->type = TYPE_EMPTY;
+            printf("Internal error when allocating string, exiting...\n");
+            return 99;
+          }
+
+          // set new characters to string
+          if (strAddChar(&token->attribute.string, '-'))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
         }
         else if (c == '=')
         {
@@ -398,6 +450,7 @@ int getToken (Token *token)
           if (!strAddChar(&token->attribute.string, c)) continue;
           else
           {
+            strClear(&token->attribute.string);
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
@@ -417,6 +470,7 @@ int getToken (Token *token)
           if (!strAddChar(&token->attribute.string, c)) continue;
           else
           {
+            strClear(&token->attribute.string);
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
@@ -432,6 +486,7 @@ int getToken (Token *token)
           }
           else
           {
+            strClear(&token->attribute.string);
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
@@ -469,6 +524,7 @@ int getToken (Token *token)
         {
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
@@ -481,6 +537,7 @@ int getToken (Token *token)
           if (!strAddChar(&token->attribute.string, c)) continue;
           else
           {
+            strClear(&token->attribute.string);
             strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
@@ -492,6 +549,7 @@ int getToken (Token *token)
         // check whether adding of char was successful
         if (strAddChar(&token->attribute.string, c))
         {
+          strClear(&token->attribute.string);
           strFree(&token->attribute.string);
           printf("Unable to realloc token's attribute string.\n");
           return 99;
@@ -500,25 +558,114 @@ int getToken (Token *token)
         state = STATE_STRING;
         break;
       }
+
       case STATE_DIGIT:
         if (isdigit(c))
         {
+          // NEEDS FIX
           if (token->attribute.integer == 0)
           {
             printf("No leading zeros are supported, exiting...\n");
             return 1;
           }
-          token->attribute.integer *= 10;
-          token->attribute.integer += (int) c - 48;
+
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else if (c == 'e' || c == 'E')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_DIGIT_WITH_EXP;
+        }
+        else if (c == '.')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_FLOAT;
         }
         else
         {
           ungetc(c, sourceFile);
+
+          // change from string to int and clear string
+          int64_t tmp = atoll(strGetStr(&token->attribute.string));
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.integer = tmp;
+
           printf("INT[%lld] ", (long long) token->attribute.integer);
           token->type = TYPE_INT;
           return 0;
         }
         break;
+      case STATE_DIGIT_WITH_EXP:
+        if (isdigit(c) || c == '+' || c == '-')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_DIGIT_WITH_EXP_AND_OP;
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to int and clear string
+          int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.integer = tmp;
+
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+          token->type = TYPE_INT;
+          return 0;
+        }
+        break;
+      case STATE_DIGIT_WITH_EXP_AND_OP:
+        if (isdigit(c))
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to int and clear string
+          int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.integer = tmp;
+
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+          token->type = TYPE_INT;
+          return 0;
+        }
+        break;
+
       case STATE_DIGIT_NEGATIVE:
         if (isdigit(c))
         {
@@ -527,13 +674,277 @@ int getToken (Token *token)
             printf("No leading zeros are supported, exiting...\n");
             return 1;
           }
-          token->attribute.integer *= 10;
-          token->attribute.integer -= (int) c - 48;
+
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else if (c == 'e' || c == 'E')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_DIGIT_NEGATIVE_WITH_EXP;
+        }
+        else if (c == '.')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_FLOAT_NEGATIVE;
         }
         else
         {
           ungetc(c, sourceFile);
+
+          // change from string to float and clear string
+          int64_t tmp = atoll(strGetStr(&token->attribute.string));
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.integer = tmp;
+
           printf("INT[%lld] ", (long long) token->attribute.integer);
+          token->type = TYPE_INT;
+          return 0;
+        }
+        break;
+      case STATE_DIGIT_NEGATIVE_WITH_EXP:
+        if (isdigit(c) || c == '+' || c == '-')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_DIGIT_NEGATIVE_WITH_EXP_AND_OP;
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to int and clear string
+          int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.integer = tmp;
+
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+          token->type = TYPE_INT;
+          return 0;
+        }
+        break;
+      case STATE_DIGIT_NEGATIVE_WITH_EXP_AND_OP:
+        if (isdigit(c))
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to int and clear string
+          int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.integer = tmp;
+
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+          token->type = TYPE_INT;
+          return 0;
+        }
+        break;
+
+      case STATE_FLOAT:
+        if (isdigit(c))
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else if (c == 'e' || c == 'E')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_FLOAT_WITH_EXP;
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to float and clear string
+          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.float64 = tmp;
+
+          printf("FLOAT[%f] ", token->attribute.float64);
+          token->type = TYPE_FLOAT64;
+          return 0;
+        }
+        break;
+      case STATE_FLOAT_WITH_EXP:
+        if (isdigit(c) || c == '+' || c == '-')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_FLOAT_WITH_EXP_AND_OP;
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to float and clear string
+          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.float64 = tmp;
+
+          printf("FLOAT[%f] ", token->attribute.float64);
+          token->type = TYPE_FLOAT64;
+          return 0;
+        }
+        break;
+      case STATE_FLOAT_WITH_EXP_AND_OP:
+        if (isdigit(c))
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to int and clear string
+          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.float64 = tmp;
+
+          printf("FLOAT[%f] ", token->attribute.float64);
+          token->type = TYPE_INT;
+          return 0;
+        }
+        break;
+
+      case STATE_FLOAT_NEGATIVE:
+        if (isdigit(c))
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else if (c == 'e' || c == 'E')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_FLOAT_WITH_EXP;
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to float and clear string
+          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.float64 = tmp;
+
+          printf("FLOAT[%f] ", token->attribute.float64);
+          token->type = TYPE_FLOAT64;
+          return 0;
+        }
+        break;
+      case STATE_FLOAT_NEGATIVE_WITH_EXP:
+        if (isdigit(c) || c == '+' || c == '-')
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+
+          state = STATE_FLOAT_NEGATIVE_WITH_EXP_AND_OP;
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to float and clear string
+          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.float64 = tmp;
+
+          printf("FLOAT[%f] ", token->attribute.float64);
+          token->type = TYPE_FLOAT64;
+          return 0;
+        }
+        break;
+      case STATE_FLOAT_NEGATIVE_WITH_EXP_AND_OP:
+        if (isdigit(c))
+        {
+          // set new character to string
+          if (strAddChar(&token->attribute.string, c))
+          {
+            printf("Unable to realloc token's attribute string.\n");
+            return 99;
+          }
+        }
+        else
+        {
+          ungetc(c, sourceFile);
+
+          // change from string to int and clear string
+          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          token->attribute.float64 = tmp;
+
+          printf("FLOAT[%f] ", token->attribute.float64);
           token->type = TYPE_INT;
           return 0;
         }
