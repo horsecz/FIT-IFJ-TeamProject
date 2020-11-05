@@ -248,6 +248,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -265,6 +267,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -388,11 +392,15 @@ int getToken (Token *token)
           // set new characters to string
           if (strAddChar(&token->attribute.string, '+'))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -427,11 +435,15 @@ int getToken (Token *token)
           // set new characters to string
           if (strAddChar(&token->attribute.string, '-'))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -619,6 +631,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -628,6 +642,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -639,6 +655,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -666,6 +684,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -684,6 +704,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -716,6 +738,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -725,6 +749,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -736,6 +762,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -763,6 +791,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -781,6 +811,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -807,6 +839,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -816,6 +850,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -843,6 +879,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -861,6 +899,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -887,6 +927,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -896,6 +938,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -923,6 +967,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
@@ -941,6 +987,8 @@ int getToken (Token *token)
           // set new character to string
           if (strAddChar(&token->attribute.string, c))
           {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
             printf("Unable to realloc token's attribute string.\n");
             return 99;
           }
