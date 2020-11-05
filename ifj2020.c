@@ -57,10 +57,6 @@ int main(int argc, char **argv)
       return holdResponse;
     }
 
-      // this fixes all missing frees() except one + adds 5 another which creates new errors
-      if (&token->attribute.string.str != NULL)
-          strFree(&token->attribute.string);
-
   }
 
   // close read file & unset source file
