@@ -8,9 +8,12 @@
  *      Hais Lukas (xhaisl00)
  */
 
-#include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "scanner.h"
+
+FILE *sourceFile = NULL;
+
 
 int setSourceFile (FILE *file)
 {

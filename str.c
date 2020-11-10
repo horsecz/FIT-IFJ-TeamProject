@@ -1,6 +1,7 @@
 //jednoducha knihovna pro praci s nekonecne dlouhymi retezci
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "str.h"
 
 #define STR_LEN_INC 8
