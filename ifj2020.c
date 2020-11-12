@@ -54,7 +54,9 @@ int main(int argc, char **argv)
       printf("Error in scanner, exiting...\n");
       return holdResponse;
     }
-
+    // add cleanup of string (fixes a lot of bugs - 80 bytes lost remaining)
+    if (token->type == TYPE_IDENTIFIER || token->type == TYPE_STRING)
+      strFree(&token->attribute.string);
   }
 
   // close read file & unset source file
