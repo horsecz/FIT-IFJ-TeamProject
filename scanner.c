@@ -12,24 +12,6 @@
 #include <stdlib.h>
 #include "scanner.h"
 
-FILE *sourceFile = NULL;
-
-
-int setSourceFile (FILE *file)
-{
-  if (file != NULL)
-  {
-    sourceFile = file;
-    return 0;
-  }
-  return 1;
-}
-
-void unsetSourceFile ()
-{
-  sourceFile = NULL;
-}
-
 int isReservedKeyword (string *str)
 {
   // maybe this is not the best approach (discussion necessary)
@@ -191,7 +173,7 @@ int getToken (Token *token)
     return 2;
   }
 
-  // char read from @var sourceFile
+  // char read from stdin
   char c;
   // initialization of state
   State state = STATE_START;
@@ -199,7 +181,7 @@ int getToken (Token *token)
   while (1)
   {
     // read another character
-    c = getc(sourceFile);
+    c = getc(stdin);
 
     // enter deterministic automaton
     switch (state)
@@ -417,7 +399,7 @@ int getToken (Token *token)
         else
         {
           printf("[+] ");
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           token->type = TYPE_PLUS;
           return 0;
         }
@@ -460,7 +442,7 @@ int getToken (Token *token)
         else
         {
           printf("[-] ");
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           token->type = TYPE_MINUS;
           return 0;
         }
@@ -475,7 +457,7 @@ int getToken (Token *token)
         else
         {
           printf("[*] ");
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           token->type = TYPE_MULTIPLY;
           return 0;
         }
@@ -496,7 +478,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           token->type = TYPE_DIVIDE;
           return 0;
         }
@@ -520,7 +502,7 @@ int getToken (Token *token)
         else
         {
           printf("ID[%s] ", strGetStr(&token->attribute.string));
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           token->type = TYPE_IDENTIFIER;
           return 0;
         }
@@ -569,7 +551,7 @@ int getToken (Token *token)
             token->type = TYPE_IDENTIFIER;
           }
 
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           return 0;
         }
       /****** END ID/KEY SECTION ******/
@@ -669,7 +651,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to int and clear string
           int64_t tmp = atoll(strGetStr(&token->attribute.string));
@@ -716,7 +698,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to int and clear string
           int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
@@ -776,7 +758,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to float and clear string
           int64_t tmp = atoll(strGetStr(&token->attribute.string));
@@ -823,7 +805,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to int and clear string
           int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
@@ -864,7 +846,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to float and clear string
           float tmp = strtod(strGetStr(&token->attribute.string), NULL);
@@ -911,7 +893,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to int and clear string
           float tmp = strtod(strGetStr(&token->attribute.string), NULL);
@@ -952,7 +934,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to float and clear string
           float tmp = strtod(strGetStr(&token->attribute.string), NULL);
@@ -999,7 +981,7 @@ int getToken (Token *token)
         }
         else
         {
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           // change from string to int and clear string
           float tmp = strtod(strGetStr(&token->attribute.string), NULL);
@@ -1019,7 +1001,7 @@ int getToken (Token *token)
         if (c == '\n' || c == EOF)
         {
           printf("[Line Comment] ");
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
 
           token->type = TYPE_EMPTY;
           return 0;
@@ -1082,7 +1064,7 @@ int getToken (Token *token)
         else
         {
           printf("[>] ");
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           token->type = TYPE_GREATER;
           return 0;
         }
@@ -1096,7 +1078,7 @@ int getToken (Token *token)
         else
         {
           printf("[<] ");
-          ungetc(c, sourceFile);
+          ungetc(c, stdin);
           token->type = TYPE_LESSER;
           return 0;
         }

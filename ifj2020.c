@@ -11,23 +11,8 @@
 #include <stdlib.h>
 #include "ifj2020.h"
 
-int main(int argc, char **argv)
+int main()
 {
-  if (argc == 1)
-  {
-    printf("No parameters passed, program %s is exiting\n", argv[0]);
-    return 1;
-  }
-
-  // open source file for reading
-  FILE *src = fopen(argv[1], "r");
-  if (src == NULL)
-  {
-    printf("Unable to open source file, exiting.\n");
-    return 1;
-  }
-  else setSourceFile(src);
-
   // create token
   Token *token = (Token*) malloc(sizeof(Token));
   if (token == NULL) {
@@ -44,10 +29,6 @@ int main(int argc, char **argv)
     holdResponse = getToken(token);
     if (holdResponse != 0)
     {
-      // close read file & unset source file
-      unsetSourceFile();
-      fclose(src);
-
       // free up token from memory
       free(token);
 
@@ -58,10 +39,6 @@ int main(int argc, char **argv)
     if (token->type == TYPE_IDENTIFIER || token->type == TYPE_STRING)
       strFree(&token->attribute.string);
   }
-
-  // close read file & unset source file
-  unsetSourceFile();
-  fclose(src);
 
   free(token);
 
