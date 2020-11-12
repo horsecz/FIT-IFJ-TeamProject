@@ -8,8 +8,8 @@
  *      Hais Lukas (xhaisl00)
  */
 
-#include <stdio.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "scanner.h"
 
 int isReservedKeyword (string *str)

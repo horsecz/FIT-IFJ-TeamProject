@@ -13,8 +13,9 @@
 
 // include for int_64t support
 #include <stdint.h>
+#include <stdio.h>
 // include files for working with dynamic string
-#include "str.c"
+#include "str.h"
 
 typedef enum
 {

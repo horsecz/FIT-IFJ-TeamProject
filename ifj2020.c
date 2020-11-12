@@ -7,10 +7,9 @@
  * @authors
  *      Hais Lukas (xhaisl00)
  */
-
 #include <stdio.h>
 #include <stdlib.h>
-#include "scanner.c"
+#include "ifj2020.h"
 
 int main()
 {
