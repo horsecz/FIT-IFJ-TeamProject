@@ -48,8 +48,7 @@ int main(int argc, char **argv)
       unsetSourceFile();
       fclose(src);
 
-      // free up token string and token itself from memory
-      strFree(&token->attribute.string);
+      // free up token from memory
       free(token);
 
       printf("Error in scanner, exiting...\n");
