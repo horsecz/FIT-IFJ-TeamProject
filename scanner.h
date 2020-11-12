@@ -16,11 +16,6 @@
 // include files for working with dynamic string
 #include "str.c"
 
-/**
- * @brief Source file we are reading from.
- */
-FILE *sourceFile = NULL;
-
 typedef enum
 {
   STATE_START,
@@ -187,19 +182,6 @@ typedef struct
 } Token;
 
 /**
- * @brief Sets @c file to @var sourceFile.
- *
- * @param file
- * @return 0 if successful, otherwise 1
- */
-int setSourceFile (FILE *file);
-
-/**
- * @brief Frees @var sourceFile
- */
-void unsetSourceFile ();
-
-/**
  * @brief Checks whether passed string equals to any reserved keyword and if so
  *          it returns corresponding code to keyword
  *
@@ -235,7 +217,7 @@ int isValidEscapeCharacter (char c);
 char getEscapeSequence (char c);
 
 /**
- * @brief Reads char after char from @var sourceFile
+ * @brief Reads char after char from stdin
  *
  * @param token
  * @return 0 if successfully returned token,
