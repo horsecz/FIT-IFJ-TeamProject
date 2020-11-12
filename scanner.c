@@ -366,7 +366,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Invalid character read, exiting...");
+          printf("Invalid character read, exiting...\n");
           return 1;
         }
         break;
