@@ -557,6 +557,7 @@ int getToken (Token *token)
           if (code != 0)
           {
             printf("KEY[%s] ", strGetStr(&token->attribute.string));
+            strFree(&token->attribute.string);
             setTokenKeyword(token, code);
           }
           else
