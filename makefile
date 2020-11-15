@@ -20,16 +20,16 @@ scanner.o: scanner.c scanner.h str.h
 str.o: str.c str.h
 	$(CC) $(CFLAGSS) -c $<
 
-#symtable.o: symtable.c symtable.h str.h
-#	$(CC) $(CFLAGSS) -c $<
+symtable.o: symtable.c symtable.h str.h
+	$(CC) $(CFLAGSS) -c $<
 
 # MAIN
 
-$(MAIN).o: $(MAIN).c $(MAIN).h scanner.h str.h
+$(MAIN).o: $(MAIN).c $(MAIN).h scanner.h str.h symtable.h
 	$(CC) $(CFLAGS) -c $<
 	
 $(MAIN): $(MAIN).o scanner.o str.o
-	$(CC) $(CFLAGS) $(MAIN).o scanner.o str.o -o $(OUT)
+	$(CC) $(CFLAGS) $(MAIN).o scanner.o str.o symtable.o -o $(OUT)
 
 
 # ADDITIONAL FEATURES
