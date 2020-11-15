@@ -50,8 +50,7 @@ typedef struct {
     int top;
 } tStackP;
 
-/*
-void st_construct ( BTNode_t* symtable );*/
+
 void st_construct ( BTNode_t** symtable );
 // Sets symtable to NULL
 
