@@ -11,6 +11,7 @@
 
 #include "scanner.h"
 #include "str.h"
+#include "parser.h"
 
 // TODO
 

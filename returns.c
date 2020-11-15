@@ -8,6 +8,6 @@
 #include "returns.h"
 
 void iPrint(eRC code, bool error) {
-    fprintf(stderr, "%s: %s", (error) ? "[ERROR]" : "[INFO]",
+    fprintf((error) ? stderr : stdout, "%s: %s", (error) ? "[ERROR]" : "[INFO]",
     (code == RC_ERR_INTERNAL) ? errorString[10] : errorString[code]);
 }

@@ -17,10 +17,11 @@
 /**
  * @brief Main parser logic 
  */
-void parser();
+eRC parser(BTNode_t** SymbolTable);
 //*** ACCORDING TO LL1-GRAMAR FUNCTION TO BE CALLED
 // PROGRAM
 eRC program();
+eRC prolog();
 // EOLs
 eRC eolM();
 eRC eolR();
@@ -35,8 +36,7 @@ eRC argumentNext();
 // TYPE
 eRC type();
 eRC typeFunction();
-eRC typeReturn();
-eRC typeReturnNext();
+eRC typeFunctionNext();
 // COMMANDS / CODE
 eRC commands();
 eRC command();
