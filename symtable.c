@@ -22,9 +22,9 @@ void stConstruct ( BTNodePtr *symtable ) {
  * @brief Helper function for destructor
  * @param ptr Pointer to the node
  * @param stack Pointer to the stack
- * @post Fills stack with nodes -> all leftmost nodes
+ * @post Fills stack with nodes -> all leftmost nodes pushed onto stack
  */
-void destructLeftmost ( BTNodePtr ptr, tStackP* stack ) {
+void addLeftmost ( BTNodePtr ptr, tStackP* stack ) {
     if(!ptr) {	// Not found - NULL protection
 		return;
 	}
@@ -43,11 +43,11 @@ void stDestruct ( BTNodePtr *symtable ) {
     }
 
     SInitP(stack);
-    destructLeftmost((*symtable), stack);
+    addLeftmost((*symtable), stack);
 
     while (!SEmptyP(stack)) {                       // Process every node in stack
         BTNodePtr deleting = STopPopP(stack);
-		destructLeftmost(deleting->RPtr, stack);	// Check right subtree
+		addLeftmost(deleting->RPtr, stack);	// Check right subtree
 		free(deleting);
     }
     free(stack);    // Free stack that we allocated
@@ -177,7 +177,7 @@ int stDelete ( BTNodePtr *symtable, stID identificator ) {
 			(*symtable) = child;
 			return ST_SUCCESS;
 		}
-		if ((*symtable)->LPtr && (*symtable)->LPtr) {		// Both subtrees
+		if ((*symtable)->LPtr && (*symtable)->RPtr) {		// Both subtrees
 			deleteReplaceByRightmost((*symtable), &(*symtable)->LPtr);
 			return ST_SUCCESS;
 		}
@@ -197,7 +197,6 @@ void stSetType ( BTNodePtr idNode, stType datatype ) {
         return;
     }
     idNode->type = datatype;
-    return;
 }
 
 void SInitP (tStackP *S)
