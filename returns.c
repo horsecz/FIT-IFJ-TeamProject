@@ -7,7 +7,7 @@
  */
 #include "returns.h"
 
-void iPrint(eRC code, bool error) {
-    fprintf((error) ? stderr : stdout, "%s: %s", (error) ? "[ERROR]" : "[INFO]",
-    (code == RC_ERR_INTERNAL) ? errorString[10] : errorString[code]);
+void iPrint(eRC code, bool error, char* opMsg) {
+    fprintf(stderr, (!opMsg) ? "%s: %s" : "%s: %s %s", (error) ? "[ERROR]" : "[INFO]",
+    (code == RC_ERR_INTERNAL) ? errorString[10] : errorString[code], (!opMsg) ? opMsg : NULL);
 }

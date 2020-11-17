@@ -48,7 +48,10 @@ char *errorString[] = {
 
 /**
  * @brief Nice print of errors and other things
+ * @param eRC Return code -> @see @enum returnCodes
+ * @param bool true if sending error eRC, false otherwise
+ * @param char* Optional text msg to be printed out with error (if not used use NULL to indicate that)
  */
-void iPrint(eRC, bool);
+void iPrint(eRC, bool, char*);
 
 #endif
