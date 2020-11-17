@@ -228,7 +228,7 @@ int getToken (Token *token)
           if (strInit(&token->attribute.string))
           {
             token->type = TYPE_EMPTY;
-            printf("Internal error when allocating string, exiting...\n");
+            fprintf(stderr, "Internal error when allocating string, exiting...\n");
             return 99;
           }
 
@@ -237,7 +237,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -247,7 +247,7 @@ int getToken (Token *token)
           if (strInit(&token->attribute.string))
           {
             token->type = TYPE_EMPTY;
-            printf("Internal error when allocating string, exiting...\n");
+            fprintf(stderr, "Internal error when allocating string, exiting...\n");
             return 99;
           }
 
@@ -256,7 +256,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -268,7 +268,7 @@ int getToken (Token *token)
           if (strInit(&token->attribute.string))
           {
             token->type = TYPE_EMPTY;
-            printf("Internal error when allocating string, exiting...\n");
+            fprintf(stderr, "Internal error when allocating string, exiting...\n");
             return 99;
           }
 
@@ -353,7 +353,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Invalid character read, exiting...\n");
+          fprintf(stderr, "Invalid character read, exiting...\n");
           return 1;
         }
         break;
@@ -372,7 +372,7 @@ int getToken (Token *token)
           if (strInit(&token->attribute.string))
           {
             token->type = TYPE_EMPTY;
-            printf("Internal error when allocating string, exiting...\n");
+            fprintf(stderr, "Internal error when allocating string, exiting...\n");
             return 99;
           }
 
@@ -381,14 +381,14 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
           if (strAddChar(&token->attribute.string, c))
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -415,7 +415,7 @@ int getToken (Token *token)
           if (strInit(&token->attribute.string))
           {
             token->type = TYPE_EMPTY;
-            printf("Internal error when allocating string, exiting...\n");
+            fprintf(stderr, "Internal error when allocating string, exiting...\n");
             return 99;
           }
 
@@ -424,14 +424,14 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
           if (strAddChar(&token->attribute.string, c))
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -497,7 +497,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -517,7 +517,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -533,7 +533,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -578,7 +578,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -592,7 +592,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -600,7 +600,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Get invalid escape sequence, exiting...");
+          fprintf(stderr, "Get invalid escape sequence, exiting...");
           return 1;
         }
         break;
@@ -612,7 +612,7 @@ int getToken (Token *token)
           // NEEDS FIX
           if (token->attribute.integer == 0)
           {
-            printf("No leading zeros are supported, exiting...\n");
+            fprintf(stderr, "No leading zeros are supported, exiting...\n");
             return 1;
           }
 
@@ -621,7 +621,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -632,7 +632,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -645,7 +645,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -674,7 +674,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -682,7 +682,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Invalid format for number with exponent, exiting...\n");
+          fprintf(stderr, "Invalid format for number with exponent, exiting...\n");
           return 1;
         }
         break;
@@ -694,7 +694,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -719,7 +719,7 @@ int getToken (Token *token)
         {
           if (token->attribute.integer == 0)
           {
-            printf("No leading zeros are supported, exiting...\n");
+            fprintf(stderr, "No leading zeros are supported, exiting...\n");
             return 1;
           }
 
@@ -728,7 +728,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -739,7 +739,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -752,7 +752,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -781,7 +781,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -789,7 +789,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Invalid format for number with exponent, exiting...\n");
+          fprintf(stderr, "Invalid format for number with exponent, exiting...\n");
           return 1;
         }
         break;
@@ -801,7 +801,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -829,7 +829,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -840,7 +840,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -869,7 +869,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -877,7 +877,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Invalid format for float with exponent, exiting...\n");
+          fprintf(stderr, "Invalid format for float with exponent, exiting...\n");
           return 1;
         }
         break;
@@ -889,7 +889,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -917,7 +917,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -928,7 +928,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -957,7 +957,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
 
@@ -965,7 +965,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Invalid format for float with exponent, exiting...\n");
+          fprintf(stderr, "Invalid format for float with exponent, exiting...\n");
           return 1;
         }
         break;
@@ -977,7 +977,7 @@ int getToken (Token *token)
           {
             strClear(&token->attribute.string);
             strFree(&token->attribute.string);
-            printf("Unable to realloc token's attribute string.\n");
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return 99;
           }
         }
@@ -1038,7 +1038,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Didn't get '=' for declarative assign ':=', exiting...\n");
+          fprintf(stderr, "Didn't get '=' for declarative assign ':=', exiting...\n");
           return 1;
         }
       case STATE_NOT_EQUALS:
@@ -1095,7 +1095,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Didn't get '&' for AND, exiting...\n");
+          fprintf(stderr, "Didn't get '&' for AND, exiting...\n");
           return 1;
         }
       case STATE_OR:
@@ -1107,7 +1107,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("Didn't get '|' for OR, exiting...\n");
+          fprintf(stderr, "Didn't get '|' for OR, exiting...\n");
           return 1;
         }
       /****** END BOOLEAN EXTENSION ******/
