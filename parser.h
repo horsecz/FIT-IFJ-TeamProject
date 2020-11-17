@@ -12,19 +12,43 @@
 #include <stdlib.h>
 // Project specific
 #include "scanner.h"
+#include "symtable.h"
 #include "returns.h"
 
 /**
- * @brief Main parser logic 
+ * @brief Main parser logic
+ * @param SymbolTable Symbol table (implemented as BST)
  */
-eRC parser(BTNode_t** SymbolTable);
-//*** ACCORDING TO LL1-GRAMAR FUNCTION TO BE CALLED
-// PROGRAM
+eRC parser(BTNodePtr* SymbolTable);
+
+/** ---------------------------------------------------- **
+ *  List of functions generated according to LL1-grammar  *
+ ** ---------------------------------------------------- **/
+
+/**
+ * @brief Rule '<program> -> <prolog> <eol_m> <functions>'
+ * @return eRC @see @enum returnCodes
+ */
 eRC program();
+
+/**
+ * @brief Rule '<prolog> -> package main'
+ * @return eRC @see @enum returnCodes
+ */
 eRC prolog();
-// EOLs
+
+/**
+ * @brief Rule '<eol_m> -> EOL <eol_r>'
+ * @return eRC @see @enum returnCodes
+ */
 eRC eolM();
+
+/**
+ * @brief Rule '<eol_r> -> EOL <eol_r>' or '<eol_r> -> eps'
+ * @return eRC @see @enum returnCodes
+ */
 eRC eolR();
+
 // FUNCTION RELATED
 eRC functions();
 eRC function();

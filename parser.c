@@ -1,7 +1,7 @@
 /**
  * @file parser.c
- * @authors Roman Janiczek (xjanic25@vutbr.cz)
- *          Dominik Horky (xhorky32@vutbr.cz)
+ * @author Roman Janiczek (xjanic25@vutbr.cz)
+ * @author Dominik Horky (xhorky32@vutbr.cz)
  * @brief Parser implementation
  * @version 0.420
  * @date 2020-11-15
@@ -496,32 +496,40 @@ eRC prolog() {
 
     switch (tk->type) {
         case TYPE_KEYWORD:
-            if (strCmpConstStr(strGetStr(tk->attribute.string), "package"))
+            if (strCmpConstStr(strGetStr(tk->attribute.string), "package")) {
                 return RC_ERR_SYNTAX_ANALYSIS;
-
+            }
             token = getToken(tk);
-            if (strCmpConstStr(strGetStr(tk->attribute.string), "main") || tk->type != TYPE_IDENTIFIER)
+            if (strCmpConstStr(strGetStr(tk->attribute.string), "main") || tk->type != TYPE_IDENTIFIER) {
                 return RC_ERR_SYNTAX_ANALYSIS;
+            }
             break;
         default:
-            result = RC_ERR_SYNTAX_ANALYSIS;
-            break;
+            return RC_ERR_SYNTAX_ANALYSIS;
     }
 
     return result;
 }
 
 eRC program() {
-    // rule: <program> -> <prolog> <eol_m> <functions>
     eRC result = RC_OK;
 
-    // cycle until i'm out of comments and eols
-    while (tk->type == TYPE_EMPTY || tk->type == TYPE_EOL)
+    // Cycle 'till we are out of comments and eols
+    while (tk->type == TYPE_EMPTY || tk->type == TYPE_EOL) {
         token = getToken(tk);
+        if (token == 1) {
+            iPrint(RC_ERR_LEXICAL_ANALYSIS, true);
+            return RC_ERR_LEXICAL_ANALYSIS;
+        } else if (token) {
+            iPrint(RC_ERR_INTERNAL, true);
+            return RC_ERR_INTERNAL;
+        }
+    }
 
     // incorrect: package -> rule <program>
-    if (strCmpConstStr(strGetStr(tk->attribute.string), "package"))
+    if (strCmpConstStr(strGetStr(tk->attribute.string), "package")) {
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     // next token should be <prolog>, which is KEYWORD
     switch (tk->type) {
@@ -543,31 +551,22 @@ eRC program() {
     return result;
 }
 
-// eRC parser(BTNode_t* SymbolTable, InstructionsList_t* list);
-eRC parser(BTNode_t** st, Token* t) {
-    eRC result = RC_OK; // innocent until proven guilty, right?
-    //il = list;
-    SymbolTable = *st;
-    tk = t;
+eRC parser(BTNodePtr* SymbolTable) {
     token = getToken(tk);
 
     switch (token) {
+        // TOKEN OK
         case 0:
-            result = program();
-            break;
+            return program();
+        // LEX ERROR
         case 1:
-            result = RC_ERR_LEXICAL_ANALYSIS;
-            break;
+            iPrint(RC_ERR_LEXICAL_ANALYSIS, true);
+            return RC_ERR_LEXICAL_ANALYSIS;
+        // 2+ INTERNAL in this case
         case 2:
         case 99:
-            result = RC_ERR_INTERNAL; // TODO -> INTERNAL when returned 2? token == NULL <=> returned 2
-            break;
         default:
-            result = RC_ERR_INTERNAL;
-            printf("Fatal error: Unexpected case in parser.\n"); // to distinguish between 99 and this
-            break;
+            iPrint(RC_ERR_INTERNAL, true);
+            return RC_ERR_INTERNAL;
     }
-
-    iPrint(result, (result) ? true : false);
-    return result;
 }
