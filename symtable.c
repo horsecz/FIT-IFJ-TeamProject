@@ -1,7 +1,8 @@
 /**
  *  @note   IFJ: Implementace interpreta jazyka IFJ20
  *	@file	symtable.c
- *	@author Dominik Horky, FIT
+ *	@author Dominik Horky (xhorky32@stud.fit.vutbr.cz)
+ *  @author Roman Janiczek (xjanic25@vutbr.cz)
  *	@brief  Modul symtable je hlavnim modulem pracujicicm s binarnim stromem, ktery je ADT pro tabulku symbolu.
  *	@note	Reseni IFJ-proj, tabulka symbolu
  *	@note   Pro vypracovani tohoto modulu byly vyuzity funkce z IAL-DU2 (modul C402 - preddefinovane i mnou vypracovane)
@@ -10,251 +11,212 @@
 #include "symtable.h"
 
 
-void st_construct ( BTNode_t** symtable ) {
-    *symtable = NULL;
-}
-
-void destruct_leftmost ( BTNode_t** ptr, tStackP* stack) {
-    while (*ptr != NULL) {
-        SPushP(stack, *ptr);
-        *ptr = (*ptr)->LPtr;
+void stConstruct ( BTNodePtr *symtable ) {
+    if (!(*symtable)) {    // Symtable is alredy NULL, no need to do anything
+        return;
     }
+    (*symtable) = NULL;    // Symtable contained some mem garbage, set to NULL
 }
 
-void st_destruct ( BTNode_t** symtable ) {
+/**
+ * @brief Helper function for destructor
+ * @param ptr Pointer to the node
+ * @param stack Pointer to the stack
+ * @post Fills stack with nodes -> all leftmost nodes
+ */
+void destructLeftmost ( BTNodePtr ptr, tStackP* stack ) {
+    if(!ptr) {	// Not found - NULL protection
+		return;
+	}
+
+    while(ptr) {// Go through the whole tree to the left
+		SPushP(stack, ptr);
+		ptr = ptr->LPtr;
+	}
+}
+
+void stDestruct ( BTNodePtr *symtable ) {
     tStackP* stack = (tStackP*) calloc(sizeof(tStackP), 1);
-    if (stack == NULL) {
+    if (!stack) {
         fprintf(stderr, "Cannot destruct symtable due to internal error. [malloc-stack]\n");
         return;
     }
 
     SInitP(stack);
-    destruct_leftmost(&(*symtable), stack);
+    destructLeftmost((*symtable), stack);
 
-    while (!SEmptyP(stack)) {
-        *symtable = STopPopP(stack);
-        if ((*symtable)->RPtr != NULL)
-            destruct_leftmost(&(*symtable)->RPtr, stack);
-
-        free(*symtable);
-        *symtable = NULL;
+    while (!SEmptyP(stack)) {                       // Process every node in stack
+        BTNodePtr deleting = STopPopP(stack);
+		destructLeftmost(deleting->RPtr, stack);	// Check right subtree
+		free(deleting);
     }
-
-    free(stack);
+    free(stack);    // Free stack that we allocated
 }
 
-int sortStrings ( st_id fst, st_id snd ) {
-    int fst_s = strlen(fst);
-    int snd_s = strlen(snd);
-    int cmp = strcmp(fst, snd);
-
-    if (!cmp)
-        return 0;
-
-    for(int i = 0; i < fst_s && i < snd_s; i++) {
-        if (fst[i] > snd[i]) {
-            return 1;
-        }
-        else if (fst[i] < snd[i]) {
-            return -1;
-        }
-    }
-
-    if (fst_s > snd_s) {
-        return 1;
-    }
-    else if (fst_s < snd_s) {
-        return -1;
-    }
-
-    return 0;
+/**
+ * @brief Helper function for going through the tree according to stID
+ * @param fst First string
+ * @param snd Second string
+ * @return int 0 -> Strings are equal,
+ *            -N -> First string is less than second
+ *             N -> First string is greater than second
+ */
+int sortStrings ( stID fst, stID snd ) {
+    return strcmp(fst, snd);
 }
 
-int st_insert ( BTNode_t** symtable, st_id identificator, st_type datatype ) {
-    BTNode_t* new = (BTNode_t*) calloc(sizeof(BTNode_t), 1);
-    if (new == NULL) { return ST_ERROR; }
+int stInsert ( BTNodePtr *symtable, stID identificator, stType datatype ) {
+    BTNodePtr new = (BTNodePtr) calloc(sizeof(struct BTNode), 1);
+    if (!new) { 
+        return ST_ERROR; 
+    }
 
     new->RPtr = NULL;
     new->LPtr = NULL;
     new->type = datatype;
     new->id = identificator;
 
-
-    if (*symtable == NULL) {
-        *symtable = new;
+    if (!(*symtable)) {
+        (*symtable) = new;
         return ST_SUCCESS;
     }
 
-    if (!strcmp((*symtable)->id, new->id)) {
-        free(new);
-        return ST_ID_EXISTS;
-    }
+    BTNodePtr temp = (*symtable);
 
-    BTNode_t* temp = *symtable;
-    int st_sort = 0;
-
-    while (temp->LPtr != NULL || temp->RPtr != NULL) {
-        st_sort = sortStrings(temp->id, new->id);
-        if (temp->LPtr != NULL && (st_sort > 0))
+    while (temp) {
+        if (sortStrings(temp->id, identificator) > 0) {
+            if (!temp->LPtr) {
+                temp->LPtr = new;
+                return ST_SUCCESS;
+            }
             temp = temp->LPtr;
-        else if (temp->RPtr != NULL && (st_sort < 0 ))
+        } else if (sortStrings(temp->id, identificator) < 0) {
+            if (!temp->RPtr) {
+                temp->RPtr = new;
+                return ST_SUCCESS;
+            }
             temp = temp->RPtr;
-        else if (st_sort == 0) {
+        } else {
             free(new);
             return ST_ID_EXISTS;
         }
-        else
-            break;
-    }
-
-    st_sort = sortStrings(temp->id, new->id);
-    if (st_sort > 0)
-        temp->LPtr = new;
-    else if (st_sort < 0)
-        temp->RPtr = new;
-    else {
-        free(new);
-        return ST_ID_EXISTS;
     }
 
     return ST_SUCCESS;
 }
 
-BTNode_t* st_lookup ( BTNode_t** symtable, st_id identificator ) {
-    BTNode_t* temp = *symtable;
-    int st_sort = 0;
+BTNodePtr stLookUp ( BTNodePtr *symtable, stID identificator ) {
+    if (!(*symtable)) {
+        return NULL;
+    }
 
-    while (temp != NULL) {
-        st_sort = sortStrings(temp->id, identificator);
-        if (st_sort > 0) //left
+    BTNodePtr temp = (*symtable);
+
+    while (temp) {
+        if (sortStrings(temp->id, identificator) > 0) {         //left
             temp = temp->LPtr;
-        else if (st_sort < 0) //right
+        } else if (sortStrings(temp->id, identificator) < 0) {  //right
             temp = temp->RPtr;
-        else
-            break;
-    }
-
-    return temp;
-}
-
-void delete_ReplaceByRightmost (BTNode_t* PtrReplaced, BTNode_t** RootPtr) {
-    while ((*RootPtr) != NULL && (*RootPtr)->RPtr != NULL)
-        *RootPtr = (*RootPtr)->RPtr;
-
-    // expecting RootPtr != NULL
-    BTNode_t* work = *RootPtr;
-    PtrReplaced->type = (*RootPtr)->type;
-    PtrReplaced->id = (*RootPtr)->id;
-    free(work);
-    work = NULL;
-    return;
-}
-
-int st_delete ( BTNode_t** symtable, st_id identificator ) {
-    BTNode_t* removal = *symtable;
-    BTNode_t* removal_p = *symtable;
-    int st_sort = 0;
-
-
-    while (removal != NULL) {
-        st_sort = sortStrings((removal)->id, identificator);
-        if (st_sort == 0)
-            break;
-
-        removal_p = removal;
-        if (st_sort > 0) //left
-            removal = (removal)->LPtr;
-        else if (st_sort < 0) //right
-            removal = (removal)->RPtr;
-    }
-
-    if (removal == NULL) return ST_ERROR;
-
-    if ((removal)->LPtr == NULL && (removal)->RPtr == NULL) {
-        if (removal_p != removal) {
-            if (removal_p->RPtr == removal)
-                removal_p->RPtr = NULL;
-            else
-                removal_p->LPtr = NULL;
-
         } else {
-            (*symtable) = NULL;
-        }
-
-        free(removal);
-        removal = NULL;
-    } else if ((removal)->LPtr != NULL && (removal)->RPtr != NULL) {
-        BTNode_t* LPtr = removal->LPtr->LPtr;
-        delete_ReplaceByRightmost((removal), &(removal)->LPtr);
-        (removal)->LPtr = LPtr;
-    } else {
-        BTNode_t* workLPtr = (removal)->LPtr;
-        BTNode_t* workRPtr = (removal)->RPtr;
-        BTNode_t* newRoot = NULL;
-
-        if ((removal)->LPtr != NULL) {
-            newRoot = workLPtr;
-        } else {
-            newRoot = workRPtr;
-        }
-
-        if (removal_p->LPtr == removal)
-            removal_p->LPtr = newRoot;
-        else if (removal_p->RPtr == removal)
-            removal_p->RPtr = newRoot;
-
-        if (removal != (*symtable)) {
-            free(removal);
-            removal = NULL;
-        } else {
-            if (removal->LPtr != NULL) {
-                removal_p = removal->LPtr;
-            }
-            else if (removal->RPtr != NULL) {
-                removal_p = removal->RPtr;
-            }
-            else {
-                removal_p = NULL;
-            }
-
-            (*symtable) = removal_p;
-            free(removal);
+            return temp;
         }
     }
 
-    return ST_SUCCESS;
+    return NULL;
 }
 
-st_type st_get_type ( BTNode_t** id_node ) {
-    return (*id_node)->type;
-}
-
-void st_set_type ( BTNode_t** id_node, st_type datatype ) {
-    (*id_node)->type = datatype;
-    return;
-}
-
-/*
- * FUNCTIONS FROM IAL-DU2 (STACK)
+/**
+ * @brief Helper function - find, replace and free rightmost
+ * @param PtrReplaced Node that will be replaced
+ * @param RootPtr From this node we look for rightmost
  */
+void deleteReplaceByRightmost ( BTNodePtr PtrReplaced, BTNodePtr *RootPtr ) {
+    // Stop conditon - END // STOP SOMETHING WENT HORRIBLY WRONG
+	if (!(*RootPtr)) {
+		return;
+	}
+
+	BTNodePtr rm = NULL;
+
+	if (!(*RootPtr)->RPtr) {	// IS THE RIGHTMOST (NO RIGHT SUB TREE EXISTS)
+		rm = (*RootPtr);
+		PtrReplaced->id = rm->id;
+        PtrReplaced->type = rm->type;
+		free((*RootPtr));
+		(*RootPtr) = rm->LPtr;
+		return;
+	}
+	deleteReplaceByRightmost(PtrReplaced, &(*RootPtr)->RPtr);	// LOOK MORE TO THE RIGHT
+}
+
+int stDelete ( BTNodePtr *symtable, stID identificator ) {
+    // Stop conditon - NOT FOUND
+	if (!(*symtable)) {
+		return ST_ERROR;
+	}
+
+	if (sortStrings((*symtable)->id, identificator) > 0) {			// Key in left subtree
+		return stDelete(&(*symtable)->LPtr, identificator);
+	} else if (sortStrings((*symtable)->id, identificator) < 0) {	// Key in right subtree
+		return stDelete(&(*symtable)->RPtr, identificator);
+	} else { // Found key
+		if (!(*symtable)->LPtr && !(*symtable)->RPtr) {	// No subtrees in key node
+			free((*symtable));
+			(*symtable) = NULL;
+			return ST_SUCCESS;
+		}
+		if (!(*symtable)->LPtr &&  (*symtable)->RPtr) {	// Only right subtree
+			BTNodePtr child = (*symtable)->RPtr;
+			free((*symtable));
+			(*symtable) = child;
+			return ST_SUCCESS;
+		}
+		if (!(*symtable)->RPtr &&  (*symtable)->LPtr) {	// Only left subtree
+			BTNodePtr child = (*symtable)->LPtr;
+			free((*symtable));
+			(*symtable) = child;
+			return ST_SUCCESS;
+		}
+		if ((*symtable)->LPtr && (*symtable)->LPtr) {		// Both subtrees
+			deleteReplaceByRightmost((*symtable), &(*symtable)->LPtr);
+			return ST_SUCCESS;
+		}
+	}
+    return ST_ERROR;
+}
+
+stType stGetType ( BTNodePtr idNode ) {
+    if(!idNode) {
+        return UNKNOWN;
+    }
+    return idNode->type;
+}
+
+void stSetType ( BTNodePtr idNode, stType datatype ) {
+    if(!idNode) {
+        return;
+    }
+    idNode->type = datatype;
+    return;
+}
 
 void SInitP (tStackP *S)
 {
     S->top = 0;
 }
 
-void SPushP (tStackP *S, BTNode_t* ptr)
+void SPushP (tStackP *S, BTNodePtr ptr)
 {
     /* Při implementaci v poli může dojít k přetečení zásobníku. */
     if (S->top == ST_MAXSTACK)
         printf("ERROR: Pointer stack overflow.\n");
     else {
         S->top++;
-        S->a[S->top]=ptr;
+        S->a[S->top]=&ptr;
     }
 }
 
-BTNode_t* STopPopP (tStackP *S)
+BTNodePtr STopPopP (tStackP *S)
 {
     /* Operace nad prázdným zásobníkem způsobí chybu. */
     if (S->top==0)  {
@@ -262,7 +224,7 @@ BTNode_t* STopPopP (tStackP *S)
         return(NULL);
     }
     else {
-        return (S->a[S->top--]);
+        return *(S->a[S->top--]);
     }
 }
 
