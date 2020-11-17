@@ -17,7 +17,6 @@
 // include files for working with dynamic string
 #include "str.h"
 
-
 typedef enum
 {
   STATE_START,
