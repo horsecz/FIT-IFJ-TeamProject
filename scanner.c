@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include "scanner.h"
 
+#define DEBUG 1
+
 int isReservedKeyword (string *str)
 {
   // maybe this is not the best approach (discussion necessary)
@@ -190,7 +192,7 @@ int getToken (Token *token)
       case STATE_START:
         if (c == EOF)
         {
-          printf("[EOF]\n");
+          if (DEBUG) printf("[EOF]\n");
           token->type = TYPE_EOF;
           return 0;
         }
@@ -282,37 +284,37 @@ int getToken (Token *token)
         }
         else if (c == '(')
         {
-          printf("[(] ");
+          if (DEBUG) printf("[(] ");
           token->type = TYPE_LEFT_BRACKET;
           return 0;
         }
         else if (c == ')')
         {
-          printf("[)] ");
+          if (DEBUG) printf("[)] ");
           token->type = TYPE_RIGHT_BRACKET;
           return 0;
         }
         else if (c == '{')
         {
-          printf("[{] ");
+          if (DEBUG) printf("[{] ");
           token->type = TYPE_LEFT_CURLY_BRACKET;
           return 0;
         }
         else if (c == '}')
         {
           token->type = TYPE_RIGHT_CURLY_BRACKET;
-          printf("[}] ");
+          if (DEBUG) printf("[}] ");
           return 0;
         }
         else if (c == ',')
         {
-          printf("[,] ");
+          if (DEBUG) printf("[,] ");
           token->type = TYPE_COMMA;
           return 0;
         }
         else if (c == '=')
         {
-          printf("[=] ");
+          if (DEBUG) printf("[=] ");
           token->type = TYPE_ASSIGN;
           return 0;
         }
@@ -326,7 +328,7 @@ int getToken (Token *token)
         }
         else if (c == ';')
         {
-          printf("[;] ");
+          if (DEBUG) printf("[;] ");
           token->type = TYPE_SEMICOLON;
           return 0;
         }
@@ -334,7 +336,7 @@ int getToken (Token *token)
         {
           if (c == '\n')
           {
-            printf("[EOL]\n");
+            if (DEBUG) printf("[EOL]\n");
             token->type = TYPE_EOL;
             return 0;
           }
@@ -392,13 +394,13 @@ int getToken (Token *token)
         }
         else if (c == '=')
         {
-          printf("[+=] ");
+          if (DEBUG) printf("[+=] ");
           token->type = TYPE_PLUS_ASSIGN;
           return 0;
         }
         else
         {
-          printf("[+] ");
+          if (DEBUG) printf("[+] ");
           ungetc(c, stdin);
           token->type = TYPE_PLUS;
           return 0;
@@ -435,13 +437,13 @@ int getToken (Token *token)
         }
         else if (c == '=')
         {
-          printf("[-=] ");
+          if (DEBUG) printf("[-=] ");
           token->type = TYPE_MINUS_ASSIGN;
           return 0;
         }
         else
         {
-          printf("[-] ");
+          if (DEBUG) printf("[-] ");
           ungetc(c, stdin);
           token->type = TYPE_MINUS;
           return 0;
@@ -450,13 +452,13 @@ int getToken (Token *token)
       case STATE_MULTIPLY:
         if (c == '=')
         {
-          printf("[*=] ");
+          if (DEBUG) printf("[*=] ");
           token->type = TYPE_MULTIPLY_ASSIGN;
           return 0;
         }
         else
         {
-          printf("[*] ");
+          if (DEBUG) printf("[*] ");
           ungetc(c, stdin);
           token->type = TYPE_MULTIPLY;
           return 0;
@@ -472,7 +474,7 @@ int getToken (Token *token)
         }
         else if (c == '=')
         {
-          printf("[/=] ");
+          if (DEBUG) printf("[/=] ");
           token->type = TYPE_DIVIDE_ASSIGN;
           return 0;
         }
@@ -501,7 +503,7 @@ int getToken (Token *token)
         }
         else
         {
-          printf("ID[%s] ", strGetStr(&token->attribute.string));
+          if (DEBUG) printf("ID[%s] ", strGetStr(&token->attribute.string));
           ungetc(c, stdin);
           token->type = TYPE_IDENTIFIER;
           return 0;
@@ -541,13 +543,13 @@ int getToken (Token *token)
           int code = isReservedKeyword(&token->attribute.string);
           if (code != 0)
           {
-            printf("KEY[%s] ", strGetStr(&token->attribute.string));
+            if (DEBUG) printf("KEY[%s] ", strGetStr(&token->attribute.string));
             strFree(&token->attribute.string);
             setTokenKeyword(token, code);
           }
           else
           {
-            printf("ID[%s] ", strGetStr(&token->attribute.string));
+            if (DEBUG) printf("ID[%s] ", strGetStr(&token->attribute.string));
             token->type = TYPE_IDENTIFIER;
           }
 
@@ -560,7 +562,7 @@ int getToken (Token *token)
       case STATE_STRING:
         if (c == '"')
         {
-          printf("STRING[%s] ", strGetStr(&token->attribute.string));
+          if (DEBUG) printf("STRING[%s] ", strGetStr(&token->attribute.string));
           token->type = TYPE_STRING;
           return 0;
         }
@@ -659,7 +661,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          printf("INT[%lld] ", (long long) token->attribute.integer);
+          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
           token->type = TYPE_INT;
           return 0;
         }
@@ -706,7 +708,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          printf("INT[%lld] ", (long long) token->attribute.integer);
+          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
           token->type = TYPE_INT;
           return 0;
         }
@@ -766,7 +768,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          printf("INT[%lld] ", (long long) token->attribute.integer);
+          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
           token->type = TYPE_INT;
           return 0;
         }
@@ -813,7 +815,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          printf("INT[%lld] ", (long long) token->attribute.integer);
+          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
           token->type = TYPE_INT;
           return 0;
         }
@@ -854,7 +856,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          printf("FLOAT[%f] ", token->attribute.float64);
+          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
           token->type = TYPE_FLOAT64;
           return 0;
         }
@@ -901,7 +903,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          printf("FLOAT[%f] ", token->attribute.float64);
+          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
           token->type = TYPE_INT;
           return 0;
         }
@@ -942,7 +944,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          printf("FLOAT[%f] ", token->attribute.float64);
+          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
           token->type = TYPE_FLOAT64;
           return 0;
         }
@@ -989,7 +991,7 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          printf("FLOAT[%f] ", token->attribute.float64);
+          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
           token->type = TYPE_INT;
           return 0;
         }
@@ -1000,7 +1002,7 @@ int getToken (Token *token)
       case STATE_LINE_COMMENT:
         if (c == '\n' || c == EOF)
         {
-          printf("[Line Comment] ");
+          if (DEBUG) printf("[Line Comment] ");
           ungetc(c, stdin);
 
           token->type = TYPE_EMPTY;
@@ -1016,7 +1018,7 @@ int getToken (Token *token)
       case STATE_MULTI_LINE_COMMENT_END:
         if (c == '/' || c == EOF)
         {
-          printf("[Multi line comment] ");
+          if (DEBUG) printf("[Multi line comment] ");
           token->type = TYPE_EMPTY;
           return 0;
         }
@@ -1030,7 +1032,7 @@ int getToken (Token *token)
       case STATE_DECLARATIVE_ASSIGN:
         if (c == '=')
         {
-          printf("[:=] ");
+          if (DEBUG) printf("[:=] ");
           token->type = TYPE_DECLARATIVE_ASSIGN;
           return 0;
         }
@@ -1042,14 +1044,14 @@ int getToken (Token *token)
       case STATE_NOT_EQUALS:
         if (c == '=')
         {
-          printf("[!=] ");
+          if (DEBUG) printf("[!=] ");
           token->type = TYPE_NOT_EQUALS;
           return 0;
         }
         // BOOLEAN EXTENSION [without it should return 1 for missing '=']
         else
         {
-          printf("[!] ");
+          if (DEBUG) printf("[!] ");
           token->type = TYPE_NOT;
           return 0;
         }
@@ -1057,13 +1059,13 @@ int getToken (Token *token)
       case STATE_GREATER_OR_EQUAL:
         if (c == '=')
         {
-          printf("[>=] ");
+          if (DEBUG) printf("[>=] ");
           token->type = TYPE_GREATER_OR_EQUAL;
           return 0;
         }
         else
         {
-          printf("[>] ");
+          if (DEBUG) printf("[>] ");
           ungetc(c, stdin);
           token->type = TYPE_GREATER;
           return 0;
@@ -1071,13 +1073,13 @@ int getToken (Token *token)
       case STATE_LESSER_OR_EQUAL:
         if (c == '=')
         {
-          printf("[<=] ");
+          if (DEBUG) printf("[<=] ");
           token->type = TYPE_LESSER_OR_EQUAL;
           return 0;
         }
         else
         {
-          printf("[<] ");
+          if (DEBUG) printf("[<] ");
           ungetc(c, stdin);
           token->type = TYPE_LESSER;
           return 0;
@@ -1087,7 +1089,7 @@ int getToken (Token *token)
       case STATE_AND:
         if (c == '&')
         {
-          printf("[&&] ");
+          if (DEBUG) printf("[&&] ");
           token->type = TYPE_AND;
           return 0;
         }
@@ -1099,7 +1101,7 @@ int getToken (Token *token)
       case STATE_OR:
         if (c == '|')
         {
-          printf("[||] ");
+          if (DEBUG) printf("[||] ");
           token->type = TYPE_OR;
           return 0;
         }
