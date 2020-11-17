@@ -1,95 +1,158 @@
 /**
  *  @note   IFJ: Implementace interpreta jazyka IFJ20
  *	@file	symtable.h
- *	@author Dominik Horky, FIT
+ *	@author Dominik Horky (xhorky32@stud.fit.vutbr.cz)
+ *  @author Roman Janiczek (xjanic25@vutbr.cz)
  *	@brief  Hlavickovy soubor slouzici pro symtable.c
  *	@note	Reseni IFJ-proj, tabulka symbolu
  */
 
-#ifndef SYMTABLE_H
-#define SYMTABLE_H
-
+#ifndef IFJ_PROJECT_SYMTABLE_H
+#define IFJ_PROJECT_SYMTABLE_H
+// General
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <string.h>
 
-/*
- * USER FUNCTIONS, TYPES, ENUMS, ..
+/**
+ * @brief Max size of the stack
  */
-
-#define ST_SUCCESS 1
-#define ST_ERROR 0
-#define ST_ID_EXISTS -1
 #define ST_MAXSTACK CHAR_MAX
 
-typedef char* st_id;
+/**
+ * @brief Status codes for symtable
+ * @enum stCodes
+ */
+typedef enum stCodes {
+    ST_SUCCESS = 1,     /**< Success */
+    ST_ERROR = 0,       /**< Error */
+    ST_ID_EXISTS = -1   /**< Already exists */
+} stC;
 
-typedef enum st_datatypes {
-    // INTERNAL
-    UNKNOWN,
+typedef char* stID;
 
-    // BASIC DATA TYPES
-    INT,
-    STRING,
-    FLOAT64,
+/**
+ * @brief Enum containing data types
+ * @enum stDataTypes
+ */
+typedef enum stDataTypes {
+    UNKNOWN,    /**< [INTERNAL] Internal only */
 
-    // EXTENSION DATA TYPES
-} st_type;
+    INT,        /**< [BASIC] Integer data type */
+    STRING,     /**< [BASIC] String data type */
+    FLOAT64,    /**< [BASIC] Float data type */
 
+} stType;
+
+/**
+ * @brief Structure for the node of the tree
+ */
 typedef struct BTNode {
-    st_id id;
-    st_type type;
-    struct BTNode* LPtr;
-    struct BTNode* RPtr;
-} BTNode_t;
+    stID id;                /**< Identificator of the node */
+    stType type;            /**< Saved type - refer to enum stDateTypes */
+    struct BTNode* LPtr;    /**< Pointer to the left subtree */
+    struct BTNode* RPtr;    /**< Pointer to the right subtree */
+} *BTNodePtr;
 
+/**
+ * @brief Stack structure (support structure for symtable implementation)
+ */
 typedef struct {
-    BTNode_t* a[ST_MAXSTACK];
-    int top;
+    BTNodePtr* a[ST_MAXSTACK];   /**< Stack - storing nodes from the tree */
+    int top;                    /**< Indicate top of the stack - 0 => empty */
 } tStackP;
 
-
-void st_construct ( BTNode_t** symtable );
-// Sets symtable to NULL
-
-void st_destruct ( BTNode_t** symtable );
-// Destroys symtable
-
-int st_insert ( BTNode_t** symtable, st_id identificator, st_type datatype );
-// Inserts new node with key 'identificator' and data 'datatype' in symtable 'symtable'.
-// Returns >0 if ok, 0 if insert failed (malloc, ..), <0 if 'identificator' already exists in 'symtable'
-
-int st_delete ( BTNode_t** symtable, st_id identificator );
-// Returns >0 if ok, 0 if remove failed, because 'identificator' isnt present in 'symtable'
-
-BTNode_t* st_lookup ( BTNode_t** symtable, st_id identificator );
-// Looks up for 'identificator' in 'symtable'
-// Returns pointer to (pointer to) node containing 'identificator' key or NULL if not found.
-
-st_type st_get_type ( BTNode_t** id_node );
-// Returns type of 'id_node' identificator, which is expected to be != NULL (or expect undefined behaviour)
-
-void st_set_type ( BTNode_t** id_node, st_type datatype );
-// Sets type of 'id_node" identificator to 'datatype'
-// Notes: id_node should be NULL and datatype should be from D_TYPE enum (for both cases: expect undefined behaviour)
-
-
-/*
- * FUNCTIONS (PROTOTYPES) FROM IAL-DU2 (STACK)
+/**
+ * @brief Initialize symtable
+ * @param symtable Pointer to the symtable
+ * @post symtable will be initilized to NULL
  */
+void stConstruct ( BTNodePtr *symtable );
 
+/**
+ * @brief Destroy symtable
+ * @note Destroy & free all nodes of the symtable 
+ * @param symtable Pointer to the symtable
+ */
+void stDestruct ( BTNodePtr *symtable );
+
+/**
+ * @brief Insert new node to the symtable
+ * @param symtable Pointer to the symtable
+ * @param identificator New node identificatior
+ * @param datatype Datatype saved in the new node
+ * @return ST_SUCCESS Everything went OK, requested node was deleted
+ * @return ST_ERROR Something went wrong (allocation problems or other)
+ * @return ST_ID_EXISTS Node alredy exists in the symtbale
+ */
+stC stInsert ( BTNodePtr *symtable, stID identificator, stType datatype );
+
+/**
+ * @brief Delete node from the symtable
+ * @param symtable Pointer to the symtable
+ * @param identificator Identificator of the node to be deleted
+ * @return ST_SUCCESS Everything went OK, requested node was deleted
+ * @return ST_ERROR Something went wrong (not found or other problems)
+ */
+stC stDelete ( BTNodePtr *symtable, stID identificator );
+
+/**
+ * @brief Find node in the symtable 
+ * @param symtable Pointer to the symtable
+ * @param identificator Identificator of node that we are looking for
+ * @return BTNodePtr* Pointer to the note if found else NULL
+ */
+BTNodePtr stLookUp ( BTNodePtr *symtable, stID identificator );
+
+/**
+ * @brief Get type of the selected node
+ * @param stNode Pointer to the selected node of the symtable
+ * @return stType Type that was saved in the node
+ * @pre stNode is pointer to existing node of the symtable
+ */
+stType stGetType ( BTNodePtr stNode );
+
+/**
+ * @brief Set new datatype to selected node
+ * @param stNode Pointer to the selected node of the symtable
+ * @param datatype Datatype to be set from enum stDataTypes
+ * @pre stNode is pointer to existing node of the symtable
+ * @pre datatype is from the enum stDataTypes
+ */
+void stSetType ( BTNodePtr stNode, stType datatype );
+
+/**
+ * @brief Initialize stack
+ * @note This function is copied from c402 task of the IAL-DU2
+ * @param S Pointer to the stack (uninitialized)
+ */
 void SInitP (tStackP *S);
-// Initializes stack
 
-void SPushP (tStackP *S, BTNode_t* ptr);
-// Pushes 'ptr' to stack 'S'
+/**
+ * @brief Push node to the stack
+ * @note This function is copied from c402 task of the IAL-DU2
+ * @param S Pointer to the stack (initialized)
+ * @param ptr Pointer to the node to be put on the stack
+ */
+void SPushP (tStackP *S, BTNodePtr ptr);
 
-BTNode_t* STopPopP (tStackP *S);
-// Pops last pointer from stack 'S'
+/**
+ * @brief Pop node from the top of the stack
+ * @note This function is copied from c402 task of the IAL-DU2
+ * @param S Pointer to the stack (initialized)
+ * @return BTNodePtr* Pointer to the node of the symtable that was saved at the top of the stack
+ */
+BTNodePtr STopPopP (tStackP *S);
 
+/**
+ * @brief Check if stack is empty
+ * @note This function is copied from c402 task of the IAL-DU2
+ * @param S Pointer to the stack
+ * @return true Stack is empty
+ * @return false Stack is not empty
+ */
 bool SEmptyP (tStackP *S);
-// Returns bool value (Is stack empty?)
 
-#endif //SYMTABLE_H
+#endif //IFJ_PROJECT_SYMTABLE_H
