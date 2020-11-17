@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include "scanner.h"
 
-#define DEBUG 1
 #define SCANNER_SUCC 0
 #define SCANNER_ERR 1
 #define SCANNER_MISSING_TOKEN 2
@@ -196,7 +195,9 @@ int getToken (Token *token)
       case STATE_START:
         if (c == EOF)
         {
-          if (DEBUG) printf("[EOF]\n");
+#ifdef DEBUG
+          printf("[EOF]\n");
+#endif
           token->type = TYPE_EOF;
           return SCANNER_SUCC;
         }
@@ -288,37 +289,49 @@ int getToken (Token *token)
         }
         else if (c == '(')
         {
-          if (DEBUG) printf("[(] ");
+#ifdef DEBUG
+          printf("[(] ");
+#endif
           token->type = TYPE_LEFT_BRACKET;
           return SCANNER_SUCC;
         }
         else if (c == ')')
         {
-          if (DEBUG) printf("[)] ");
+#ifdef DEBUG
+          printf("[)] ");
+#endif
           token->type = TYPE_RIGHT_BRACKET;
           return SCANNER_SUCC;
         }
         else if (c == '{')
         {
-          if (DEBUG) printf("[{] ");
+#ifdef DEBUG
+          printf("[{] ");
+#endif
           token->type = TYPE_LEFT_CURLY_BRACKET;
           return SCANNER_SUCC;
         }
         else if (c == '}')
         {
           token->type = TYPE_RIGHT_CURLY_BRACKET;
-          if (DEBUG) printf("[}] ");
+#ifdef DEBUG
+          printf("[}] ");
+#endif
           return SCANNER_SUCC;
         }
         else if (c == ',')
         {
-          if (DEBUG) printf("[,] ");
+#ifdef DEBUG
+          printf("[,] ");
+#endif
           token->type = TYPE_COMMA;
           return SCANNER_SUCC;
         }
         else if (c == '=')
         {
-          if (DEBUG) printf("[=] ");
+#ifdef DEBUG
+          printf("[=] ");
+#endif
           token->type = TYPE_ASSIGN;
           return SCANNER_SUCC;
         }
@@ -332,7 +345,9 @@ int getToken (Token *token)
         }
         else if (c == ';')
         {
-          if (DEBUG) printf("[;] ");
+#ifdef DEBUG
+          printf("[;] ");
+#endif
           token->type = TYPE_SEMICOLON;
           return SCANNER_SUCC;
         }
@@ -340,13 +355,15 @@ int getToken (Token *token)
         {
           if (c == '\n')
           {
-            if (DEBUG) printf("[EOL]\n");
+#ifdef DEBUG
+            printf("[EOL]\n");
+#endif
             token->type = TYPE_EOL;
             return SCANNER_SUCC;
           }
           continue;
         }
-        // BOOLEAN EXTENSION
+          // BOOLEAN EXTENSION
         else if (c == '&')
         {
           state = STATE_AND;
@@ -362,11 +379,11 @@ int getToken (Token *token)
         }
         break;
 
-      /******   OPERATORS SECTION   ******/
-      /** STATE PLUS + MINUS NEEDS TO SAVE NUMBER TO CORRESPONDING VARIABLE **/
+        /******   OPERATORS SECTION   ******/
+        /** STATE PLUS + MINUS NEEDS TO SAVE NUMBER TO CORRESPONDING VARIABLE **/
 
-      /** WILL INCREMENTATION AND DECREMENTATION BE IMPLEMENTED???? **/
-      /** ADDED UNARY EXTENSION **/
+        /** WILL INCREMENTATION AND DECREMENTATION BE IMPLEMENTED???? **/
+        /** ADDED UNARY EXTENSION **/
       case STATE_PLUS:
         if (isdigit(c))
         {
@@ -398,13 +415,17 @@ int getToken (Token *token)
         }
         else if (c == '=')
         {
-          if (DEBUG) printf("[+=] ");
+#ifdef DEBUG
+          printf("[+=] ");
+#endif
           token->type = TYPE_PLUS_ASSIGN;
           return SCANNER_SUCC;
         }
         else
         {
-          if (DEBUG) printf("[+] ");
+#ifdef DEBUG
+          printf("[+] ");
+#endif
           ungetc(c, stdin);
           token->type = TYPE_PLUS;
           return SCANNER_SUCC;;
@@ -441,13 +462,17 @@ int getToken (Token *token)
         }
         else if (c == '=')
         {
-          if (DEBUG) printf("[-=] ");
+#ifdef DEBUG
+          printf("[-=] ");
+#endif
           token->type = TYPE_MINUS_ASSIGN;
           return SCANNER_SUCC;
         }
         else
         {
-          if (DEBUG) printf("[-] ");
+#ifdef DEBUG
+          printf("[-] ");
+#endif
           ungetc(c, stdin);
           token->type = TYPE_MINUS;
           return SCANNER_SUCC;
@@ -456,13 +481,17 @@ int getToken (Token *token)
       case STATE_MULTIPLY:
         if (c == '=')
         {
-          if (DEBUG) printf("[*=] ");
+#ifdef DEBUG
+          printf("[*=] ");
+#endif
           token->type = TYPE_MULTIPLY_ASSIGN;
           return SCANNER_SUCC;
         }
         else
         {
-          if (DEBUG) printf("[*] ");
+#ifdef DEBUG
+          printf("[*] ");
+#endif
           ungetc(c, stdin);
           token->type = TYPE_MULTIPLY;
           return SCANNER_SUCC;
@@ -478,7 +507,9 @@ int getToken (Token *token)
         }
         else if (c == '=')
         {
-          if (DEBUG) printf("[/=] ");
+#ifdef DEBUG
+          printf("[/=] ");
+#endif
           token->type = TYPE_DIVIDE_ASSIGN;
           return SCANNER_SUCC;
         }
@@ -489,9 +520,9 @@ int getToken (Token *token)
           return SCANNER_SUCC;
         }
         break;
-      /****** END OPERATORS SECTION ******/
+        /****** END OPERATORS SECTION ******/
 
-      /******   ID/KEY SECTION   ******/
+        /******   ID/KEY SECTION   ******/
       case STATE_IDENTIFIER:
         if (isalpha(c) || isdigit(c) || c == '_')
         {
@@ -507,7 +538,9 @@ int getToken (Token *token)
         }
         else
         {
-          if (DEBUG) printf("ID[%s] ", strGetStr(&token->attribute.string));
+#ifdef DEBUG
+          printf("ID[%s] ", strGetStr(&token->attribute.string));
+#endif
           ungetc(c, stdin);
           token->type = TYPE_IDENTIFIER;
           return SCANNER_SUCC;
@@ -547,26 +580,32 @@ int getToken (Token *token)
           int code = isReservedKeyword(&token->attribute.string);
           if (code != 0)
           {
-            if (DEBUG) printf("KEY[%s] ", strGetStr(&token->attribute.string));
+#ifdef DEBUG
+            printf("KEY[%s] ", strGetStr(&token->attribute.string));
+#endif
             strFree(&token->attribute.string);
             setTokenKeyword(token, code);
           }
           else
           {
-            if (DEBUG) printf("ID[%s] ", strGetStr(&token->attribute.string));
+#ifdef DEBUG
+            printf("ID[%s] ", strGetStr(&token->attribute.string));
+#endif
             token->type = TYPE_IDENTIFIER;
           }
 
           ungetc(c, stdin);
           return SCANNER_SUCC;
         }
-      /****** END ID/KEY SECTION ******/
+        /****** END ID/KEY SECTION ******/
 
-      /******    DATA TYPES    ******/
+        /******    DATA TYPES    ******/
       case STATE_STRING:
         if (c == '"')
         {
-          if (DEBUG) printf("STRING[%s] ", strGetStr(&token->attribute.string));
+#ifdef DEBUG
+          printf("STRING[%s] ", strGetStr(&token->attribute.string));
+#endif
           token->type = TYPE_STRING;
           return SCANNER_SUCC;
         }
@@ -665,7 +704,9 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
+#ifdef DEBUG
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+#endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
         }
@@ -712,7 +753,9 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
+#ifdef DEBUG
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+#endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
         }
@@ -772,7 +815,9 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
+#ifdef DEBUG
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+#endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
         }
@@ -819,7 +864,9 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.integer = tmp;
 
-          if (DEBUG) printf("INT[%lld] ", (long long) token->attribute.integer);
+#ifdef DEBUG
+          printf("INT[%lld] ", (long long) token->attribute.integer);
+#endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
         }
@@ -860,7 +907,9 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
+#ifdef DEBUG
+          printf("FLOAT[%f] ", token->attribute.float64);
+#endif
           token->type = TYPE_FLOAT64;
           return SCANNER_SUCC;
         }
@@ -907,7 +956,9 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
+#ifdef DEBUG
+          printf("FLOAT[%f] ", token->attribute.float64);
+#endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
         }
@@ -948,7 +999,9 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
+#ifdef DEBUG
+          printf("FLOAT[%f] ", token->attribute.float64);
+#endif
           token->type = TYPE_FLOAT64;
           return SCANNER_SUCC;
         }
@@ -995,18 +1048,22 @@ int getToken (Token *token)
           strFree(&token->attribute.string);
           token->attribute.float64 = tmp;
 
-          if (DEBUG) printf("FLOAT[%f] ", token->attribute.float64);
+#ifdef DEBUG
+          printf("FLOAT[%f] ", token->attribute.float64);
+#endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
         }
         break;
-      /****** END DATA TYPES ******/
+        /****** END DATA TYPES ******/
 
-      /******   COMMENTS SECTION   ******/
+        /******   COMMENTS SECTION   ******/
       case STATE_LINE_COMMENT:
         if (c == '\n' || c == EOF)
         {
-          if (DEBUG) printf("[Line Comment] ");
+#ifdef DEBUG
+          printf("[Line Comment] ");
+#endif
           ungetc(c, stdin);
 
           token->type = TYPE_EMPTY;
@@ -1022,7 +1079,9 @@ int getToken (Token *token)
       case STATE_MULTI_LINE_COMMENT_END:
         if (c == '/' || c == EOF)
         {
-          if (DEBUG) printf("[Multi line comment] ");
+#ifdef DEBUG
+          printf("[Multi line comment] ");
+#endif
           token->type = TYPE_EMPTY;
           return SCANNER_SUCC;
         }
@@ -1031,12 +1090,14 @@ int getToken (Token *token)
           state = STATE_MULTI_LINE_COMMENT_START;
         }
         break;
-      /****** END COMMENTS SECTION ******/
+        /****** END COMMENTS SECTION ******/
 
       case STATE_DECLARATIVE_ASSIGN:
         if (c == '=')
         {
-          if (DEBUG) printf("[:=] ");
+#ifdef DEBUG
+          printf("[:=] ");
+#endif
           token->type = TYPE_DECLARATIVE_ASSIGN;
           return SCANNER_SUCC;
         }
@@ -1048,14 +1109,18 @@ int getToken (Token *token)
       case STATE_NOT_EQUALS:
         if (c == '=')
         {
-          if (DEBUG) printf("[!=] ");
+#ifdef DEBUG
+          printf("[!=] ");
+#endif
           token->type = TYPE_NOT_EQUALS;
           return SCANNER_SUCC;
         }
-        // BOOLEAN EXTENSION [without it should return 1 for missing '=']
+          // BOOLEAN EXTENSION [without it should return 1 for missing '=']
         else
         {
-          if (DEBUG) printf("[!] ");
+#ifdef DEBUG
+          printf("[!] ");
+#endif
           token->type = TYPE_NOT;
           return SCANNER_SUCC;
         }
@@ -1063,13 +1128,17 @@ int getToken (Token *token)
       case STATE_GREATER_OR_EQUAL:
         if (c == '=')
         {
-          if (DEBUG) printf("[>=] ");
+#ifdef DEBUG
+          printf("[>=] ");
+#endif
           token->type = TYPE_GREATER_OR_EQUAL;
           return SCANNER_SUCC;
         }
         else
         {
-          if (DEBUG) printf("[>] ");
+#ifdef DEBUG
+          printf("[>] ");
+#endif
           ungetc(c, stdin);
           token->type = TYPE_GREATER;
           return SCANNER_SUCC;
@@ -1077,23 +1146,29 @@ int getToken (Token *token)
       case STATE_LESSER_OR_EQUAL:
         if (c == '=')
         {
-          if (DEBUG) printf("[<=] ");
+#ifdef DEBUG
+          printf("[<=] ");
+#endif
           token->type = TYPE_LESSER_OR_EQUAL;
           return SCANNER_SUCC;
         }
         else
         {
-          if (DEBUG) printf("[<] ");
+#ifdef DEBUG
+          printf("[<] ");
+#endif
           ungetc(c, stdin);
           token->type = TYPE_LESSER;
           return SCANNER_SUCC;
         }
 
-      /******   BOOLEAN EXTENSION   ******/
+        /******   BOOLEAN EXTENSION   ******/
       case STATE_AND:
         if (c == '&')
         {
-          if (DEBUG) printf("[&&] ");
+#ifdef DEBUG
+          printf("[&&] ");
+#endif
           token->type = TYPE_AND;
           return SCANNER_SUCC;
         }
@@ -1105,7 +1180,9 @@ int getToken (Token *token)
       case STATE_OR:
         if (c == '|')
         {
-          if (DEBUG) printf("[||] ");
+#ifdef DEBUG
+          printf("[||] ");
+#endif
           token->type = TYPE_OR;
           return SCANNER_SUCC;
         }
@@ -1114,7 +1191,7 @@ int getToken (Token *token)
           fprintf(stderr, "Didn't get '|' for OR, exiting...\n");
           return SCANNER_ERR;
         }
-      /****** END BOOLEAN EXTENSION ******/
+        /****** END BOOLEAN EXTENSION ******/
     }
   }
 }
