@@ -1,4 +1,4 @@
-#include "../symtable.h"
+#include "symtable.h"
 #define testmsg(text) printf("--> %s\n", text)
 
 int main (void) {

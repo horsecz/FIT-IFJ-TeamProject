@@ -32,19 +32,7 @@ typedef enum returnCodes {
 /**
  * @brief Description of returnCodes for print
  */
-char *errorString[] = {
-    "SUCCESS",
-    "LEXICAL ANALYSIS",
-    "SYNTAX ANALYSIS",
-    "SEMANTIC (UNDEFINED VALUES, REDEFINITON ATTEMPTS, ETC.)",
-    "SEMANTIC (TYPE ASSIGN)",
-    "SEMANTIC (TYPE COMPATIBILITY)",
-    "SEMANTIC (PARAMETRS & RETURN VALUES)",
-    "SEMANTIC (OTHER)",
-    "",
-    "SEMANTIC (ZERO DIVISION)"
-    "INTERNAL",
-};
+extern char *errorString[];
 
 /**
  * @brief Nice print of errors and other things

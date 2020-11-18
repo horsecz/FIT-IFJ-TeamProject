@@ -10,7 +10,7 @@
  */
 #include "parser.h"
 
-BTNode_t* symbolTable; // symboltable global var.
+BTNodePtr symbolTable; // symboltable global var.
 Token* tk; // token global var.
 int token;
 int mainFound = 0; // indicator if 'func main' was found in program or not
@@ -328,7 +328,7 @@ eRC functionReturn() {
     return result;
 }
 
-eRC argumentsNext() {
+eRC argumentNext() {
     eRC result = RC_OK;
     token = getToken(tk);
 
@@ -344,7 +344,7 @@ eRC argumentsNext() {
         if (result != RC_OK) return result;
 
         // <arguments_n>
-        result = argumentsNext();
+        result = argumentNext();
         if (result != RC_OK) return result;
     }
     // else rule: <arguments_n> -> eps
@@ -391,7 +391,7 @@ eRC function() {
     eRC result = RC_OK;
 
     // func keyword
-    if (strCmpConstStr(strGetStr(tk->attribute.string), "func"))
+    if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "func"))
         return RC_ERR_SYNTAX_ANALYSIS;
 
     // ID: function identificator
@@ -399,7 +399,7 @@ eRC function() {
     if (tk->type != TYPE_IDENTIFIER) {
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
-        if (strCmpConstStr(strGetStr(tk->attribute.string), "main"))
+        if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "main"))
             mainFound++;
     }
 
@@ -435,7 +435,7 @@ eRC functionNext() {
             return result;
             break;
         case TYPE_KEYWORD: // <function_n> -> <func> <function_n>
-            if (strCmpConstStr(strGetStr(tk->attribute.string), "func"))
+            if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "func"))
                 return RC_ERR_SYNTAX_ANALYSIS;
             result = function();
             if (result != RC_OK) return result;
@@ -455,7 +455,7 @@ eRC functions() {
     eRC result = RC_OK;
 
     // program must have at least 1 function
-    if (strCmpConstStr(strGetStr(tk->attribute.string), "func"))
+    if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "func"))
         return RC_ERR_SYNTAX_ANALYSIS;
 
     result = function();
@@ -496,11 +496,11 @@ eRC prolog() {
 
     switch (tk->type) {
         case TYPE_KEYWORD:
-            if (strCmpConstStr(strGetStr(tk->attribute.string), "package")) {
+            if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "package")) {
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             token = getToken(tk);
-            if (strCmpConstStr(strGetStr(tk->attribute.string), "main") || tk->type != TYPE_IDENTIFIER) {
+            if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "main") || tk->type != TYPE_IDENTIFIER) {
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             break;
@@ -518,16 +518,16 @@ eRC program() {
     while (tk->type == TYPE_EMPTY || tk->type == TYPE_EOL) {
         token = getToken(tk);
         if (token == 1) {
-            iPrint(RC_ERR_LEXICAL_ANALYSIS, true);
+            iPrint(RC_ERR_LEXICAL_ANALYSIS, true, NULL);
             return RC_ERR_LEXICAL_ANALYSIS;
         } else if (token) {
-            iPrint(RC_ERR_INTERNAL, true);
+            iPrint(RC_ERR_INTERNAL, true, NULL);
             return RC_ERR_INTERNAL;
         }
     }
 
     // incorrect: package -> rule <program>
-    if (strCmpConstStr(strGetStr(tk->attribute.string), "package")) {
+    if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "package")) {
         return RC_ERR_SYNTAX_ANALYSIS;
     }
 
@@ -560,13 +560,13 @@ eRC parser(BTNodePtr* SymbolTable) {
             return program();
         // LEX ERROR
         case 1:
-            iPrint(RC_ERR_LEXICAL_ANALYSIS, true);
+            iPrint(RC_ERR_LEXICAL_ANALYSIS, true, NULL);
             return RC_ERR_LEXICAL_ANALYSIS;
         // 2+ INTERNAL in this case
         case 2:
         case 99:
         default:
-            iPrint(RC_ERR_INTERNAL, true);
+            iPrint(RC_ERR_INTERNAL, true, NULL);
             return RC_ERR_INTERNAL;
     }
 }
