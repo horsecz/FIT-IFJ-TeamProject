@@ -22,7 +22,7 @@ int main()
   token->type = TYPE_EMPTY;
   token->attribute.keyword = KEYWORD_EMPTY;
 
-  int holdResponse = parser(); //parser(&SymbolTable, &InstructionsList, token);
+  int holdResponse = parser(NULL); //parser(&SymbolTable, &InstructionsList, token);
 
   if (holdResponse != 0)
   {
