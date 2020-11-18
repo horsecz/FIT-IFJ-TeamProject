@@ -14,6 +14,7 @@
 // include for int_64t support
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 // include files for working with dynamic string
 #include "str.h"
 
@@ -117,6 +118,7 @@ typedef enum
   TYPE_INT,
   TYPE_STRING,
   TYPE_FLOAT64,
+  TYPE_BOOL,
 
   // ARITHMETIC OPERATORS
   TYPE_PLUS,
@@ -166,6 +168,7 @@ typedef union
   string string;
   int64_t integer;
   double float64;
+  bool boolean;
 
   Keyword keyword;
 } TokenAttribute;
@@ -186,7 +189,7 @@ typedef struct
  *
  * @param str - string to compare
  * @return 0 if no match found
- *         1-17 depending on match
+ *         1-19 depending on match
  */
 int isReservedKeyword (string *str);
 
