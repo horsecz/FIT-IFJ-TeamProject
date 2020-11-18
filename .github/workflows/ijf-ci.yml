@@ -1,0 +1,15 @@
+name: IFJ Project CHECK
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile (according to Makefile)
+      run: make
+    - name: Tests (according to Makefile)
+      run: make test
