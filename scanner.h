@@ -11,8 +11,9 @@
 #ifndef IFJ_PROJ_SCANNER_H
 #define IFJ_PROJ_SCANNER_H
 
-// include for int_64t support
+// include for int_64t and bool support
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 // include files for working with dynamic string
 #include "str.h"
@@ -94,11 +95,9 @@ typedef enum
 
   // BOOLEAN EXTENSION
   KEYWORD_BOOL, // 17
-  KEYWORD_TRUE, // 18
-  KEYWORD_FALSE, //19
 
   // EMPTY, FOR INIT
-  KEYWORD_EMPTY // 20
+  KEYWORD_EMPTY // 18
 } Keyword;
 
 /**
@@ -117,6 +116,7 @@ typedef enum
   TYPE_INT,
   TYPE_STRING,
   TYPE_FLOAT64,
+  TYPE_BOOL,
 
   // ARITHMETIC OPERATORS
   TYPE_PLUS,
@@ -166,6 +166,7 @@ typedef union
   string string;
   int64_t integer;
   double float64;
+  bool boolean;
 
   Keyword keyword;
 } TokenAttribute;
