@@ -13,7 +13,6 @@
 #include "scanner.h"
 
 #define SCANNER_SUCC 0
-#define DEBUG 1
 #define SCANNER_ERR 1
 #define SCANNER_MISSING_TOKEN 2
 #define SCANNER_INTERNAL 99
