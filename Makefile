@@ -5,8 +5,6 @@ OUT=compilerIFJ2020
 MAIN=ifj2020
 CODEFILE=inputFile.go
 
-RUN=$(OUT) <$(CODEFILE)
-
 make: $(MAIN)
 
 # PARTS
@@ -28,7 +26,7 @@ symtable.o: symtable.c symtable.h str.h
 $(MAIN).o: $(MAIN).c $(MAIN).h scanner.h str.h symtable.h
 	$(CC) $(CCFLAGS) -c $<
 	
-$(MAIN): $(MAIN).o scanner.o str.o
+$(MAIN): $(MAIN).o scanner.o str.o symtable.o
 	$(CC) $(CCFLAGS) $(MAIN).o scanner.o str.o symtable.o -o $(OUT)
 	
 # RUN WITH DEBUG
@@ -36,17 +34,13 @@ $(MAIN): $(MAIN).o scanner.o str.o
 
 # ADDITIONAL FEATURES
 
-debug: $(MAIN-D)
+debug: $(MAIN)-d
 
 scanner-d.o: scanner.c scanner.h str.h
 	$(CC) $(CCFLAGS) -DDEBUG -c $<
 
-$(MAIN-D): $(MAIN).o scanner-d.o str.o
-	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o scanner-d.o str.o symtable.o -o $(OUT)
+$(MAIN)-d: $(MAIN).o scanner-d.o str.o symtable.o
+	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o scanner.o str.o symtable.o -o $(OUT)
 	
-
-run: $(MAIN)
-	./$(RUN)
-
 clean:
 	rm -rf *.o $(OUT)
