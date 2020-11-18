@@ -13,6 +13,7 @@
 #include "scanner.h"
 
 #define SCANNER_SUCC 0
+#define DEBUG 1
 #define SCANNER_ERR 1
 #define SCANNER_MISSING_TOKEN 2
 #define SCANNER_INTERNAL 99
@@ -116,12 +117,6 @@ void setTokenKeyword (Token *token, int keywordType)
       break;
     case 17:
       token->attribute.keyword = KEYWORD_BOOL;
-      break;
-    case 18:
-      token->attribute.keyword = KEYWORD_TRUE;
-      break;
-    case 19:
-      token->attribute.keyword = KEYWORD_FALSE;
   }
 }
 
@@ -515,6 +510,9 @@ int getToken (Token *token)
         }
         else
         {
+#ifdef DEBUG
+          printf("[/] ");
+#endif
           ungetc(c, stdin);
           token->type = TYPE_DIVIDE;
           return SCANNER_SUCC;
@@ -580,11 +578,32 @@ int getToken (Token *token)
           int code = isReservedKeyword(&token->attribute.string);
           if (code != 0)
           {
+            if (code == 18)
+            {
 #ifdef DEBUG
-            printf("KEY[%s] ", strGetStr(&token->attribute.string));
+              printf("BOOL[true] ");
 #endif
-            strFree(&token->attribute.string);
-            setTokenKeyword(token, code);
+              strFree(&token->attribute.string);
+              token->type = TYPE_BOOL;
+              token->attribute.boolean = true;
+            }
+            else if (code == 19)
+            {
+#ifdef DEBUG
+              printf("BOOL[false] ");
+#endif
+              strFree(&token->attribute.string);
+              token->type = TYPE_BOOL;
+              token->attribute.boolean = false;
+            }
+            else
+            {
+#ifdef DEBUG
+              printf("KEY[%s] ", strGetStr(&token->attribute.string));
+#endif
+              strFree(&token->attribute.string);
+              setTokenKeyword(token, code);
+            }
           }
           else
           {
