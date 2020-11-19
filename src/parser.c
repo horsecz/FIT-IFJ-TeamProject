@@ -113,25 +113,34 @@ eRC variableIdNext() {
     return result;
 }
 
-eRC statement() {
+eRC assignment() {
     eRC result = RC_OK;
-
     switch (tk->type) {
-        case TYPE_DECLARATIVE_ASSIGN: // rule: <statement> -> := <expression>
+        case TYPE_IDENTIFIER: // rule: <assignment> -> ID ( <arguments> )
             token = getToken(tk);
-            // TODO -> somehow handle <expression>
-            break;
-        case TYPE_LEFT_CURLY_BRACKET: // rule: <statement> -> ( <arguments> )
+            if (tk->type != TYPE_LEFT_CURLY_BRACKET)
+                return RC_ERR_SYNTAX_ANALYSIS;
             result = arguments();
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_CURLY_BRACKET) return RC_ERR_SYNTAX_ANALYSIS;
+            if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+                return RC_ERR_SYNTAX_ANALYSIS;
             break;
-        case TYPE_COMMA: // rule: <statement> -> <var_id_n> = <stat_mul>
-            result = variableIdNext();
-            if (result != RC_OK) return result;
-            if (tk->type != TYPE_ASSIGN) return RC_ERR_SYNTAX_ANALYSIS;
-            result = statementMul();
-            if (result != RC_OK) return result;
+        default:
+            // rule: <assignment> -> <expression>
+            // TODO -> handle expression
+            break;
+    }
+
+    return result;
+}
+
+eRC unary() {
+    eRC result = RC_OK;
+    switch (tk->type) {
+        case TYPE_PLUS_ASSIGN: // rules: <unary> -> += or -= or *= or /=
+        case TYPE_MINUS_ASSIGN:
+        case TYPE_MULTIPLY_ASSIGN:
+        case TYPE_DIVIDE_ASSIGN:
             break;
         default:
             result = RC_ERR_SYNTAX_ANALYSIS;
@@ -139,6 +148,73 @@ eRC statement() {
     }
 
     return result;
+}
+
+eRC statement() {
+    eRC result = RC_OK;
+
+    switch (tk->type) {
+        case TYPE_ASSIGN: // rule: <statement> -> = <assignment>
+            token = getToken(tk);
+            result = assignment();
+            if (result != RC_OK) return result;
+            break;
+        case TYPE_LEFT_CURLY_BRACKET: // rule: <statement> -> ( <arguments> )
+            result = arguments();
+            if (result != RC_OK) return result;
+            if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+                return RC_ERR_SYNTAX_ANALYSIS;
+            break;
+        case TYPE_DECLARATIVE_ASSIGN: // rule: <statement> -> := <assignment>
+            token = getToken(tk);
+            result = assignment();
+            if (result != RC_OK) return result;
+            break;
+        default: // rule: <statement> -> <unary> <expression>
+            result = unary();
+            if (result != RC_OK) return result;
+            token = getToken(tk);
+            // TODO -> handle expression
+            break;
+    }
+
+    return result;
+}
+
+eRC ifElseExpanded() {
+    eRC result = RC_OK;
+
+    if (tk->attribute.keyword == KEYWORD_IF) {
+        // rule: <if_else_st> -> if <cmd_block> <if_else_st_n>
+        // <cmd_block>
+        token = getToken(tk);
+        result = commandBlock();
+        if (result != RC_OK) return result;
+
+        // <if_else_st_n>
+        result = ifElse();
+        if (result != RC_OK) return result;
+    } else {
+        // else rule: <if_else_st> -> <cmd_block>
+        result = commandBlock();
+        if (result != RC_OK) return result;
+    }
+
+    return result;
+}
+
+eRC ifElse() {
+    eRC result = RC_OK;
+    switch (tk->attribute.keyword) {
+        case KEYWORD_ELSE: // rule: <if_else> -> else <if_else_st>
+            token = getToken(tk);
+            result = ifElseExpanded();
+            if (result != RC_OK) return result;
+        default:
+            break;
+    }
+
+    return RC_OK;
 }
 
 // TODO -> too big function, maybe separate into smaller ones ? (e.g. if_handle(), for_handle(), ..)
@@ -153,7 +229,7 @@ eRC command() {
         token = getToken(tk);
     } else if (tk->type == TYPE_KEYWORD) {
         switch (tk->attribute.keyword) {
-            case KEYWORD_IF: // rule: <cmd> -> if ...
+            case KEYWORD_IF: // rule: <cmd> -> if <expression> <cmd_block> <if_else>
                 // <expression>
                 token = getToken(tk);
                 // TODO -> handle <expression>
@@ -163,13 +239,8 @@ eRC command() {
                 result = commandBlock();
                 if (result != RC_OK) return result;
 
-                // else
-                if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_ELSE)
-                    return RC_ERR_SYNTAX_ANALYSIS;
-
-                // <cmd_block>
-                token = getToken(tk);
-                result = commandBlock();
+                // <if_else>
+                result = ifElse();
                 if (result != RC_OK) return result;
                 break;
             case KEYWORD_FOR: // rule: <cmd> -> for ...
@@ -283,6 +354,7 @@ eRC typeFunctionNext() {
         result = typeFunctionNext(); // TODO -> i dont like this
         if (result != RC_OK) return result;
     }
+    // else rule: <r_type_n> -> eps
 
     return result;
 }
@@ -291,9 +363,16 @@ eRC typeFunction() {
     eRC result = RC_OK;
 
     switch (tk->type) {
-        case TYPE_INT: // rule: <f_type> -> <type>
+        case TYPE_INT: // rule: <f_type> -> <type> <r_type_n>
         case TYPE_FLOAT64:
         case TYPE_STRING:
+        case TYPE_BOOL:
+            token = getToken(tk);
+            result = typeFunctionNext();
+            if (result != RC_OK) return result;
+            if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+                return RC_ERR_SYNTAX_ANALYSIS;
+            token = getToken(tk);
         case TYPE_RIGHT_CURLY_BRACKET: // rule: <f_type> -> eps (=> token is ')' )
             break;
         default:
@@ -307,21 +386,12 @@ eRC typeFunction() {
 eRC functionReturn() {
     eRC result = RC_OK;
 
-    // rule: <func_return> -> ( <f_type> <r_type_n> )
+    // rule: <func_return> -> ( <f_type> )
     if (tk->type == TYPE_LEFT_CURLY_BRACKET) {
         // <f_type>
         token = getToken(tk);
         result = typeFunction();
         if (result != RC_OK) return result;
-
-        // <r_type_n>
-        if (tk->type != TYPE_RIGHT_CURLY_BRACKET) {
-            result = typeFunctionNext();
-            if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
-                return RC_ERR_SYNTAX_ANALYSIS;
-            token = getToken(tk);
-        }
     }
     // else rule: <func_return> -> eps
 
@@ -359,6 +429,7 @@ eRC type() {
         case TYPE_INT:
         case TYPE_FLOAT64:
         case TYPE_STRING:
+        case TYPE_BOOL:
             break;
         default:
             result = RC_ERR_SYNTAX_ANALYSIS;

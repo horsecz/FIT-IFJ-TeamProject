@@ -68,7 +68,12 @@ eRC commandBlock();
 // STATEMENTS
 eRC statement();
 eRC statementMul();
+eRC assignment();
+eRC unary();
 eRC variableIdNext();
+// IF
+eRC ifElse();
+eRC ifElseExpanded();
 // FOR
 eRC forDefine();
 eRC forAssign();
