@@ -10,31 +10,75 @@
  */
 #include "parser.h"
 
+// use only with functions returning eRC type!
+// gets next token + checks if lexical error or internal error occured
+#define getToken(returnVar,tokenVar) \
+    do{            \
+        returnVar = getToken(tokenVar); \
+        if (returnVar == 1) { \
+	        iPrint(RC_ERR_LEXICAL_ANALYSIS, true, "invalid character read from input"); \
+	        return RC_ERR_LEXICAL_ANALYSIS; \
+	    } else if (returnVar == 2 || returnVar == 99) { \
+	        iPrint(RC_ERR_INTERNAL, true, "internal error (malloc, other)"); \
+	        return RC_ERR_INTERNAL; \
+	    } \
+	}while(0)        \
+
+// maximum size of error message
+#define MAX_ERR_MSG 255
+//
+#define setErrMsg(msg) do{ strncpy(errText, msg, MAX_ERR_MSG); }while(0)
+
+// DEBUG MACROS
+
+#ifdef DEBUG
+// print debug message
+#define debugPrint(msg, ...) fprintf(stderr, "[DBG] "msg"\n", ##__VA_ARGS__);
+// mark some point in code
+#define debugPoint fprintf(stderr, "[DBG] ---> marked point <---\n");
+// mark more points in code
+#define debugPoints(ptNum) fprintf(stderr, "[DBG] --> %d - marked point - %d <---\n", ptNum, ptNum);
+
+#else
+// if not compiled with DEBUG, define as empty macros
+#define debugPrint(msg, ...)
+#define debugPoint
+#define debugPoints
+#endif
+
+// GLOBAL VARIABLES
+
 BTNodePtr symbolTable; // symboltable global var.
 Token* tk; // token global var.
-int token;
+int token; // for getToken returncode
 int mainFound = 0; // indicator if 'func main' was found in program or not
+char errText[MAX_ERR_MSG]; // for error message if error will occur
 //InstructionsList* il;
 
+// FUNCTIONS - RULES
+
 eRC returnStatement() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    token = getToken(tk);
+    getToken(token, tk);
 
     // rule: <return_stat> -> <expression>
     // TODO -> handle expression
 
     // rule: <return_stat> -> eps
     // TODO -> if not expression -> else do nothing
-
     return result;
 }
 
 eRC returnCommand() {
+    debugPrint("rule %s", __func__);
     // rule: <return_cmd> -> return <return_stat>
     eRC result = RC_OK;
 
-    if (tk->attribute.keyword != KEYWORD_RETURN)
+    if (tk->attribute.keyword != KEYWORD_RETURN) {
+        setErrMsg("expected keyword 'return'");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     result = returnStatement();
     if (result != RC_OK) return result;
@@ -43,14 +87,17 @@ eRC returnCommand() {
 }
 
 eRC forAssign() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    token = getToken(tk);
+    getToken(token, tk);
 
     // rule: <for_assignment> -> ID = <expression>
     if (tk->type == TYPE_IDENTIFIER) {
-        token = getToken(tk);
-        if (tk->type != TYPE_ASSIGN)
+        getToken(token, tk);
+        if (tk->type != TYPE_ASSIGN) {
+            setErrMsg("expected '=' after identifier [for assignment]");
             return RC_ERR_SYNTAX_ANALYSIS;
+        }
         // TODO -> handle <expression>
     }
 
@@ -58,15 +105,18 @@ eRC forAssign() {
 }
 
 eRC forDefine() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    token = getToken(tk);
+    getToken(token, tk);
 
     // rule: <for_definition> -> ID := <expression>
     if (tk->type == TYPE_IDENTIFIER) {
         // := <expression>
-        token = getToken(tk);
-        if (tk->type != TYPE_DECLARATIVE_ASSIGN)
+        getToken(token, tk);
+        if (tk->type != TYPE_DECLARATIVE_ASSIGN) {
+            setErrMsg("expected ':=' after identifier [for definition]");
             return RC_ERR_SYNTAX_ANALYSIS;
+        }
         // TODO -> handle <expression>
     }
     // else rule: <for_definition> -> eps
@@ -75,36 +125,47 @@ eRC forDefine() {
 }
 
 eRC statementMul() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    token = getToken(tk);
+    getToken(token, tk);
 
     // rule: <stat_mul> -> <expression>
     // TODO -> handle <expression>
 
     // rule: <stat_mul> -> ID ( <arguments> )
-    if (tk->type != TYPE_IDENTIFIER)
+    if (tk->type != TYPE_IDENTIFIER) {
+        setErrMsg("expected identifier [multiple statement]");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
-    token = getToken(tk);
-    if (tk->type != TYPE_LEFT_CURLY_BRACKET)
+    getToken(token, tk);
+    if (tk->type != TYPE_LEFT_BRACKET) {
+        setErrMsg("expected '(' after identifier");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     result = arguments();
     if (result != RC_OK) return result;
-    if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+    if (tk->type != TYPE_RIGHT_BRACKET) {
+        setErrMsg("expected ')' after argument types");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     return result;
 }
 
 eRC variableIdNext() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     // rule: <var_id_n> -> , ID <var_id_n>
     if (tk->type == TYPE_COMMA) {
-        token = getToken(tk);
-        if (tk->type != TYPE_IDENTIFIER) return RC_ERR_SYNTAX_ANALYSIS;
-        token = getToken(tk);
+        getToken(token, tk);
+        if (tk->type != TYPE_IDENTIFIER) {
+            setErrMsg("expected next identifier after ','");
+            return RC_ERR_SYNTAX_ANALYSIS;
+        }
+        getToken(token, tk);
         result = variableIdNext(); // TODO -> i dont like this
         if (result != RC_OK) return result;
     }
@@ -114,16 +175,21 @@ eRC variableIdNext() {
 }
 
 eRC assignment() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
     switch (tk->type) {
         case TYPE_IDENTIFIER: // rule: <assignment> -> ID ( <arguments> )
-            token = getToken(tk);
-            if (tk->type != TYPE_LEFT_CURLY_BRACKET)
+            getToken(token, tk);
+            if (tk->type != TYPE_LEFT_BRACKET) {
+                setErrMsg("expected '(' after identifier");
                 return RC_ERR_SYNTAX_ANALYSIS;
+            }
             result = arguments();
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+            if (tk->type != TYPE_RIGHT_BRACKET) {
+                setErrMsg("expected ')' after function arguments");
                 return RC_ERR_SYNTAX_ANALYSIS;
+            }
             break;
         default:
             // rule: <assignment> -> <expression>
@@ -135,6 +201,7 @@ eRC assignment() {
 }
 
 eRC unary() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
     switch (tk->type) {
         case TYPE_PLUS_ASSIGN: // rules: <unary> -> += or -= or *= or /=
@@ -143,6 +210,7 @@ eRC unary() {
         case TYPE_DIVIDE_ASSIGN:
             break;
         default:
+            setErrMsg("expected unary assignment token '+=', '-=', '*=' or '/='");
             result = RC_ERR_SYNTAX_ANALYSIS;
             break;
     }
@@ -151,29 +219,32 @@ eRC unary() {
 }
 
 eRC statement() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     switch (tk->type) {
         case TYPE_ASSIGN: // rule: <statement> -> = <assignment>
-            token = getToken(tk);
+            getToken(token, tk);
             result = assignment();
             if (result != RC_OK) return result;
             break;
-        case TYPE_LEFT_CURLY_BRACKET: // rule: <statement> -> ( <arguments> )
+        case TYPE_LEFT_BRACKET: // rule: <statement> -> ( <arguments> )
             result = arguments();
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+            if (tk->type != TYPE_RIGHT_BRACKET) {
+                setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
+            }
             break;
         case TYPE_DECLARATIVE_ASSIGN: // rule: <statement> -> := <assignment>
-            token = getToken(tk);
+            getToken(token, tk);
             result = assignment();
             if (result != RC_OK) return result;
             break;
         default: // rule: <statement> -> <unary> <expression>
             result = unary();
             if (result != RC_OK) return result;
-            token = getToken(tk);
+            getToken(token, tk);
             // TODO -> handle expression
             break;
     }
@@ -182,12 +253,13 @@ eRC statement() {
 }
 
 eRC ifElseExpanded() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     if (tk->attribute.keyword == KEYWORD_IF) {
         // rule: <if_else_st> -> if <cmd_block> <if_else_st_n>
         // <cmd_block>
-        token = getToken(tk);
+        getToken(token, tk);
         result = commandBlock();
         if (result != RC_OK) return result;
 
@@ -204,10 +276,11 @@ eRC ifElseExpanded() {
 }
 
 eRC ifElse() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
     switch (tk->attribute.keyword) {
         case KEYWORD_ELSE: // rule: <if_else> -> else <if_else_st>
-            token = getToken(tk);
+            getToken(token, tk);
             result = ifElseExpanded();
             if (result != RC_OK) return result;
         default:
@@ -219,23 +292,24 @@ eRC ifElse() {
 
 // TODO -> too big function, maybe separate into smaller ones ? (e.g. if_handle(), for_handle(), ..)
 eRC command() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     // rule: <cmd> -> ID <statement>
     if (tk->type == TYPE_IDENTIFIER) {
-        token = getToken(tk);
+        getToken(token, tk);
         result = statement();
         if (result != RC_OK) return result;
-        token = getToken(tk);
+        getToken(token, tk);
     } else if (tk->type == TYPE_KEYWORD) {
         switch (tk->attribute.keyword) {
             case KEYWORD_IF: // rule: <cmd> -> if <expression> <cmd_block> <if_else>
                 // <expression>
-                token = getToken(tk);
+                getToken(token, tk);
                 // TODO -> handle <expression>
 
                 // <cmd_block>
-                token = getToken(tk);
+                getToken(token, tk);
                 result = commandBlock();
                 if (result != RC_OK) return result;
 
@@ -249,8 +323,10 @@ eRC command() {
                 if (result != RC_OK) return result;
 
                 // ;
-                if (tk->type != TYPE_SEMICOLON)
+                if (tk->type != TYPE_SEMICOLON) {
+                    setErrMsg("expected ';' after for cycle definition");
                     return RC_ERR_SYNTAX_ANALYSIS;
+                }
 
                 // <expression>
                 // TODO -> handle <expression>
@@ -268,10 +344,11 @@ eRC command() {
                 if (result != RC_OK) return result;
                 break;
             default:
+                setErrMsg("expected keyword 'if', 'for' or 'return'");
                 result = RC_ERR_SYNTAX_ANALYSIS;
                 break;
         }
-        token = getToken(tk);
+        //getToken(token, tk);
     }
     // else rule: <return_cmd> -> eps => <cmd> -> eps
 
@@ -279,6 +356,7 @@ eRC command() {
 }
 
 eRC commands() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     // rule: <commands> -> <cmd> EOL <commands>
@@ -288,15 +366,16 @@ eRC commands() {
 
     // EOL
     if (tk->type != TYPE_EOL) {
+        setErrMsg("expected end-of-line after (one) command");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
         // allow indefinite EOLs
         while (tk->type == TYPE_EOL)
-            token = getToken(tk);
+            getToken(token, tk);
     }
 
     // <commands> -> eps
-    if (tk->type == TYPE_RIGHT_BRACKET)
+    if (tk->type == TYPE_RIGHT_CURLY_BRACKET)
         return result;
 
     // <commands> -> <cmd> EOL <commands>
@@ -307,20 +386,25 @@ eRC commands() {
 }
 
 eRC commandBlock() {
+    debugPrint("rule %s", __func__);
     // rule: <cmd_block> -> { EOL <commands> } EOL
     eRC result = RC_OK;
 
+    getToken(token, tk);
     // { EOL
-    if (tk->type != TYPE_LEFT_BRACKET)
+    if (tk->type != TYPE_LEFT_CURLY_BRACKET) {
+        setErrMsg("expected beginning of command block, aka '{' ");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
-    token = getToken(tk);
+    getToken(token, tk);
     if (tk->type != TYPE_EOL) {
+        setErrMsg("expected end-of-line after '{'");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
         // allow indefinite EOLs
         while (tk->type == TYPE_EOL)
-            token = getToken(tk);
+            getToken(token, tk);
     }
 
     // <commands>
@@ -328,29 +412,31 @@ eRC commandBlock() {
     if (result != RC_OK) return result;
 
     // } EOL
-    if (tk->type != TYPE_RIGHT_BRACKET) {
+    if (tk->type != TYPE_RIGHT_CURLY_BRACKET) {
+        setErrMsg("expected end of command block, aka '}'");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
         // allow indefinite EOLs
         while (tk->type == TYPE_EOL)
-            token = getToken(tk);
+            getToken(token, tk);
     }
 
     return result;
 }
 
 eRC typeFunctionNext() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     // rule: <r_type_n> -> , <type> <r_type_n>
     if (tk->type == TYPE_COMMA) {
         // <type>
-        token = getToken(tk);
+        getToken(token, tk);
         result = type();
         if (result != RC_OK) return result;
 
         // <r_type_n>
-        token = getToken(tk);
+        getToken(token, tk);
         result = typeFunctionNext(); // TODO -> i dont like this
         if (result != RC_OK) return result;
     }
@@ -360,6 +446,7 @@ eRC typeFunctionNext() {
 }
 
 eRC typeFunction() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     switch (tk->type) {
@@ -367,15 +454,18 @@ eRC typeFunction() {
         case TYPE_FLOAT64:
         case TYPE_STRING:
         case TYPE_BOOL:
-            token = getToken(tk);
+            getToken(token, tk);
             result = typeFunctionNext();
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+            if (tk->type != TYPE_RIGHT_BRACKET) {
+                 setErrMsg("expected ')' after last function return type");
                 return RC_ERR_SYNTAX_ANALYSIS;
-            token = getToken(tk);
-        case TYPE_RIGHT_CURLY_BRACKET: // rule: <f_type> -> eps (=> token is ')' )
+            }
+            getToken(token, tk);
+        case TYPE_RIGHT_BRACKET: // rule: <f_type> -> eps (=> token is ')' )
             break;
         default:
+            setErrMsg("expected ')' after '(' [func return type]");
             result = RC_ERR_SYNTAX_ANALYSIS;
             break;
     }
@@ -384,12 +474,13 @@ eRC typeFunction() {
 }
 
 eRC functionReturn() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
     // rule: <func_return> -> ( <f_type> )
-    if (tk->type == TYPE_LEFT_CURLY_BRACKET) {
+    if (tk->type == TYPE_LEFT_BRACKET) {
         // <f_type>
-        token = getToken(tk);
+        getToken(token, tk);
         result = typeFunction();
         if (result != RC_OK) return result;
     }
@@ -399,15 +490,18 @@ eRC functionReturn() {
 }
 
 eRC argumentNext() {
+    debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    token = getToken(tk);
+    getToken(token, tk);
 
     // rule: <arguments_n> -> , ID <type> <arguments_n>
     if (tk->type == TYPE_COMMA) {
-        token = getToken(tk);
+        getToken(token, tk);
         // ID
-        if (tk->type != TYPE_IDENTIFIER)
+        if (tk->type != TYPE_IDENTIFIER) {
+            setErrMsg("expected next identifier after ','");
             return RC_ERR_SYNTAX_ANALYSIS;
+        }
 
         // <type>
         result = type();
@@ -422,6 +516,7 @@ eRC argumentNext() {
 }
 
 eRC type() {
+    debugPrint("rule %s", __func__);
     // rule: <type> -> int || <type> -> float64 || <type> -> string
     eRC result = RC_OK;
 
@@ -432,6 +527,7 @@ eRC type() {
         case TYPE_BOOL:
             break;
         default:
+            setErrMsg("expected datatype 'int', 'float64', 'string' or 'bool'");
             result = RC_ERR_SYNTAX_ANALYSIS;
             break;
     }
@@ -440,11 +536,12 @@ eRC type() {
 }
 
 eRC arguments() {
+    debugPrint("rule %s", __func__);
     // rule: <arguments> -> ID <type> <arguments_n>
     eRC result = RC_OK;
 
     // ID
-    token = getToken(tk);
+    getToken(token, tk);
     if (tk->type == TYPE_IDENTIFIER) {
         // <type> <arguments_n>
         result = type();
@@ -458,34 +555,42 @@ eRC arguments() {
 }
 
 eRC function() {
+    debugPrint("rule %s", __func__);
     // rule: <func> -> func ID ( <arguments> ) <func_return> <cmd_block>
     eRC result = RC_OK;
 
     // func keyword
-    if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "func"))
+    if (tk->attribute.keyword != KEYWORD_FUNC) {
+        setErrMsg("expected 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
-    // ID: function identificator
-    token = getToken(tk);
+    // ID: function identifier
+    getToken(token, tk);
     if (tk->type != TYPE_IDENTIFIER) {
+        setErrMsg("expected function identifier after 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
-        if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "main"))
+        if (tk->type == TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main"))
             mainFound++;
     }
 
     // ( <arguments> )
-    token = getToken(tk);
-    if (tk->type != TYPE_LEFT_CURLY_BRACKET)
+    getToken(token, tk);
+    if (tk->type != TYPE_LEFT_BRACKET) {
+        setErrMsg("expected '(' after function identifier");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     result = arguments();
     if (result != RC_OK) return result;
-    if (tk->type != TYPE_RIGHT_CURLY_BRACKET)
+    if (tk->type != TYPE_RIGHT_BRACKET) {
+        setErrMsg("expected ')' after function arguments");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     // <func_return>
-    token = getToken(tk);
+    getToken(token, tk);
     result = functionReturn();
     if (result != RC_OK) return result;
 
@@ -497,6 +602,7 @@ eRC function() {
 }
 
 eRC functionNext() {
+    debugPrint("rule %s", __func__);
     // rule: <function_n> -> <func> <function_n> || <function_n> -> eps
     eRC result = RC_OK;
 
@@ -506,14 +612,17 @@ eRC functionNext() {
             return result;
             break;
         case TYPE_KEYWORD: // <function_n> -> <func> <function_n>
-            if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "func"))
+            if (tk->attribute.keyword != KEYWORD_FUNC) {
+                setErrMsg("expected keyword 'func' after function definition");
                 return RC_ERR_SYNTAX_ANALYSIS;
+            }
             result = function();
             if (result != RC_OK) return result;
             result = functionNext(); // TODO -> i dont like this
             if (result != RC_OK) return result;
             break;
         default:
+            setErrMsg("expected keyword 'func' or EOF token after function definition");
             result = RC_ERR_SYNTAX_ANALYSIS;
             break;
     }
@@ -522,56 +631,68 @@ eRC functionNext() {
 }
 
 eRC functions() {
+    debugPrint("rule %s", __func__);
     // rule: <functions> -> <func> <function_n>
     eRC result = RC_OK;
 
     // program must have at least 1 function
-    if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "func"))
+    if (tk->attribute.keyword != KEYWORD_FUNC) {
+        setErrMsg("expected at least one 'func' keyword after prolog");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     result = function();
     if (result != RC_OK) return result;
     result = functionNext();
 
     // after analysis of all functions, ONE main should be found
-    if (mainFound == 0 || mainFound > 1)
+    if (mainFound == 0 || mainFound > 1) {
+        if (mainFound) setErrMsg("multiple definitions of main");
+        else setErrMsg("missing definition of main");
         return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     return result;
 }
 
 eRC eolR() {
+    debugPrint("rule %s", __func__);
     // rule: <eol_r> -> EOL <eol_r> || rule: <eol_r> -> eps
     eRC result = RC_OK;
     while (tk->type == TYPE_EOL)
-        token = getToken(tk);
+        getToken(token, tk);
 
     return result;
 }
 
 eRC eolM() {
+    debugPrint("rule %s", __func__);
     // rule: <eol_m> -> EOL <eol_r>
     eRC result = RC_OK;
-    token = getToken(tk);
+    getToken(token, tk);
 
-    if (tk->type != TYPE_EOL)
-        result = RC_ERR_SYNTAX_ANALYSIS;
+    if (tk->type != TYPE_EOL) {
+        setErrMsg("expected end-of-line after 'package main'");
+        return RC_ERR_SYNTAX_ANALYSIS;
+    }
 
     result = eolR();
     return result;
 }
 
 eRC prolog() {
+    debugPrint("rule %s", __func__);
     // rule: <prolog> -> package main
     eRC result = RC_OK;
 
     switch (tk->type) {
         case TYPE_KEYWORD:
-            if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "package")) {
+            if (tk->attribute.keyword != KEYWORD_PACKAGE) {
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            token = getToken(tk);
-            if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "main") || tk->type != TYPE_IDENTIFIER) {
+            getToken(token, tk);
+            if (tk->type != TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main")) {
+                setErrMsg("expected identifier 'main'");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             break;
@@ -584,21 +705,15 @@ eRC prolog() {
 
 eRC program() {
     eRC result = RC_OK;
+    debugPrint("rule %s", __func__);
 
     // Cycle 'till we are out of comments and eols
-    while (tk->type == TYPE_EMPTY || tk->type == TYPE_EOL) {
-        token = getToken(tk);
-        if (token == 1) {
-            iPrint(RC_ERR_LEXICAL_ANALYSIS, true, NULL);
-            return RC_ERR_LEXICAL_ANALYSIS;
-        } else if (token) {
-            iPrint(RC_ERR_INTERNAL, true, NULL);
-            return RC_ERR_INTERNAL;
-        }
-    }
+    while (tk->type == TYPE_EMPTY || tk->type == TYPE_EOL)
+        getToken(token, tk);
 
     // incorrect: package -> rule <program>
-    if (strCmpConstStr(strGetStr(&(tk->attribute.string)), "package")) {
+    if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_PACKAGE) {
+        setErrMsg("expected 'package' in first line");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
 
@@ -611,7 +726,10 @@ eRC program() {
             if (result != RC_OK) return result;
             result = functions();
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_EOF) return RC_ERR_SYNTAX_ANALYSIS; //end of program, EOF expected
+            if (tk->type != TYPE_EOF) {
+                setErrMsg("expected 'EOF'");
+                return RC_ERR_SYNTAX_ANALYSIS; //end of program, EOF expected
+            }
             //generateInstruction(program_end,...)
             break;
         default:
@@ -622,22 +740,21 @@ eRC program() {
     return result;
 }
 
-eRC parser(BTNodePtr* SymbolTable) {
-    token = getToken(tk);
 
-    switch (token) {
-        // TOKEN OK
-        case 0:
-            return program();
-        // LEX ERROR
-        case 1:
-            iPrint(RC_ERR_LEXICAL_ANALYSIS, true, NULL);
-            return RC_ERR_LEXICAL_ANALYSIS;
-        // 2+ INTERNAL in this case
-        case 2:
-        case 99:
-        default:
-            iPrint(RC_ERR_INTERNAL, true, NULL);
-            return RC_ERR_INTERNAL;
-    }
+// "MAIN" FUNCTION
+
+eRC parser(Token* tkn, BTNodePtr* SymbolTable) {
+    debugPrint("-> Syntax analysis (parsing) started.");
+    eRC result = RC_OK;
+    tk = tkn;
+    setErrMsg(""); // sets error message to empty
+
+    getToken(token, tk);
+
+    result = program();
+    if (result != 0)
+        iPrint(result, true, errText);
+
+    debugPrint("-> Syntax analysis %s.", (result ? "failed" : "OK"));
+    return result;
 }

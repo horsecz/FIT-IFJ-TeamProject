@@ -22,6 +22,6 @@ char *errorString[] = {
 };
 
 void iPrint(eRC code, bool error, char* opMsg) {
-    fprintf(stderr, (!opMsg) ? "%s: %s" : "%s: %s %s", (error) ? "[ERROR]" : "[INFO]",
-    (code == RC_ERR_INTERNAL) ? errorString[10] : errorString[code], (!opMsg) ? opMsg : NULL);
+    fprintf(stderr, (!opMsg) ? "%s: %s\n" : "%s: %s (%s)\n", (error) ? "[ERROR]" : "[INFO]",
+    (code == RC_ERR_INTERNAL) ? errorString[10] : errorString[code], (opMsg != NULL) ? opMsg : NULL);
 }
