@@ -368,7 +368,6 @@ int getToken (Token *token)
         }
         else
         {
-          fprintf(stderr, "Invalid character read, exiting...\n");
           return SCANNER_ERR;
         }
         break;
