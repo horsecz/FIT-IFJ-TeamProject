@@ -75,7 +75,7 @@ eRC returnCommand() {
     // rule: <return_cmd> -> return <return_stat>
     eRC result = RC_OK;
 
-    if (tk->attribute.keyword != KEYWORD_RETURN) {
+    if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_RETURN) {
         setErrMsg("expected keyword 'return'");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
@@ -560,7 +560,7 @@ eRC function() {
     eRC result = RC_OK;
 
     // func keyword
-    if (tk->attribute.keyword != KEYWORD_FUNC) {
+    if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_FUNC) {
         setErrMsg("expected 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
@@ -571,7 +571,7 @@ eRC function() {
         setErrMsg("expected function identifier after 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
-        if (tk->type == TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main"))
+        if (tk->type == TYPE_IDENTIFIER || strCmpConstStr(&(tk->attribute.string), "main"))
             mainFound++;
     }
 
@@ -612,7 +612,7 @@ eRC functionNext() {
             return result;
             break;
         case TYPE_KEYWORD: // <function_n> -> <func> <function_n>
-            if (tk->attribute.keyword != KEYWORD_FUNC) {
+            if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_FUNC) {
                 setErrMsg("expected keyword 'func' after function definition");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
@@ -636,7 +636,7 @@ eRC functions() {
     eRC result = RC_OK;
 
     // program must have at least 1 function
-    if (tk->attribute.keyword != KEYWORD_FUNC) {
+    if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_FUNC) {
         setErrMsg("expected at least one 'func' keyword after prolog");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
@@ -687,11 +687,11 @@ eRC prolog() {
 
     switch (tk->type) {
         case TYPE_KEYWORD:
-            if (tk->attribute.keyword != KEYWORD_PACKAGE) {
+            if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_PACKAGE) {
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             getToken(token, tk);
-            if (tk->type != TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main")) {
+            if (tk->type != TYPE_IDENTIFIER || strCmpConstStr(&(tk->attribute.string), "main")) {
                 setErrMsg("expected identifier 'main'");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
