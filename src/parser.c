@@ -571,7 +571,7 @@ eRC function() {
         setErrMsg("expected function identifier after 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
-        if (tk->type == TYPE_IDENTIFIER || strCmpConstStr(&(tk->attribute.string), "main"))
+        if (tk->type == TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main"))
             mainFound++;
     }
 
