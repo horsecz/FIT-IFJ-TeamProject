@@ -22,13 +22,12 @@ int main()
   token->type = TYPE_EMPTY;
   token->attribute.keyword = KEYWORD_EMPTY;
 
-  int holdResponse = parser(NULL); //parser(&SymbolTable, &InstructionsList, token);
+  int holdResponse = parser(token, NULL); //parser(&SymbolTable, &InstructionsList, token);
 
   if (holdResponse != 0)
   {
       // free up token from memory
       free(token);
-      printf("Error in scanner, exiting...\n");
       return holdResponse;
   }
 
