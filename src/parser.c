@@ -27,7 +27,7 @@
 // maximum size of error message
 #define MAX_ERR_MSG 255
 //
-#define setErrMsg(msg) do{ strncpy(errText, msg, MAX_ERR_MSG); }while(0)
+#define setErrMsg(msg) do{ strncpy(errText, msg, MAX_ERR_MSG);  }while(0)
 
 // DEBUG MACROS
 
@@ -53,6 +53,7 @@ Token* tk; // token global var.
 int token; // for getToken returncode
 int mainFound = 0; // indicator if 'func main' was found in program or not
 char errText[MAX_ERR_MSG]; // for error message if error will occur
+int printLastToken; // for error message - if last token may be printed or not
 //InstructionsList* il;
 
 // FUNCTIONS - RULES
@@ -649,6 +650,7 @@ eRC functions() {
     if (mainFound == 0 || mainFound > 1) {
         if (mainFound) setErrMsg("multiple definitions of main");
         else setErrMsg("missing definition of main");
+        printLastToken = 0;
         return RC_ERR_SYNTAX_ANALYSIS;
     }
 
@@ -748,12 +750,33 @@ eRC parser(Token* tkn, BTNodePtr* SymbolTable) {
     eRC result = RC_OK;
     tk = tkn;
     setErrMsg(""); // sets error message to empty
+    printLastToken = 1;
 
     getToken(token, tk);
 
     result = program();
-    if (result != 0)
+    if (result != 0) {
+        if (printLastToken) {
+            string gotStr;
+            strInit(&gotStr);
+
+            tokenToString(tk, &gotStr);
+            int strSize = strlen(errText) + strGetLength(&gotStr);
+
+            strcat(errText, " but got '");
+            strncat(errText, strGetStr(&gotStr),
+                    MAX_ERR_MSG - strlen(errText) - 5); // need 4 chars for ...' in worst case + null byte
+
+            if (strSize < MAX_ERR_MSG)
+                errText[strlen(errText)] = '\'';
+            else
+                strcat(errText, "...'");
+
+            strFree(&gotStr);
+        }
+
         iPrint(result, true, errText);
+    }
 
     debugPrint("-> Syntax analysis %s.", (result ? "failed" : "OK"));
     return result;

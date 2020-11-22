@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "str.h"
+#include "scanner.h"
+#include <string.h>
 
 /**
  * @brief Enum containing valid return codes
@@ -41,5 +44,14 @@ extern char *errorString[];
  * @param char* Optional text msg to be printed out with error (if not used use NULL to indicate that)
  */
 void iPrint(eRC, bool, char*);
+
+/**
+ * @brief Converts token to string
+ * @param tk token
+ * @param str string which will be filled with token
+ * @pre Expects tk and str not to be NULL
+ * @return character or NULL if error occured
+ */
+void tokenToString(Token* tk, string* str);
 
 #endif
