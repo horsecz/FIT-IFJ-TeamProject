@@ -19,7 +19,7 @@
  * @brief Main parser logic
  * @param SymbolTable Symbol table (implemented as BST)
  */
-eRC parser(Token *tk, BTNodePtr* SymbolTable);
+eRC parser(Token *tk, stNodePtr* SymbolTable);
 
 /** ---------------------------------------------------- **
  *  List of functions generated according to LL1-grammar  *

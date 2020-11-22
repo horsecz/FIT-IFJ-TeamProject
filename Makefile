@@ -69,7 +69,7 @@ $(MAIN)-d: $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)return
 # CLEAN MAKE OUTPUT(S)
 
 clean:
-	rm -rf src/*.o test/*.o *.o $(OUT)
+	rm -rf src/*.o tests/*.o t-* *.o $(OUT)
 
 # HELP
 
@@ -90,11 +90,11 @@ test-c: symtest
 
 # SYMTABLE TEST
 
-$(TEST)symtest.o: $(TEST)symtest.c $(SRC)symtable.h
+$(TEST)symtest.o: $(TEST)symtest.c $(SRC)symtable.h $(SRC)returns.h $(SRC)str.h
 	$(CC) $(CCFLAGS) -c $< -o $(TEST)symtest.o
 
-symtest: $(TEST)symtest.o symtable.o
-	$(CC) $(CCFLAGS) $(TEST)symtest.o $(SRC)symtable.o -o t-symtable
+symtest: $(TEST)symtest.o $(SRC)symtable.o $(SRC)returns.o $(SRC)str.o
+	$(CC) $(CCFLAGS) $(TEST)symtest.o $(SRC)symtable.o $(SRC)returns.o $(SRC)str.o -o t-symtable
 
 # RUN TESTS
 

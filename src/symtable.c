@@ -10,8 +10,20 @@
 
 #include "symtable.h"
 
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                 GENERAL SYMTABLE FUNCTIONS                    *
+ *                                                               * 
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
-void stConstruct ( BTNodePtr *symtable ) {
+#define freeData(stVar) if(!(*stVar)->fData) {          \
+                            free((*stVar)->fData);      \
+                        }                               \
+                        if(!(*stVar)->vData) {          \
+                            free((*stVar)->vData);      \
+                        }                               
+
+void stConstruct ( stNodePtr *symtable ) {
     if (!(*symtable)) {    // Symtable is alredy NULL, no need to do anything
         return;
     }
@@ -24,7 +36,7 @@ void stConstruct ( BTNodePtr *symtable ) {
  * @param stack Pointer to the stack
  * @post Fills stack with nodes -> all leftmost nodes pushed onto stack
  */
-void addLeftmost ( BTNodePtr ptr, tStackP* stack ) {
+void addLeftmost ( stNodePtr ptr, stStack* stack ) {
     if(!ptr) {	// Not found - NULL protection
 		return;
 	}
@@ -35,10 +47,10 @@ void addLeftmost ( BTNodePtr ptr, tStackP* stack ) {
 	}
 }
 
-void stDestruct ( BTNodePtr *symtable ) {
-    tStackP* stack = (tStackP*) calloc(sizeof(tStackP), 1);
+void stDestruct ( stNodePtr *symtable ) {
+    stStack* stack = (stStack*) calloc(sizeof(stStack), 1);
     if (!stack) {
-        fprintf(stderr, "Cannot destruct symtable due to internal error. [malloc-stack]\n");
+        iPrint(RC_ERR_INTERNAL, true, "Cannot destruct symtable due to internal error. [malloc-stack]");
         return;
     }
 
@@ -46,7 +58,7 @@ void stDestruct ( BTNodePtr *symtable ) {
     addLeftmost((*symtable), stack);
 
     while (!SEmptyP(stack)) {                       // Process every node in stack
-        BTNodePtr deleting = STopPopP(stack);
+        stNodePtr deleting = STopPopP(stack);
 		addLeftmost(deleting->RPtr, stack);	// Check right subtree
 		free(deleting);
     }
@@ -65,38 +77,56 @@ int sortStrings ( stID fst, stID snd ) {
     return strcmp(fst, snd);
 }
 
-int stInsert ( BTNodePtr *symtable, stID identificator, stType datatype ) {
-    BTNodePtr new = (BTNodePtr) calloc(sizeof(struct BTNode), 1);
+int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarType datatype ) {
+    stNodePtr new = (stNodePtr) calloc(sizeof(struct stNode), 1);
     if (!new) { 
         return ST_ERROR; 
     }
 
     new->RPtr = NULL;
     new->LPtr = NULL;
-    new->type = datatype;
-    new->id = identificator;
+    new->identifier = identificator;
+    if (nodeType == ST_N_FUNCTION) {
+        new->fData = calloc(sizeof(stFData), 1);
+        new->vData = NULL;
+        new->fData->identifier = identificator;
+        new->fData->returnType = datatype;
+        new->fData->defined = false;
+        new->fData->paramNum = 0;
+        new->fData->innerSymtable = NULL;
+    } else if (nodeType == ST_N_VARIABLE) {
+        new->fData = NULL;
+        new->vData = calloc(sizeof(stVData), 1);
+        new->vData->type = datatype;
+        new->vData->defined = false;
+        new->vData->fncCall = false;
+    } else {
+        new->fData = NULL;
+        new->vData = NULL;
+    }
 
     if (!(*symtable)) {
         (*symtable) = new;
         return ST_SUCCESS;
     }
 
-    BTNodePtr temp = (*symtable);
+    stNodePtr temp = (*symtable);
 
     while (temp) {
-        if (sortStrings(temp->id, identificator) > 0) {
+        if (sortStrings(temp->identifier, identificator) > 0) {
             if (!temp->LPtr) {
                 temp->LPtr = new;
                 return ST_SUCCESS;
             }
             temp = temp->LPtr;
-        } else if (sortStrings(temp->id, identificator) < 0) {
+        } else if (sortStrings(temp->identifier, identificator) < 0) {
             if (!temp->RPtr) {
                 temp->RPtr = new;
                 return ST_SUCCESS;
             }
             temp = temp->RPtr;
         } else {
+            freeData(&new);
             free(new);
             return ST_ID_EXISTS;
         }
@@ -105,17 +135,17 @@ int stInsert ( BTNodePtr *symtable, stID identificator, stType datatype ) {
     return ST_SUCCESS;
 }
 
-BTNodePtr stLookUp ( BTNodePtr *symtable, stID identificator ) {
+stNodePtr stLookUp ( stNodePtr *symtable, stID identificator ) {
     if (!(*symtable)) {
         return NULL;
     }
 
-    BTNodePtr temp = (*symtable);
+    stNodePtr temp = (*symtable);
 
     while (temp) {
-        if (sortStrings(temp->id, identificator) > 0) {         //left
+        if (sortStrings(temp->identifier, identificator) > 0) {         //left
             temp = temp->LPtr;
-        } else if (sortStrings(temp->id, identificator) < 0) {  //right
+        } else if (sortStrings(temp->identifier, identificator) < 0) {  //right
             temp = temp->RPtr;
         } else {
             return temp;
@@ -130,49 +160,60 @@ BTNodePtr stLookUp ( BTNodePtr *symtable, stID identificator ) {
  * @param PtrReplaced Node that will be replaced
  * @param RootPtr From this node we look for rightmost
  */
-void deleteReplaceByRightmost ( BTNodePtr PtrReplaced, BTNodePtr *RootPtr ) {
+void deleteReplaceByRightmost ( stNodePtr PtrReplaced, stNodePtr *RootPtr ) {
     // Stop conditon - END // STOP SOMETHING WENT HORRIBLY WRONG
 	if (!(*RootPtr)) {
 		return;
 	}
 
-	BTNodePtr rm = NULL;
+	stNodePtr rm = NULL;
 
 	if (!(*RootPtr)->RPtr) {	// IS THE RIGHTMOST (NO RIGHT SUB TREE EXISTS)
 		rm = (*RootPtr);
-		PtrReplaced->id = rm->id;
-        PtrReplaced->type = rm->type;
+		PtrReplaced->identifier = rm->identifier;
+        if(rm->fData) {
+            PtrReplaced->fData = rm->fData;
+        }
+        if(rm->vData) {
+            PtrReplaced->vData = rm->vData;
+        }
+        // DO A PROPER FREE
+        freeData(RootPtr);
 		free((*RootPtr));
+        // SET NODE
 		(*RootPtr) = rm->LPtr;
 		return;
 	}
 	deleteReplaceByRightmost(PtrReplaced, &(*RootPtr)->RPtr);	// LOOK MORE TO THE RIGHT
 }
 
-int stDelete ( BTNodePtr *symtable, stID identificator ) {
+int stDelete ( stNodePtr *symtable, stID identificator ) {
     // Stop conditon - NOT FOUND
 	if (!(*symtable)) {
 		return ST_ERROR;
 	}
 
-	if (sortStrings((*symtable)->id, identificator) > 0) {			// Key in left subtree
+	if (sortStrings((*symtable)->identifier, identificator) > 0) {			// Key in left subtree
 		return stDelete(&(*symtable)->LPtr, identificator);
-	} else if (sortStrings((*symtable)->id, identificator) < 0) {	// Key in right subtree
+	} else if (sortStrings((*symtable)->identifier, identificator) < 0) {	// Key in right subtree
 		return stDelete(&(*symtable)->RPtr, identificator);
 	} else { // Found key
 		if (!(*symtable)->LPtr && !(*symtable)->RPtr) {	// No subtrees in key node
+            freeData(symtable);
 			free((*symtable));
 			(*symtable) = NULL;
 			return ST_SUCCESS;
 		}
 		if (!(*symtable)->LPtr &&  (*symtable)->RPtr) {	// Only right subtree
-			BTNodePtr child = (*symtable)->RPtr;
+			stNodePtr child = (*symtable)->RPtr;
+            freeData(symtable);
 			free((*symtable));
 			(*symtable) = child;
 			return ST_SUCCESS;
 		}
 		if (!(*symtable)->RPtr &&  (*symtable)->LPtr) {	// Only left subtree
-			BTNodePtr child = (*symtable)->LPtr;
+			stNodePtr child = (*symtable)->LPtr;
+            freeData(symtable);
 			free((*symtable));
 			(*symtable) = child;
 			return ST_SUCCESS;
@@ -185,41 +226,126 @@ int stDelete ( BTNodePtr *symtable, stID identificator ) {
     return ST_ERROR;
 }
 
-stType stGetType ( BTNodePtr idNode ) {
-    if(!idNode) {
-        return UNKNOWN;
-    }
-    return idNode->type;
-}
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                ADVANCED SYMTABLE FUNCTIONS                    *
+ *                                                               * 
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
-void stSetType ( BTNodePtr idNode, stType datatype ) {
+void stSetType ( stNodePtr idNode, stVarType datatype ) {
     if(!idNode) {
         return;
     }
-    idNode->type = datatype;
+    if (idNode->fData) {
+        idNode->fData->returnType = datatype;
+    }
+    if (idNode->vData) {
+       idNode->vData->type = datatype;
+    }
 }
 
-void SInitP (tStackP *S)
+void stFncSetParam ( stNodePtr stNode, stVarType paramType ) {
+    if (stNode && stNode->fData) {
+        stNode->fData->paramTypes[stNode->fData->paramNum + 1] = paramType;
+        stNode->fData->paramNum++;
+    }
+}
+
+void stFncSetDefined ( stNodePtr stNode, bool defined ) {
+    if (stNode) {
+        if (stNode->fData) {
+            stNode->fData->defined = defined;
+        } else if (stNode->vData) {
+            stNode->vData->defined = defined;
+        }
+    }
+}
+
+void stFncSetInnerSt ( stNodePtr stNode, stNodePtr* symtable ) {
+    if (stNode && stNode->fData) {
+        stNode->fData->innerSymtable = symtable;
+    }
+}
+
+void stVarSetFncCall ( stNodePtr stNode, bool fncCall ) {
+    if (stNode && stNode->vData) {
+        stNode->vData->fncCall = fncCall;
+    }
+}
+
+stVarType stGetType ( stNodePtr idNode ) {
+    if (!idNode) {
+        return UNKNOWN;
+    }
+    if (idNode->fData) {
+        return idNode->fData->returnType;
+    }
+    if (idNode->vData) {
+        return idNode->vData->type;
+    }
+    return UNKNOWN;
+}
+
+bool stDefined ( stNodePtr stNode ) {
+    if (stNode) {
+        if (stNode->fData) {
+            return stNode->fData->defined;
+        } else if (stNode->vData) {
+            return stNode->vData->defined;
+        }
+    }
+    return false;
+}
+
+int stFncGetNumParams ( stNodePtr stNode ) {
+    if (stNode && stNode->fData) {
+        return stNode->fData->paramNum;
+    }
+    return -1;
+}
+
+stVarType* stFncGetParams ( stNodePtr stNode ) {
+    if (stNode && stNode->fData) {
+        return stNode->fData->paramTypes;
+    }
+    return NULL;
+}
+
+stNodePtr* stFncGetInnerSt ( stNodePtr stNode) {
+    if (stNode && stNode->fData) {
+        return stNode->fData->innerSymtable;
+    }
+    return NULL;
+}
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                       STACK  HELPER                           * 
+ *                                                               *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+void SInitP (stStack *S)
 {
     S->top = 0;
 }
 
-void SPushP (tStackP *S, BTNodePtr ptr)
+void SPushP (stStack *S, stNodePtr ptr)
 {
     /* Při implementaci v poli může dojít k přetečení zásobníku. */
-    if (S->top == ST_MAXSTACK)
-        printf("ERROR: Pointer stack overflow.\n");
-    else {
+    if (S->top == ST_MAXSTACK) {
+        iPrint(RC_ERR_INTERNAL, true, "Pointer stack overflow.");
+        return;
+    } else {
         S->top++;
         S->a[S->top]=&ptr;
     }
 }
 
-BTNodePtr STopPopP (tStackP *S)
+stNodePtr STopPopP (stStack *S)
 {
     /* Operace nad prázdným zásobníkem způsobí chybu. */
     if (S->top==0)  {
-        printf("ERROR: Pointer stack overflow.\n");
+        iPrint(RC_ERR_INTERNAL, true, "Pointer stack overflow.");
         return(NULL);
     }
     else {
@@ -227,7 +353,7 @@ BTNodePtr STopPopP (tStackP *S)
     }
 }
 
-bool SEmptyP (tStackP *S)
+bool SEmptyP (stStack *S)
 {
     return(S->top==0);
 }

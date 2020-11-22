@@ -15,6 +15,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <string.h>
+#include "returns.h"
 
 /**
  * @brief Max size of the stack
@@ -25,69 +26,113 @@
  * @brief Status codes for symtable
  * @enum stCodes
  */
-typedef enum stCodes {
-    ST_SUCCESS = 1,     /**< Success */
-    ST_ERROR = 0,       /**< Error */
-    ST_ID_EXISTS = -1   /**< Already exists */
+typedef enum stExitCodes {
+    ST_SUCCESS = 1,                     /**< Success                                */
+    ST_ERROR = 0,                       /**< Error                                  */
+    ST_ID_EXISTS = -1                   /**< Already exists                         */
 } stC;
 
+/**
+ * @brief Identifier 
+ */
 typedef char* stID;
 
 /**
- * @brief Enum containing data types
- * @enum stDataTypes
+ * @brief Enum containing node types
+ * @enum stNodeType
  */
-typedef enum stDataTypes {
-    UNKNOWN,    /**< [INTERNAL] Internal only */
+typedef enum stNodeType {
+    ST_N_UNDEFINED,                     /**< Not defined (internal)                 */
 
-    INT,        /**< [BASIC] Integer data type */
-    STRING,     /**< [BASIC] String data type */
-    FLOAT64,    /**< [BASIC] Float data type */
+    ST_N_FUNCTION,                      /**< Function node                          */
+    ST_N_VARIABLE,                      /**< Variable node                          */
+}stNType;
 
-} stType;
+/**
+ * @brief Enum containing variable data types
+ * @enum stVarTypes
+ */
+typedef enum stVarTypes {
+    UNKNOWN,                            /**< [INTERNAL] Internal only               */
+
+    INT,                                /**< [BASIC] Integer data type              */
+    STRING,                             /**< [BASIC] String data type               */
+    FLOAT64,                            /**< [BASIC] Float data type                */
+} stVarType;
+
+/**
+ * @brief Structure holding data about a function
+ * @enum stData
+ */
+typedef struct stFunctionData {
+    stID        identifier;             /**< Function ID                            */
+    stVarType   returnType;             /**< Function return type                   */
+    int         paramNum;               /**< Number of parameters function takes    */
+    stVarType   paramTypes[CHAR_MAX];   /**< Parameter types                        */
+    bool        defined;                /**< Is function defined?                   */
+    struct stNode** innerSymtable;      /**< Inner symtable (is OK?)                */
+} stFData;
+
+/**
+ * @brief Sturcutre holding data about a variable
+ * @enum stData
+ */
+typedef struct stVariableData {
+    stVarType   type;                   /**< Variable type (int, string, float64)   */
+    bool        defined;                /**< Is variable already defined?           */
+    bool        fncCall;                /**< Not a variable but a function call     */
+} stVData;
 
 /**
  * @brief Structure for the node of the tree
  */
-typedef struct BTNode {
-    stID id;                /**< Identificator of the node */
-    stType type;            /**< Saved type - refer to enum stDateTypes */
-    struct BTNode* LPtr;    /**< Pointer to the left subtree */
-    struct BTNode* RPtr;    /**< Pointer to the right subtree */
-} *BTNodePtr;
+typedef struct stNode {
+    stID        identifier;             /**< Identificator of the node              */
+    struct stFunctionData* fData;       /**< Pointer to struct holding fnc data     */
+    struct stVariableData* vData;       /**< Pointer to struct holding var data     */
+    struct stNode* LPtr;                /**< Pointer to the left subtree            */
+    struct stNode* RPtr;                /**< Pointer to the right subtree           */
+} *stNodePtr;
 
 /**
  * @brief Stack structure (support structure for symtable implementation)
  */
 typedef struct {
-    BTNodePtr* a[ST_MAXSTACK];   /**< Stack - storing nodes from the tree */
-    int top;                    /**< Indicate top of the stack - 0 => empty */
-} tStackP;
+    stNodePtr*  a[ST_MAXSTACK];         /**< Stack - storing nodes from the tree    */
+    int         top;                    /**< Indicate top of the stack - 0 => empty */
+} stStack;
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                 GENERAL SYMTABLE FUNCTIONS                    *
+ *                                                               * 
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 /**
  * @brief Initialize symtable
  * @param symtable Pointer to the symtable
  * @post symtable will be initilized to NULL
  */
-void stConstruct ( BTNodePtr *symtable );
+void stConstruct ( stNodePtr *symtable );
 
 /**
  * @brief Destroy symtable
  * @note Destroy & free all nodes of the symtable 
  * @param symtable Pointer to the symtable
  */
-void stDestruct ( BTNodePtr *symtable );
+void stDestruct ( stNodePtr *symtable );
 
 /**
  * @brief Insert new node to the symtable
  * @param symtable Pointer to the symtable
  * @param identificator New node identificatior
- * @param datatype Datatype saved in the new node
+ * @param nodeType Type of the node (function or variable)
+ * @param datatype Datatype saved in the new node (variable type or function return type)
  * @return ST_SUCCESS Everything went OK, requested node was deleted
  * @return ST_ERROR Something went wrong (allocation problems or other)
  * @return ST_ID_EXISTS Node alredy exists in the symtbale
  */
-stC stInsert ( BTNodePtr *symtable, stID identificator, stType datatype );
+stC stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarType datatype );
 
 /**
  * @brief Delete node from the symtable
@@ -96,15 +141,64 @@ stC stInsert ( BTNodePtr *symtable, stID identificator, stType datatype );
  * @return ST_SUCCESS Everything went OK, requested node was deleted
  * @return ST_ERROR Something went wrong (not found or other problems)
  */
-stC stDelete ( BTNodePtr *symtable, stID identificator );
+stC stDelete ( stNodePtr *symtable, stID identificator );
 
 /**
  * @brief Find node in the symtable 
  * @param symtable Pointer to the symtable
  * @param identificator Identificator of node that we are looking for
- * @return BTNodePtr* Pointer to the note if found else NULL
+ * @return stNodePtr* Pointer to the note if found else NULL
  */
-BTNodePtr stLookUp ( BTNodePtr *symtable, stID identificator );
+stNodePtr stLookUp ( stNodePtr *symtable, stID identificator );
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                ADVANCED SYMTABLE FUNCTIONS                    *
+ *                                                               * 
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   SETTERS                                                     *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+/**
+ * @brief Set new datatype to selected node
+ * @param stNode Pointer to the selected node of the symtable
+ * @param datatype Datatype to be set from enum stDataTypes (fnc return type or variable type)
+ * @pre stNode is pointer to existing node of the symtable
+ * @pre datatype is from the enum stDataTypes
+ */
+void stSetType ( stNodePtr stNode, stVarType datatype );
+
+/**
+ * @brief Add new parameter to function
+ * @param stNode Pointer to the selected node of the symtable (has to be function node!)
+ * @param paramType Parameter type
+ */
+void stFncSetParam ( stNodePtr stNode, stVarType paramType );
+
+/**
+ * @brief Set function as defined or undefined inside symtable for functions
+ * @param stNode Pointer to the selected node of the symtable (has to be function node!)
+ * @param defined Is defined or not?
+ */
+void stFncSetDefined ( stNodePtr stNode, bool defined );
+
+/**
+ * @brief Assign inner symtable to function
+ * @param stNode Pointer to the selected node of the symtable (has to be function node!)
+ * @param symtable Pointer to symtable
+ */
+void stFncSetInnerSt ( stNodePtr stNode, stNodePtr* symtable );
+
+/**
+ * @brief Set/unset variable as an function call in variables symtable
+ * @param stNode Pointer to the selected node of the symtable (has to be variable node!)
+ * @param fncCall Is fncCall?
+ */
+void stVarSetFncCall ( stNodePtr stNode, bool fncCall );
+
+ /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+  *   GETTERS                                                     *
+  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 /**
  * @brief Get type of the selected node
@@ -112,23 +206,49 @@ BTNodePtr stLookUp ( BTNodePtr *symtable, stID identificator );
  * @return stType Type that was saved in the node
  * @pre stNode is pointer to existing node of the symtable
  */
-stType stGetType ( BTNodePtr stNode );
+stVarType stGetType ( stNodePtr stNode );
 
 /**
- * @brief Set new datatype to selected node
+ * @brief Gets information if function was already defined or not from symtable 
  * @param stNode Pointer to the selected node of the symtable
- * @param datatype Datatype to be set from enum stDataTypes
- * @pre stNode is pointer to existing node of the symtable
- * @pre datatype is from the enum stDataTypes
+ * @return true Function is defined
+ * @return false Function is not defined -> if function is not defined by the end of parsing this will cause error
  */
-void stSetType ( BTNodePtr stNode, stType datatype );
+bool stDefined ( stNodePtr stNode );
+
+/**
+ * @brief Get number of parameters the function has * 
+ * @param stNode Pointer to the selected node of the symtable (has to be function node!)
+ * @return int Number of parameters (-1 if error)
+ */
+int stFncGetNumParams ( stNodePtr stNode );
+
+/**
+ * @brief Get parameter types array of the function (use @see stFncGetNumParams to get number of params) 
+ * @param stNode Pointer to the selected node of the symtable (has to be function node!)
+ * @return stVarType* Array of parameter types
+ */
+stVarType* stFncGetParams ( stNodePtr stNode );
+
+/**
+ * @brief Get inner symtable of the function 
+ * @param stNode Pointer to the selected node of the symtable (has to be function node!)
+ * @return stNodePtr* Pointer to inner symtable
+ */
+stNodePtr* stFncGetInnerSt ( stNodePtr stNode);
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                       STACK  HELPER                           * 
+ *                                                               *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 /**
  * @brief Initialize stack
  * @note This function is copied from c402 task of the IAL-DU2
  * @param S Pointer to the stack (uninitialized)
  */
-void SInitP (tStackP *S);
+void SInitP (stStack *S);
 
 /**
  * @brief Push node to the stack
@@ -136,15 +256,15 @@ void SInitP (tStackP *S);
  * @param S Pointer to the stack (initialized)
  * @param ptr Pointer to the node to be put on the stack
  */
-void SPushP (tStackP *S, BTNodePtr ptr);
+void SPushP (stStack *S, stNodePtr ptr);
 
 /**
  * @brief Pop node from the top of the stack
  * @note This function is copied from c402 task of the IAL-DU2
  * @param S Pointer to the stack (initialized)
- * @return BTNodePtr* Pointer to the node of the symtable that was saved at the top of the stack
+ * @return stNodePtr* Pointer to the node of the symtable that was saved at the top of the stack
  */
-BTNodePtr STopPopP (tStackP *S);
+stNodePtr STopPopP (stStack *S);
 
 /**
  * @brief Check if stack is empty
@@ -153,6 +273,6 @@ BTNodePtr STopPopP (tStackP *S);
  * @return true Stack is empty
  * @return false Stack is not empty
  */
-bool SEmptyP (tStackP *S);
+bool SEmptyP (stStack *S);
 
 #endif //IFJ_PROJECT_SYMTABLE_H

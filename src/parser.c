@@ -48,12 +48,12 @@
 
 // GLOBAL VARIABLES
 
-BTNodePtr symbolTable; // symboltable global var.
-Token* tk; // token global var.
-int token; // for getToken returncode
-int mainFound = 0; // indicator if 'func main' was found in program or not
-char errText[MAX_ERR_MSG]; // for error message if error will occur
-int printLastToken; // for error message - if last token may be printed or not
+stNodePtr stFunctions;      /**< Symboltable for functions (only fucntions are global) */
+Token* tk;                  /**< Token store - global                                  */
+int token;                  /**< Token return code store - global                      */
+int mainFound = 0;          /**< Was `function main` found in program?                 */
+char errText[MAX_ERR_MSG];  /**< Error text msg (if error occurs)                      */
+int printLastToken;         /**< For error message - if last token may be printed      */
 //InstructionsList* il;
 
 // FUNCTIONS - RULES
@@ -745,7 +745,7 @@ eRC program() {
 
 // "MAIN" FUNCTION
 
-eRC parser(Token* tkn, BTNodePtr* SymbolTable) {
+eRC parser(Token* tkn, stNodePtr* SymbolTable) {
     debugPrint("-> Syntax analysis (parsing) started.");
     eRC result = RC_OK;
     tk = tkn;
