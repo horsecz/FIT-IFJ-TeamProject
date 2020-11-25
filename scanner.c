@@ -132,6 +132,7 @@ int isValidEscapeCharacter (char c)
     case 'v':
     case '\\':
     case '"':
+    case 'x':
       return 1;
     default:
       return 0;
@@ -160,6 +161,8 @@ char getEscapeSequence (char c)
       return '\\';
     case '"':
       return '\"';
+    case 'x':
+      return 'x';
     default:
       return '\0';
   }
@@ -374,8 +377,6 @@ int getToken (Token *token)
         break;
 
         /******   OPERATORS SECTION   ******/
-        /** STATE PLUS + MINUS NEEDS TO SAVE NUMBER TO CORRESPONDING VARIABLE **/
-
         /** WILL INCREMENTATION AND DECREMENTATION BE IMPLEMENTED???? **/
         /** ADDED UNARY EXTENSION **/
       case STATE_PLUS:
@@ -645,19 +646,27 @@ int getToken (Token *token)
         }
         break;
       case STATE_STRING_SKIP:
-      {
         if (isValidEscapeCharacter(c))
         {
-          // check whether adding of char was successful
-          if (strAddChar(&token->attribute.string, getEscapeSequence(c)))
+          char tmp = getEscapeSequence(c);
+          // check if not hexa sequence
+          if (tmp == 'x')
           {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
+            state = STATE_STRING_HEXA_START;
           }
+          else
+          {
+            // check whether adding of char was successful
+            if (strAddChar(&token->attribute.string, tmp))
+            {
+              strClear(&token->attribute.string);
+              strFree(&token->attribute.string);
+              fprintf(stderr, "Unable to realloc token's attribute string.\n");
+              return SCANNER_INTERNAL;
+            }
 
-          state = STATE_STRING;
+            state = STATE_STRING;
+          }
         }
         else
         {
@@ -665,7 +674,43 @@ int getToken (Token *token)
           return SCANNER_ERR;
         }
         break;
-      }
+      case STATE_STRING_HEXA_START:
+        if ((c > 47 && c < 57) || (c > 64 && c < 71) || (c > 96 && c < 103))
+        {
+          hexaHold[0] = c;
+          state = STATE_STRING_HEXA_END;
+        }
+        else
+        {
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          fprintf(stderr, "Invalid character read for escaped hexa value, exiting...\n");
+            return SCANNER_ERR;
+        }
+        break;
+      case STATE_STRING_HEXA_END:
+        if ((c > 47 && c < 57) || (c > 64 && c < 71) || (c > 96 && c < 103))
+        {
+          hexaHold[1] = c;
+          long tmp = strtol(hexaHold, NULL, 16);
+          if (strAddChar(&token->attribute.string, (char) tmp))
+          {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
+            return SCANNER_INTERNAL;
+          }
+          state = STATE_STRING;
+        }
+        else
+        {
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          fprintf(stderr, "Invalid character read for escaped hexa value, exiting...\n");
+          return SCANNER_ERR;
+        }
+        break;
+        break;
 
       case STATE_DIGIT:
         if (isdigit(c))
