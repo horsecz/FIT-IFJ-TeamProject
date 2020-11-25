@@ -18,6 +18,8 @@
 // include files for working with dynamic string
 #include "str.h"
 
+char hexaHold[2];
+
 typedef enum
 {
   STATE_START,
@@ -50,6 +52,8 @@ typedef enum
 
   STATE_STRING,
   STATE_STRING_SKIP, // used when '\' is read in string
+  STATE_STRING_HEXA_START,
+  STATE_STRING_HEXA_END,
 
   STATE_DECLARATIVE_ASSIGN,
   STATE_NOT_EQUALS,
