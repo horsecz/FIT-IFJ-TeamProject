@@ -670,8 +670,8 @@ int getToken (Token *token)
       case STATE_DIGIT:
         if (isdigit(c))
         {
-          // NEEDS FIX
-          if (token->attribute.integer == 0)
+          int64_t tmp = atoll(strGetStr(&token->attribute.string));
+          if (tmp == 0)
           {
             fprintf(stderr, "No leading zeros are supported, exiting...\n");
             return SCANNER_ERR;
@@ -782,7 +782,8 @@ int getToken (Token *token)
       case STATE_DIGIT_NEGATIVE:
         if (isdigit(c))
         {
-          if (token->attribute.integer == 0)
+          int64_t tmp = atoll(strGetStr(&token->attribute.string));
+          if (tmp == 0)
           {
             fprintf(stderr, "No leading zeros are supported, exiting...\n");
             return SCANNER_ERR;
