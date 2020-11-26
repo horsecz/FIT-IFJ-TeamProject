@@ -131,7 +131,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "BCDEF");
     if (n_res)
-        printf("---> OK: id BCDEF found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id BCDEF found in symtable with type %d\n", stVarGetType(n_res));
     else
     {
         testmsg("ERR: something went wrong, id BCDEF not found (even it's there)");
@@ -140,7 +140,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "SSSSS");
     if (n_res)
-        printf("---> OK: id SSSSS found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id SSSSS found in symtable with type %d\n", stVarGetType(n_res));
     else
     {
         testmsg("ERR: something went wrong, id SSSSS not found (even it's there)");
@@ -149,7 +149,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "AAAAA");
     if (n_res)
-        printf("---> OK: id AAAAA found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id AAAAA found in symtable with type %d\n", stVarGetType(n_res));
     else
     {
         testmsg("ERR: something went wrong, id AAAAA not found (even it's there)");
@@ -158,7 +158,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "ABCDE");
     if (n_res)
-        printf("---> OK: id ABCDE found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id ABCDE found in symtable with type %d\n", stVarGetType(n_res));
     else
     {
         testmsg("ERR: something went wrong, id ABCDE not found (even it's there)");
@@ -169,10 +169,10 @@ int main(void)
     fprintf(stderr, "\n-------------> GET / SET TYPE\n");
 
     char resultGetSet[CHAR_MAX];
-    sprintf(resultGetSet, "DONE: id ABCDE has type %d", stGetType(n_res));
+    sprintf(resultGetSet, "DONE: id ABCDE has type %d", stVarGetType(n_res));
     testmsg(resultGetSet);
-    stSetType(n_res, STRING);
-    sprintf(resultGetSet, "DONE: id ABCDE has now type %d", stGetType(n_res));
+    stVarSetType(n_res, STRING);
+    sprintf(resultGetSet, "DONE: id ABCDE has now type %d", stVarGetType(n_res));
     testmsg(resultGetSet);
 
     // -> Insert existing
@@ -400,7 +400,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "BCDEF");
     if (n_res)
-        printf("---> OK: id BCDEF found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id BCDEF found in symtable with type %d\n", stFncGetType(n_res)[0]);
     else
     {
         testmsg("ERR: something went wrong, id BCDEF not found (even it's there)");
@@ -409,7 +409,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "SSSSS");
     if (n_res)
-        printf("---> OK: id SSSSS found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id SSSSS found in symtable with type %d\n", stFncGetType(n_res)[0]);
     else
     {
         testmsg("ERR: something went wrong, id SSSSS not found (even it's there)");
@@ -418,7 +418,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "AAAAA");
     if (n_res)
-        printf("---> OK: id AAAAA found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id AAAAA found in symtable with type %d\n", stFncGetType(n_res)[0]);
     else
     {
         testmsg("ERR: something went wrong, id AAAAA not found (even it's there)");
@@ -427,7 +427,7 @@ int main(void)
 
     n_res = stLookUp(&mysym, "ABCDE");
     if (n_res)
-        printf("---> OK: id ABCDE found in symtable with type %d\n", stGetType(n_res));
+        printf("---> OK: id ABCDE found in symtable with type %d\n", stFncGetType(n_res)[0]);
     else
     {
         testmsg("ERR: something went wrong, id ABCDE not found (even it's there)");
@@ -437,10 +437,10 @@ int main(void)
     // -> Get/Set
     fprintf(stderr, "\n-------------> GET / SET TYPE\n");
 
-    sprintf(resultGetSet, "DONE: id ABCDE has type %d", stGetType(n_res));
+    sprintf(resultGetSet, "DONE: id ABCDE has type %d", stFncGetType(n_res)[0]);
     testmsg(resultGetSet);
-    stSetType(n_res, STRING);
-    sprintf(resultGetSet, "DONE: id ABCDE has now type %d", stGetType(n_res));
+    stFncSetType(n_res, STRING, -1);
+    sprintf(resultGetSet, "DONE: id ABCDE has now type %d", stFncGetType(n_res)[0]);
     testmsg(resultGetSet);
 
     // -> Insert existing

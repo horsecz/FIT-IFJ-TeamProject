@@ -83,6 +83,7 @@ int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarT
         return ST_ERROR; 
     }
 
+    new->predecessor = NULL;
     new->RPtr = NULL;
     new->LPtr = NULL;
     new->identifier = identificator;
@@ -90,13 +91,15 @@ int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarT
         new->fData = calloc(sizeof(stFData), 1);
         new->vData = NULL;
         new->fData->identifier = identificator;
-        new->fData->returnType = datatype;
+        new->fData->returnNum = 0;
+        new->fData->returnType[0] = datatype;
         new->fData->defined = false;
         new->fData->paramNum = 0;
         new->fData->innerSymtable = NULL;
     } else if (nodeType == ST_N_VARIABLE) {
         new->fData = NULL;
         new->vData = calloc(sizeof(stVData), 1);
+        new->vData->identifier = identificator;
         new->vData->type = datatype;
         new->vData->defined = false;
         new->vData->fncCall = false;
@@ -143,9 +146,9 @@ stNodePtr stLookUp ( stNodePtr *symtable, stID identificator ) {
     stNodePtr temp = (*symtable);
 
     while (temp) {
-        if (sortStrings(temp->identifier, identificator) > 0) {         //left
+        if (sortStrings(temp->identifier, identificator) > 0) {         // Left
             temp = temp->LPtr;
-        } else if (sortStrings(temp->identifier, identificator) < 0) {  //right
+        } else if (sortStrings(temp->identifier, identificator) < 0) {  // Right
             temp = temp->RPtr;
         } else {
             return temp;
@@ -218,7 +221,7 @@ int stDelete ( stNodePtr *symtable, stID identificator ) {
 			(*symtable) = child;
 			return ST_SUCCESS;
 		}
-		if ((*symtable)->LPtr && (*symtable)->RPtr) {		// Both subtrees
+		if ((*symtable)->LPtr && (*symtable)->RPtr) {	// Both subtrees
 			deleteReplaceByRightmost((*symtable), &(*symtable)->LPtr);
 			return ST_SUCCESS;
 		}
@@ -232,16 +235,25 @@ int stDelete ( stNodePtr *symtable, stID identificator ) {
  *                                                               * 
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
-void stSetType ( stNodePtr idNode, stVarType datatype ) {
-    if(!idNode) {
+void stFncSetType ( stNodePtr stNode, stVarType datatype, int position ) {
+    if (stNode && stNode->fData) {
+        if (position == -1) {
+            stNode->fData->returnType[0] = datatype;
+            return;
+        } else if (stNode->fData->returnNum >= position) {
+            stNode->fData->returnType[position] = datatype;
+            return;
+        }
+    }
+    iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE] Invalid parameters in stFncSetType call");
+}
+
+void stVarSetType ( stNodePtr stNode, stVarType datatype ) {
+    if (stNode && stNode->vData) {
+        stNode->vData->type = datatype;
         return;
     }
-    if (idNode->fData) {
-        idNode->fData->returnType = datatype;
-    }
-    if (idNode->vData) {
-       idNode->vData->type = datatype;
-    }
+    iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE] Invalid node sent during stVarSetType call");
 }
 
 void stFncSetParam ( stNodePtr stNode, stVarType paramType ) {
@@ -273,17 +285,30 @@ void stVarSetFncCall ( stNodePtr stNode, bool fncCall ) {
     }
 }
 
-stVarType stGetType ( stNodePtr idNode ) {
-    if (!idNode) {
-        return UNKNOWN;
+stNType stGetNodeType ( stNodePtr stNode ) {
+    if (stNode) {
+        if (stNode->fData) {
+            return ST_N_FUNCTION;
+        } else if (stNode->vData) {
+            return ST_N_VARIABLE;
+        } else {
+            return ST_N_UNDEFINED;
+        }
     }
-    if (idNode->fData) {
-        return idNode->fData->returnType;
+    iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE] Invalid node sent during stGetNodeType call");
+}
+
+stVarType* stFncGetType ( stNodePtr stNode ) {
+    if (stNode && stNode->fData) {
+        return stNode->fData->returnType;
     }
-    if (idNode->vData) {
-        return idNode->vData->type;
+    return NULL;
+}
+
+stVarType stVarGetType ( stNodePtr stNode ) {
+    if (stNode && stNode->vData) {
+        return stNode->vData->type;
     }
-    return UNKNOWN;
 }
 
 bool stDefined ( stNodePtr stNode ) {
@@ -320,20 +345,106 @@ stNodePtr* stFncGetInnerSt ( stNodePtr stNode) {
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
+ *               SYMBOLTABLE STACK FUNCTIONS                     * 
+ *                                                               *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+eRC stackStInit ( stStack *stack, stNodePtr *symtable ) {
+    if (!stack && !(*symtable)) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackStInit call");
+        return RC_WRN_INTERNAL;
+    }
+    SInitP(stack);
+    if (stack->top == ST_MAXSTACK) {
+        return RC_ERR_INTERNAL;
+    }
+    SPushP(stack, (*symtable));
+    return RC_OK;
+}
+
+eRC stackStDesctruct ( stStack *stack ) {
+    if (!stack) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackStDesctruct call");
+        return RC_WRN_INTERNAL;
+    }
+    while(stack->top >= 0) {
+        stDestruct(stack->a[stack->top--]);  // Possible segfault here
+    }
+    return RC_OK;
+}
+
+stNodePtr* stackGetTopSt ( stStack *stack ) {
+    if (!stack) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackGetTopSt call");
+        return NULL;
+    }
+    return (stack->top >= 0) ? stack->a[stack->top] : NULL;
+}
+
+stNodePtr* stackGetBotSt ( stStack *stack ) {
+    if (!stack) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackGetBotSt call");
+        return NULL;
+    }
+    return (stack->top >= 0) ? stack->a[0] : NULL;
+}
+
+eRC stackPushSt ( stStack *stack, stNodePtr *symtable ) {
+    if (!stack && !(*symtable)) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackPushSt call");
+        return RC_WRN_INTERNAL;
+    }
+    if (stack->top >= 0) {
+        (*symtable)->predecessor = stackGetTopSt(stack);
+    }
+    SPushP(stack, (*symtable));
+    return RC_OK;
+}
+
+stNodePtr* stackPopSt ( stStack *stack ) {
+    if (!stack) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackPopSt call");
+        return NULL;
+    }
+    return (stack->top >= 0) ? stack->a[stack->top--] : NULL;
+}
+
+eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype ) {
+    stC status = stInsert(stackGetTopSt(stack), identifier, nodeType, datatype);
+    if (status != ST_SUCCESS) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STATUS] Something went wrong during stStackInsert call");
+    }
+    return (status == ST_SUCCESS) ? RC_OK : RC_WRN_INTERNAL;
+}
+
+eRC stStackDelete ( stStack *stack, stID identifier ) {
+    stC status = stDelete(stackGetTopSt(stack), identifier);
+    if (status != ST_SUCCESS) {
+        iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STATUS] Something went wrong during stStackDelete call");
+    }
+    return (status == ST_SUCCESS) ? RC_OK : RC_WRN_INTERNAL;
+}
+
+stNodePtr stStackLookUp ( stStack *stack, stID identificator ) {
+    return stLookUp(stackGetTopSt(stack), identificator);
+}
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
  *                       STACK  HELPER                           * 
  *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 void SInitP (stStack *S)
 {
-    S->top = 0;
+    S->top = -1;
 }
 
 void SPushP (stStack *S, stNodePtr ptr)
 {
     /* Při implementaci v poli může dojít k přetečení zásobníku. */
     if (S->top == ST_MAXSTACK) {
-        iPrint(RC_ERR_INTERNAL, true, "Pointer stack overflow.");
+        iPrint(RC_ERR_INTERNAL, true, "[STACK] Overflow");
         return;
     } else {
         S->top++;
@@ -343,10 +454,9 @@ void SPushP (stStack *S, stNodePtr ptr)
 
 stNodePtr STopPopP (stStack *S)
 {
-    /* Operace nad prázdným zásobníkem způsobí chybu. */
-    if (S->top==0)  {
-        iPrint(RC_ERR_INTERNAL, true, "Pointer stack overflow.");
-        return(NULL);
+    if (S->top == -1)  {
+        iPrint(RC_ERR_INTERNAL, true, "[STACK] Empty");
+        return NULL;
     }
     else {
         return *(S->a[S->top--]);
@@ -355,5 +465,5 @@ stNodePtr STopPopP (stStack *S)
 
 bool SEmptyP (stStack *S)
 {
-    return(S->top==0);
+    return (S->top == -1);
 }

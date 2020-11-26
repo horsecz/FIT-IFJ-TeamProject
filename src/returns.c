@@ -20,11 +20,14 @@ char *errorString[] = {
     "",
     "SEMANTIC (ZERO DIVISION)"
     "INTERNAL",
+    "WARNING"
 };
 
 void iPrint(eRC code, bool error, char* opMsg) {
     fprintf(stderr, (!opMsg) ? "%s: %s\n" : "%s: %s (%s)\n", (error) ? "[ERROR]" : "[INFO]",
-    (code == RC_ERR_INTERNAL) ? errorString[10] : errorString[code], (opMsg != NULL) ? opMsg : NULL);
+    (code == RC_ERR_INTERNAL || code == RC_WRN_INTERNAL) ? 
+    ((code == RC_ERR_INTERNAL) ? errorString[10] : errorString[11]) : errorString[code], 
+    (opMsg != NULL) ? opMsg : NULL);
 }
 
 void tokenToString(Token* tk, string* str) {
