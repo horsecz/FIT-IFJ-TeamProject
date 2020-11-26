@@ -23,10 +23,10 @@ jobs:
     - name: Try running compiled program
       continue-on-error: true
       run: ./compilerIFJ2020 < tests/inputFile.go
-    - name: Compile with defubg (according to Makefile)
-      continue-on-error: true
+    - name: Compile with debug (according to Makefile)
       run: make debug
     - name: Try running compiled program (debug version)
+      continue-on-error: true
       run: ./compilerIFJ2020 < tests/inputFile.go
 
   tests:
