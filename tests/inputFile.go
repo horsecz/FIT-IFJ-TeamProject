@@ -1,8 +1,8 @@
 //Program3:Pracesretezciavestavenymifunkcemi
 /* kek */
-package main
+package main // Test
 
-func newFnc(in int, ou string, ca bool) int {
+func newFnc(in int, ou string, ca bool) (int, string) {
 	i1 := 5
 }
 
