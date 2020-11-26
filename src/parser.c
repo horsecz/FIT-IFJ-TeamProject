@@ -48,7 +48,7 @@
 
 // GLOBAL VARIABLES
 
-stNodePtr *stFunctions;     /**< Symboltable for functions (only fucntions are global) */
+stNodePtr stFunctions;      /**< Symboltable for functions (only fucntions are global) */
 stStack stack;              /**< Global stack for symtables                            */
 Token* tk;                  /**< Token store - global                                  */
 int token;                  /**< Token return code store - global                      */
@@ -701,7 +701,7 @@ eRC eolM() {
     eRC result = RC_OK;
     getToken(token, tk);
 
-    if (tk->type != TYPE_EOL || tk->type != TYPE_EMPTY) {
+    if (tk->type != TYPE_EOL) { //TODO: Take into account possible comments after fnc?
         setErrMsg("expected end-of-line after 'package main'");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
@@ -771,9 +771,9 @@ eRC program() {
 eRC parser(Token* tkn) {
     debugPrint("-> Syntax analysis (parsing) started.");
     // Symtable & stack setup (this will probably cause serious trouble and segfault)
-    stConstruct(stFunctions);
-    stInsert(stFunctions, "___funcRoot___", ST_N_UNDEFINED, UNKNOWN);
-    stackStInit(&stack , stFunctions);
+    stConstruct(&stFunctions);
+    stInsert(&stFunctions, "___funcRoot___", ST_N_UNDEFINED, UNKNOWN);
+    stackStInit(&stack , &stFunctions);
     // Variables setup
     eRC result = RC_OK;
     tk = tkn;
@@ -805,7 +805,9 @@ eRC parser(Token* tkn) {
 
         iPrint(result, true, errText);
     }
-
+    #ifdef DEBUG
+    displayBST(stFunctions);
+    #endif
     debugPrint("-> Syntax analysis %s.", (result ? "failed" : "OK"));
     return result;
 }

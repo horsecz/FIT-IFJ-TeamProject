@@ -282,7 +282,7 @@ stNodePtr* stFncGetInnerSt ( stNodePtr stNode);
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
- *               SYMBOLTABLE STACK FUNCTIONS                     * 
+ *               SYMBOLTABLE STACK FUNCTIONS                     *
  *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *   WORK WITH STACK AND SYMTABLE                                *
@@ -405,5 +405,27 @@ stNodePtr STopPopP (stStack *S);
  * @return false Stack is not empty
  */
 bool SEmptyP (stStack *S);
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                  HELPER & OTHER FUNCTIONS                     * 
+ *                                                               *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+/**
+ * @brief Display BST
+ * @note Code from IAL C402
+ * @param symtable Pointer to the symtable
+ */
+void displayBST( stNodePtr symtable );
+
+/**
+ * @brief Display BST
+ * @note Code from IAL C402
+ * @param symtable Pointer to the symtable
+ * @param sufix 
+ * @param fromdir 
+ */
+void displayBST2( stNodePtr symtable, char* sufix, char fromdir );
 
 #endif //IFJ_PROJECT_SYMTABLE_H

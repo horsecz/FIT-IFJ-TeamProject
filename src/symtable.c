@@ -466,3 +466,71 @@ bool SEmptyP (stStack *S)
 {
     return (S->top == -1);
 }
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *                                                               *
+ *                  HELPER & OTHER FUNCTIONS                     * 
+ *                                                               *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+void displayBST(stNodePtr symtable) {
+    printf("=================================================\n");
+    printf("\t\tBinary tree structure\n");
+    printf("=================================================\n");
+    printf("\n");
+    if (symtable != NULL) {
+        displayBST2(symtable, "", 'X');\
+    } else {
+        printf("Tree is empty\n");
+    }
+    printf("\n");
+    printf("=================================================\n");
+}
+
+void displayBST2( stNodePtr symtable, char* sufix, char fromdir ) {
+    char* types[] = {
+        "UNKNOWN",
+        "INT",
+        "STRING",
+        "FLOAT64",
+        "BOOL"
+    };
+    if (symtable != NULL) {
+        char* suf2 = (char*) malloc(strlen(sufix) + 4);
+        strcpy(suf2, sufix);
+        if (fromdir == 'L') {
+            suf2 = strcat(suf2, "  |");
+            printf("%s\n", suf2);
+	    } else {
+	        suf2 = strcat(suf2, "   ");
+        }
+        displayBST2(symtable->RPtr, suf2, 'R');
+        if (symtable->fData){
+            printf("%s  +- func %s", sufix, symtable->identifier);
+            printf("(");
+            for(int i = 0; i < symtable->fData->paramNum; i++) {
+                printf("%s ", types[symtable->fData->paramTypes[i]]);
+            }
+            printf(")(");
+            for(int i = 0; i < symtable->fData->returnNum; i++) {
+                printf("%s ", types[symtable->fData->returnType[i]]);
+            }
+            printf(") {}\n");
+        } else if (symtable->vData) {
+            printf("%s  +- %s %s", sufix, types[symtable->vData->type], symtable->identifier);
+        } else {
+            printf("%s  +- %s", sufix, symtable->identifier);
+        }
+        strcpy(suf2, sufix);
+        if (fromdir == 'R') {
+            suf2 = strcat(suf2, "  |");
+        } else {
+            suf2 = strcat(suf2, "   ");
+        }
+        displayBST2(symtable->LPtr, suf2, 'L');
+        if (fromdir == 'R') {
+            printf("%s\n", suf2);
+        }
+        free(suf2);
+    }
+}

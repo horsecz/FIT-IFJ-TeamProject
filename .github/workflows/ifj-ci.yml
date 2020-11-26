@@ -12,6 +12,21 @@ jobs:
     - name: Compile (according to Makefile)
       run: make
 
+  makeRunAndDebug:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Compile (according to Makefile)
+      run: make
+    - name: Try running compiled program
+      run: ./compilerIFJ2020 < tests/inputFile.go
+    - name: Compile with defubg (according to Makefile)
+      run: make debug
+    - name: Try running compiled program (debug version)
+      run: ./compilerIFJ2020 < tests/inputFile.go
+
   tests:
 
     runs-on: ubuntu-latest
