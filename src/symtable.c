@@ -394,7 +394,7 @@ eRC stackPushSt ( stStack *stack, stNodePtr *symtable ) {
         return RC_WRN_INTERNAL;
     }
     if (stack->top >= 0) {
-        (*symtable)->predecessor = stackGetTopSt(stack);
+        (*symtable)->predecessor = (*stackGetTopSt(stack));
     }
     SPushP(stack, (*symtable));
     return RC_OK;

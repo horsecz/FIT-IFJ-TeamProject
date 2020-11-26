@@ -22,7 +22,7 @@ int main()
   token->type = TYPE_EMPTY;
   token->attribute.keyword = KEYWORD_EMPTY;
 
-  int holdResponse = parser(token, NULL); //parser(&SymbolTable, &InstructionsList, token);
+  int holdResponse = parser(token); //parser(&SymbolTable, &InstructionsList, token);
 
     // add cleanup of string (fixes a lot of bugs - 80 bytes lost remaining)
   if (token->type == TYPE_IDENTIFIER || token->type == TYPE_STRING)

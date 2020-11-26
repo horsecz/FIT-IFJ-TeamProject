@@ -526,30 +526,30 @@ eRC type() {
     switch (tk->type) {
         case TYPE_INT:
             if (!argRet) {
-                stFncSetParam(stackGetTopSt(&stack), INT);
+                stFncSetParam((*stackGetTopSt(&stack)), INT);
             } else if (argRet) {
-                stFncSetType(stackGetTopSt(&stack), INT, -1);
+                stFncSetType((*stackGetTopSt(&stack)), INT, -1);
             }
             break;
         case TYPE_FLOAT64:
             if (!argRet) {
-                stFncSetParam(stackGetTopSt(&stack), FLOAT64);
+                stFncSetParam((*stackGetTopSt(&stack)), FLOAT64);
             } else if (argRet) {
-                stFncSetType(stackGetTopSt(&stack), FLOAT64, -1);
+                stFncSetType((*stackGetTopSt(&stack)), FLOAT64, -1);
             }
             break;
         case TYPE_STRING:
             if (!argRet) {
-                stFncSetParam(stackGetTopSt(&stack), STRING);
+                stFncSetParam((*stackGetTopSt(&stack)), STRING);
             } else if (argRet) {
-                stFncSetType(stackGetTopSt(&stack), STRING, -1);
+                stFncSetType((*stackGetTopSt(&stack)), STRING, -1);
             }
             break;
         case TYPE_BOOL:
             if (!argRet) {
-                stFncSetParam(stackGetTopSt(&stack), BOOL);
+                stFncSetParam((*stackGetTopSt(&stack)), BOOL);
             } else if (argRet) {
-                stFncSetType(stackGetTopSt(&stack), BOOL, -1);
+                stFncSetType((*stackGetTopSt(&stack)), BOOL, -1);
             }
             break;
         default:
