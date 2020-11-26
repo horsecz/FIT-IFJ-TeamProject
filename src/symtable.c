@@ -21,7 +21,7 @@
                         }                               \
                         if(!(*stVar)->vData) {          \
                             free((*stVar)->vData);      \
-                        }                               
+                        }                               \
 
 void stConstruct ( stNodePtr *symtable ) {
     if (!(*symtable)) {    // Symtable is alredy NULL, no need to do anything
@@ -92,7 +92,6 @@ int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarT
         new->vData = NULL;
         new->fData->identifier = identificator;
         new->fData->returnNum = 0;
-        new->fData->returnType[0] = datatype;
         new->fData->defined = false;
         new->fData->paramNum = 0;
         new->fData->innerSymtable = NULL;

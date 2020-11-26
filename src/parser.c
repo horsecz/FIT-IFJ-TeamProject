@@ -12,17 +12,17 @@
 
 // use only with functions returning eRC type!
 // gets next token + checks if lexical error or internal error occured
-#define getToken(returnVar,tokenVar) \
-    do{            \
-        returnVar = getToken(tokenVar); \
-        if (returnVar == 1) { \
+#define getToken(returnVar,tokenVar)                                                    \
+    do{                                                                                 \
+        returnVar = getToken(tokenVar);                                                 \
+        if (returnVar == 1) {                                                           \
 	        iPrint(RC_ERR_LEXICAL_ANALYSIS, true, "invalid character read from input"); \
-	        return RC_ERR_LEXICAL_ANALYSIS; \
-	    } else if (returnVar == 2 || returnVar == 99) { \
-	        iPrint(RC_ERR_INTERNAL, true, "internal error (malloc, other)"); \
-	        return RC_ERR_INTERNAL; \
-	    } \
-	}while(0)        \
+	        return RC_ERR_LEXICAL_ANALYSIS;                                             \
+	    } else if (returnVar == 2 || returnVar == 99) {                                 \
+	        iPrint(RC_ERR_INTERNAL, true, "internal error (malloc, other)");            \
+	        return RC_ERR_INTERNAL;                                                     \
+	    }                                                                               \
+	}while(0)                                                                           \
 
 // maximum size of error message
 #define MAX_ERR_MSG 255
@@ -48,12 +48,14 @@
 
 // GLOBAL VARIABLES
 
-stNodePtr stFunctions;      /**< Symboltable for functions (only fucntions are global) */
+stNodePtr *stFunctions;     /**< Symboltable for functions (only fucntions are global) */
+stStack stack;              /**< Global stack for symtables                            */
 Token* tk;                  /**< Token store - global                                  */
 int token;                  /**< Token return code store - global                      */
 int mainFound = 0;          /**< Was `function main` found in program?                 */
 char errText[MAX_ERR_MSG];  /**< Error text msg (if error occurs)                      */
-int printLastToken;         /**< For error message - if last token may be printed      */
+bool printLastToken;        /**< For error message - if last token may be printed      */
+bool argRet = false;        /**< Arguments and returns switch for function parsing     */
 //InstructionsList* il;
 
 // FUNCTIONS - RULES
@@ -523,9 +525,32 @@ eRC type() {
 
     switch (tk->type) {
         case TYPE_INT:
+            if (!argRet) {
+                stFncSetParam(stackGetTopSt(&stack), INT);
+            } else if (argRet) {
+                stFncSetType(stackGetTopSt(&stack), INT, -1);
+            }
+            break;
         case TYPE_FLOAT64:
+            if (!argRet) {
+                stFncSetParam(stackGetTopSt(&stack), FLOAT64);
+            } else if (argRet) {
+                stFncSetType(stackGetTopSt(&stack), FLOAT64, -1);
+            }
+            break;
         case TYPE_STRING:
+            if (!argRet) {
+                stFncSetParam(stackGetTopSt(&stack), STRING);
+            } else if (argRet) {
+                stFncSetType(stackGetTopSt(&stack), STRING, -1);
+            }
+            break;
         case TYPE_BOOL:
+            if (!argRet) {
+                stFncSetParam(stackGetTopSt(&stack), BOOL);
+            } else if (argRet) {
+                stFncSetType(stackGetTopSt(&stack), BOOL, -1);
+            }
             break;
         default:
             setErrMsg("expected datatype 'int', 'float64', 'string' or 'bool'");
@@ -572,8 +597,10 @@ eRC function() {
         setErrMsg("expected function identifier after 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
-        if (tk->type == TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main"))
+        if (tk->type == TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main")) {
             mainFound++;
+        }
+        stStackInsert(&stack, strGetStr(&(tk->attribute.string)), ST_N_FUNCTION, UNKNOWN);
     }
 
     // ( <arguments> )
@@ -583,6 +610,7 @@ eRC function() {
         return RC_ERR_SYNTAX_ANALYSIS;
     }
 
+    argRet = false;
     result = arguments();
     if (result != RC_OK) return result;
     if (tk->type != TYPE_RIGHT_BRACKET) {
@@ -592,6 +620,7 @@ eRC function() {
 
     // <func_return>
     getToken(token, tk);
+    argRet = true;
     result = functionReturn();
     if (result != RC_OK) return result;
 
@@ -633,10 +662,9 @@ eRC functionNext() {
 
 eRC functions() {
     debugPrint("rule %s", __func__);
-    // rule: <functions> -> <func> <function_n>
+    // Rule: <functions> -> <func> <function_n>
     eRC result = RC_OK;
-
-    // program must have at least 1 function
+    // Program must have at least 1 function
     if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_FUNC) {
         setErrMsg("expected at least one 'func' keyword after prolog");
         return RC_ERR_SYNTAX_ANALYSIS;
@@ -646,7 +674,7 @@ eRC functions() {
     if (result != RC_OK) return result;
     result = functionNext();
 
-    // after analysis of all functions, ONE main should be found
+    // After analysis of all functions, ONE main should be found
     if (mainFound == 0 || mainFound > 1) {
         if (mainFound) setErrMsg("multiple definitions of main");
         else setErrMsg("missing definition of main");
@@ -659,21 +687,21 @@ eRC functions() {
 
 eRC eolR() {
     debugPrint("rule %s", __func__);
-    // rule: <eol_r> -> EOL <eol_r> || rule: <eol_r> -> eps
+    // Rule: <eol_r> -> EOL <eol_r> || Rule: <eol_r> -> eps
     eRC result = RC_OK;
-    while (tk->type == TYPE_EOL)
+    while (tk->type == TYPE_EOL || tk->type == TYPE_EMPTY) {
         getToken(token, tk);
-
+    }
     return result;
 }
 
 eRC eolM() {
     debugPrint("rule %s", __func__);
-    // rule: <eol_m> -> EOL <eol_r>
+    // Rule: <eol_m> -> EOL <eol_r>
     eRC result = RC_OK;
     getToken(token, tk);
 
-    if (tk->type != TYPE_EOL) {
+    if (tk->type != TYPE_EOL || tk->type != TYPE_EMPTY) {
         setErrMsg("expected end-of-line after 'package main'");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
@@ -684,7 +712,7 @@ eRC eolM() {
 
 eRC prolog() {
     debugPrint("rule %s", __func__);
-    // rule: <prolog> -> package main
+    // Rule: <prolog> -> package main
     eRC result = RC_OK;
 
     switch (tk->type) {
@@ -708,18 +736,16 @@ eRC prolog() {
 eRC program() {
     eRC result = RC_OK;
     debugPrint("rule %s", __func__);
-
     // Cycle 'till we are out of comments and eols
-    while (tk->type == TYPE_EMPTY || tk->type == TYPE_EOL)
+    while (tk->type == TYPE_EMPTY || tk->type == TYPE_EOL) {
         getToken(token, tk);
-
-    // incorrect: package -> rule <program>
+    }
+    // Incorrect: package -> rule <program>
     if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_PACKAGE) {
         setErrMsg("expected 'package' in first line");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
-
-    // next token should be <prolog>, which is KEYWORD
+    // Next token should be <prolog>, which is KEYWORD
     switch (tk->type) {
         case TYPE_KEYWORD:
             result = prolog();
@@ -742,20 +768,22 @@ eRC program() {
     return result;
 }
 
-
-// "MAIN" FUNCTION
-
-eRC parser(Token* tkn, stNodePtr* SymbolTable) {
+eRC parser(Token* tkn) {
     debugPrint("-> Syntax analysis (parsing) started.");
+    // Symtable & stack setup (this will probably cause serious trouble and segfault)
+    stConstruct(stFunctions);
+    stInsert(stFunctions, "___funcRoot___", ST_N_UNDEFINED, UNKNOWN);
+    stackStInit(&stack , stFunctions);
+    // Variables setup
     eRC result = RC_OK;
     tk = tkn;
-    setErrMsg(""); // sets error message to empty
-    printLastToken = 1;
-
+    setErrMsg("");  // Default : error message is empty
+    printLastToken = true;
+    // Get first token
     getToken(token, tk);
-
+    // Start parse
     result = program();
-    if (result != 0) {
+    if (result != RC_OK) {
         if (printLastToken) {
             string gotStr;
             strInit(&gotStr);
@@ -767,11 +795,11 @@ eRC parser(Token* tkn, stNodePtr* SymbolTable) {
             strncat(errText, strGetStr(&gotStr),
                     MAX_ERR_MSG - strlen(errText) - 5); // need 4 chars for ...' in worst case + null byte
 
-            if (strSize < MAX_ERR_MSG)
+            if (strSize < MAX_ERR_MSG) {
                 errText[strlen(errText)] = '\'';
-            else
+            } else {
                 strcat(errText, "...'");
-
+            }
             strFree(&gotStr);
         }
 

@@ -58,6 +58,7 @@ typedef enum stVarTypes {
     INT,                                /**< [BASIC] Integer data type              */
     STRING,                             /**< [BASIC] String data type               */
     FLOAT64,                            /**< [BASIC] Float data type                */
+    BOOL                                /**< [BOOLTHEN] bool data type              */
 } stVarType;
 
 /**
@@ -287,19 +288,84 @@ stNodePtr* stFncGetInnerSt ( stNodePtr stNode);
  *   WORK WITH STACK AND SYMTABLE                                *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
+/**
+ * @brief Initiate stack of symboltables
+ * @param stack Pointer to the stack
+ * @param symtable Pointer to the root symboltable
+ * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
+ */
 eRC stackStInit ( stStack *stack, stNodePtr *symtable );
+
+/**
+ * @brief Destruct stack of symtables 
+ * @param stack Pointer to the stack
+ * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
+ */
 eRC stackStDesctruct ( stStack *stack );
+
+/**
+ * @brief Get pointer to the symtable on the top of the stack
+ * @note This will not remove the symtable from the stack 
+ * @param stack Pointer to the stack
+ * @return stNodePtr* Pointer to the symtable on the top of the stack
+ */
 stNodePtr* stackGetTopSt ( stStack *stack );
+
+/**
+ * @brief  Get pointer to the symtable on the bottom of the stack 
+ * @note This will not remove the symtable from the stack 
+ * @param stack Pointer to the stack
+ * @return stNodePtr* Pointer to the symtable on the bottom of the stack
+ */
 stNodePtr* stackGetBotSt ( stStack *stack );
+
+/**
+ * @brief Push a new symtable to the top of the stack
+ * @param stack Pointer to the stack
+ * @param symtable Pointer to the symtable
+ * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
+ */
 eRC stackPushSt ( stStack *stack, stNodePtr *symtable );
+
+/**
+ * @brief Pop symtable from the stack
+ * @note This will REMOVE symtable from the top of the stack
+ * @param stack Pointer to the stack
+ * @return stNodePtr* Pointer to the symtable poped from the stack
+ */
 stNodePtr* stackPopSt ( stStack *stack );
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *   WORK SYMTABLE ON THE TOP OF THE STACK                       *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
+/**
+ * @brief Classic symtable insert function (using stack of symtable instead of symtable itself)
+ * @note This will work with symtable on the top of the stack
+ * @param stack Pointer to the stack
+ * @param identifier Identifier of function or variable (char*)
+ * @param nodeType Type of the node (FUNCTION, VARIABLE or UNDEFINED)
+ * @param datatype Datatype of the variable (use UNKNOWN in case of working with FUNCTIONS)
+ * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
+ */
 eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype );
+
+/**
+ * @brief Classic symtable delete function (using stack of symtable instead of symtable itself)
+ * @note This will work with symtable on the top of the stack 
+ * @param stack Pointer to the stack
+ * @param identifier Identifier of function or variable (char*)
+ * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
+ */
 eRC stStackDelete ( stStack *stack, stID identifier );
+
+/**
+ * @brief Classic symtable lookup function (using stack of symtable instead of symtable itself)
+ * @note This will work with symtable on the top of the stack  
+ * @param stack Pointer to the stack
+ * @param identificator Identifier of function or variable (char*)
+ * @return stNodePtr Pointer to the node of the symtable (function or variable)
+ */
 stNodePtr stStackLookUp ( stStack *stack, stID identificator );
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
