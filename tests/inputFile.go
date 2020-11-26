@@ -2,7 +2,7 @@
 /* kek */
 package main
 
-func newFnc(in int) int {
+func newFnc(in int, ou string, ca bool) int {
 	i1 := 5
 }
 

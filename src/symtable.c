@@ -257,7 +257,7 @@ void stVarSetType ( stNodePtr stNode, stVarType datatype ) {
 
 void stFncSetParam ( stNodePtr stNode, stVarType paramType ) {
     if (stNode && stNode->fData) {
-        stNode->fData->paramTypes[stNode->fData->paramNum + 1] = paramType;
+        stNode->fData->paramTypes[stNode->fData->paramNum] = paramType;
         stNode->fData->paramNum++;
     }
 }
@@ -474,17 +474,15 @@ bool SEmptyP (stStack *S)
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 void displayBST(stNodePtr symtable) {
-    printf("=================================================\n");
-    printf("\t\tBinary tree structure\n");
-    printf("=================================================\n");
-    printf("\n");
+    fprintf(stderr, "[SYM]=================================================\n");
+    fprintf(stderr, "[SYM]\t\tBinary tree structure\n");
+    fprintf(stderr, "[SYM]=================================================\n\n");
     if (symtable != NULL) {
         displayBST2(symtable, "", 'X');\
     } else {
-        printf("Tree is empty\n");
+        fprintf(stderr, "[SYM]Tree is empty\n");
     }
-    printf("\n");
-    printf("=================================================\n");
+    fprintf(stderr, "\n[SYM]=================================================\n");
 }
 
 void displayBST2( stNodePtr symtable, char* sufix, char fromdir ) {
@@ -500,26 +498,26 @@ void displayBST2( stNodePtr symtable, char* sufix, char fromdir ) {
         strcpy(suf2, sufix);
         if (fromdir == 'L') {
             suf2 = strcat(suf2, "  |");
-            printf("%s\n", suf2);
+            fprintf(stderr, "%s\n", suf2);
 	    } else {
 	        suf2 = strcat(suf2, "   ");
         }
         displayBST2(symtable->RPtr, suf2, 'R');
         if (symtable->fData){
-            printf("%s  +- func %s", sufix, symtable->identifier);
-            printf("(");
+            fprintf(stderr, "%s  +- func %s", sufix, symtable->identifier);
+            fprintf(stderr, "(");
             for(int i = 0; i < symtable->fData->paramNum; i++) {
-                printf("%s ", types[symtable->fData->paramTypes[i]]);
+                fprintf(stderr, "%s ", types[symtable->fData->paramTypes[i]]);
             }
-            printf(")(");
+            fprintf(stderr, ")(");
             for(int i = 0; i < symtable->fData->returnNum; i++) {
-                printf("%s ", types[symtable->fData->returnType[i]]);
+                fprintf(stderr, "%s ", types[symtable->fData->returnType[i]]);
             }
-            printf(") {}\n");
+            fprintf(stderr, ") {}\n");
         } else if (symtable->vData) {
-            printf("%s  +- %s %s", sufix, types[symtable->vData->type], symtable->identifier);
+            fprintf(stderr, "%s  +- %s %s", sufix, types[symtable->vData->type], symtable->identifier);
         } else {
-            printf("%s  +- %s", sufix, symtable->identifier);
+            fprintf(stderr, "%s  +- %s", sufix, symtable->identifier);
         }
         strcpy(suf2, sufix);
         if (fromdir == 'R') {
@@ -529,7 +527,7 @@ void displayBST2( stNodePtr symtable, char* sufix, char fromdir ) {
         }
         displayBST2(symtable->LPtr, suf2, 'L');
         if (fromdir == 'R') {
-            printf("%s\n", suf2);
+            fprintf(stderr, "%s\n", suf2);
         }
         free(suf2);
     }

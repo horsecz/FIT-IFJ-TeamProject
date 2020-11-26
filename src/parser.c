@@ -50,6 +50,7 @@
 
 stNodePtr stFunctions;      /**< Symboltable for functions (only fucntions are global) */
 stStack stack;              /**< Global stack for symtables                            */
+stID currentFnc;            /**< To remember current function (for lookup)             */
 Token* tk;                  /**< Token store - global                                  */
 int token;                  /**< Token return code store - global                      */
 int mainFound = 0;          /**< Was `function main` found in program?                 */
@@ -507,6 +508,7 @@ eRC argumentNext() {
         }
 
         // <type>
+        getToken(token, tk);
         result = type();
         if (result != RC_OK) return result;
 
@@ -522,42 +524,43 @@ eRC type() {
     debugPrint("rule %s", __func__);
     // rule: <type> -> int || <type> -> float64 || <type> -> string
     eRC result = RC_OK;
-
-    switch (tk->type) {
-        case TYPE_INT:
-            if (!argRet) {
-                stFncSetParam((*stackGetTopSt(&stack)), INT);
-            } else if (argRet) {
-                stFncSetType((*stackGetTopSt(&stack)), INT, -1);
-            }
-            break;
-        case TYPE_FLOAT64:
-            if (!argRet) {
-                stFncSetParam((*stackGetTopSt(&stack)), FLOAT64);
-            } else if (argRet) {
-                stFncSetType((*stackGetTopSt(&stack)), FLOAT64, -1);
-            }
-            break;
-        case TYPE_STRING:
-            if (!argRet) {
-                stFncSetParam((*stackGetTopSt(&stack)), STRING);
-            } else if (argRet) {
-                stFncSetType((*stackGetTopSt(&stack)), STRING, -1);
-            }
-            break;
-        case TYPE_BOOL:
-            if (!argRet) {
-                stFncSetParam((*stackGetTopSt(&stack)), BOOL);
-            } else if (argRet) {
-                stFncSetType((*stackGetTopSt(&stack)), BOOL, -1);
-            }
-            break;
-        default:
-            setErrMsg("expected datatype 'int', 'float64', 'string' or 'bool'");
-            result = RC_ERR_SYNTAX_ANALYSIS;
-            break;
+    
+    if (tk->type == TYPE_KEYWORD) {
+        switch (tk->attribute.keyword) {
+            case KEYWORD_INT:
+                if (!argRet) {
+                    stFncSetParam(stStackLookUp(&stack, currentFnc), INT);
+                } else if (argRet) {
+                    stFncSetType(stStackLookUp(&stack, currentFnc), INT, -1);
+                }
+                break;
+            case KEYWORD_FLOAT64:
+                if (!argRet) {
+                    stFncSetParam(stStackLookUp(&stack, currentFnc), FLOAT64);
+                } else if (argRet) {
+                    stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64, -1);
+                }
+                break;
+            case KEYWORD_STRING:
+                if (!argRet) {
+                    stFncSetParam(stStackLookUp(&stack, currentFnc), STRING);
+                } else if (argRet) {
+                    stFncSetType(stStackLookUp(&stack, currentFnc), STRING, -1);
+                }
+                break;
+            case KEYWORD_BOOL:
+                if (!argRet) {
+                    stFncSetParam(stStackLookUp(&stack, currentFnc), BOOL);
+                } else if (argRet) {
+                    stFncSetType(stStackLookUp(&stack, currentFnc), BOOL, -1);
+                }
+                break;
+            default:
+                setErrMsg("expected datatype 'int', 'float64', 'string' or 'bool'");
+                result = RC_ERR_SYNTAX_ANALYSIS;
+                break;
+        }
     }
-
     return result;
 }
 
@@ -570,6 +573,7 @@ eRC arguments() {
     getToken(token, tk);
     if (tk->type == TYPE_IDENTIFIER) {
         // <type> <arguments_n>
+        getToken(token, tk);
         result = type();
         if (result != RC_OK) return result;
         result = argumentNext();
@@ -601,6 +605,7 @@ eRC function() {
             mainFound++;
         }
         stStackInsert(&stack, strGetStr(&(tk->attribute.string)), ST_N_FUNCTION, UNKNOWN);
+        currentFnc = strGetStr(&(tk->attribute.string));
     }
 
     // ( <arguments> )
@@ -772,7 +777,7 @@ eRC parser(Token* tkn) {
     debugPrint("-> Syntax analysis (parsing) started.");
     // Symtable & stack setup (this will probably cause serious trouble and segfault)
     stConstruct(&stFunctions);
-    stInsert(&stFunctions, "___funcRoot___", ST_N_UNDEFINED, UNKNOWN);
+    stInsert(&stFunctions, "__funcRoot__", ST_N_UNDEFINED, UNKNOWN);
     stackStInit(&stack , &stFunctions);
     // Variables setup
     eRC result = RC_OK;
