@@ -279,13 +279,13 @@ eRC function() {
         setErrMsg("expected function identifier after 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
-        // Check if function identifier is 'main' (this is so that we can check later that this was defined)
-        if (tk->type == TYPE_IDENTIFIER && strCmpConstStr(&(tk->attribute.string), "main")) {
-            mainFound++;
-        }
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
         stStackInsert(&stack, strGetStr(&(tk->attribute.string)), ST_N_FUNCTION, UNKNOWN);
         currentFnc = strGetStr(&(tk->attribute.string));// Save what is the identifier of the function we are currently parsing
+        // Check if function identifier is 'main' (this is so that we can check later that this was defined)
+        if (!strcmp(strGetStr(&(tk->attribute.string)), "main")) {
+            mainFound++;
+        }
     }
 
     getToken(token, tk);                                // Get new token - looking for arguments
@@ -513,17 +513,19 @@ eRC commandBlock() {
         getToken(token, tk);
     } while (tk->type == TYPE_EOL);
 
-    result = commands();                            // Parse commands
-    if (result != RC_OK) return result;
+    if (tk->type != TYPE_RIGHT_CURLY_BRACKET) {
+        result = commands();                            // Parse commands
+        if (result != RC_OK) return result;
 
-    if (tk->type != TYPE_RIGHT_CURLY_BRACKET) {     // End command block with the RIGHT CURLY BRACKET
-        setErrMsg("expected end of command block, aka '}'");
-        return RC_ERR_SYNTAX_ANALYSIS;
+        if (tk->type != TYPE_RIGHT_CURLY_BRACKET) {     // End command block with the RIGHT CURLY BRACKET
+            setErrMsg("expected end of command block, aka '}'");
+            return RC_ERR_SYNTAX_ANALYSIS;
+        }
     }
 
     getToken(token, tk);                            // Get next token (should be EOL)
     if (tk->type != TYPE_EOL) {                     // RIGHT CURLY BRACKET is followed by EOL!
-        setErrMsg("expected end-of-line after '{'");
+        setErrMsg("expected end-of-line after '}'");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
     do {                                            // Allow indefinite EOLs
@@ -634,6 +636,7 @@ eRC statement() {
                 setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
+            getToken(token, tk);
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
             getToken(token, tk);                        // Get the next token (move past = to <assignment>)

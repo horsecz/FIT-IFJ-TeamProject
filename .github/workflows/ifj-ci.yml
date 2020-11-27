@@ -22,12 +22,18 @@ jobs:
       run: make
     - name: Try running compiled program
       continue-on-error: true
-      run: ./compilerIFJ2020 < tests/inputFile.go
+      run: ./compilerIFJ2020 < tests/main.go
     - name: Compile with debug (according to Makefile)
       run: make debug
-    - name: Try running compiled program (debug version)
+    - name: Run debug - Empty function (main)
       continue-on-error: true
-      run: ./compilerIFJ2020 < tests/inputFile.go
+      run: ./compilerIFJ2020 < tests/emptyFunc.go
+    - name: Run debug - Function newFnc with arguments, return type and function call inside
+      continue-on-error: true
+      run: ./compilerIFJ2020 < tests/fncCallFuncArgRet.go
+    - name: Run debug - Run main go file (test functionality of 'normal' go program)
+      continue-on-error: true
+      run: ./compilerIFJ2020 < tests/main.go
 
   tests:
 
