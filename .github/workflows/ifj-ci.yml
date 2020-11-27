@@ -61,13 +61,13 @@ jobs:
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020
     - name: Run Kamil's tests (lex)
       working-directory: ./tests/ifj-testsuite
-      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select lex
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/lex
     - name: Run Kamil's tests (syn)
       working-directory: ./tests/ifj-testsuite
-      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select syn
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/syn
     - name: Run Kamil's tests (sem)
       working-directory: ./tests/ifj-testsuite
-      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select sem
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/sem
     - name: Run Kamil's tests (exe)
       working-directory: ./tests/ifj-testsuite
-      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select exe
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/exe
