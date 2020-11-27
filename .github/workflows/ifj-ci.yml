@@ -56,6 +56,18 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build compiler (according to Makefile)
       run: make
-    - name: Run Kamil's tests
+    - name: Run Kamil's tests (all)
       working-directory: ./tests/ifj-testsuite
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020
+    - name: Run Kamil's tests (lex)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select lex
+    - name: Run Kamil's tests (syn)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select syn
+    - name: Run Kamil's tests (sem)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select sem
+    - name: Run Kamil's tests (exe)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select exe
