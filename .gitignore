@@ -1,0 +1,4 @@
+deploy/temp/
+deploy/Makefile
+*.o
+compilerIFJ2020

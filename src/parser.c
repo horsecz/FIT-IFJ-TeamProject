@@ -211,7 +211,8 @@ eRC eolM() {
         return RC_ERR_SYNTAX_ANALYSIS;
     }
 
-    return eolR();
+    result = eolR();
+    return result;
 }
 
 eRC eolR() {

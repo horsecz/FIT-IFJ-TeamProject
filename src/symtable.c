@@ -295,6 +295,7 @@ stNType stGetNodeType ( stNodePtr stNode ) {
         }
     }
     iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE] Invalid node sent during stGetNodeType call");
+    return ST_N_UNDEFINED;
 }
 
 stVarType* stFncGetType ( stNodePtr stNode ) {
@@ -308,6 +309,7 @@ stVarType stVarGetType ( stNodePtr stNode ) {
     if (stNode && stNode->vData) {
         return stNode->vData->type;
     }
+    return UNKNOWN;
 }
 
 bool stDefined ( stNodePtr stNode ) {
