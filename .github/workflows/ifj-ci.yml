@@ -55,6 +55,6 @@ jobs:
     - name: Prepare enviroment (0)
       run: sudo cp -a tests/ifj-testsuite/. .
     - name: Prepare enviroment (1)
-      run: rm -rf tests/inputFile.go tests/ifj-testsuite
+      run: rm -rf tests/*.go tests/ifj-testsuite
     - name: Run Kamil's tests
       run: sudo python2 testsuite.py --compiler compilerIFJ2020
