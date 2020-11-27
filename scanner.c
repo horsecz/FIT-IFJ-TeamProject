@@ -931,19 +931,29 @@ int getToken (Token *token)
         }
         break;
       case STATE_MULTI_LINE_COMMENT_START:
-        if (c == '*' || c == EOF)
+        if (c == '*')
         {
           state = STATE_MULTI_LINE_COMMENT_END;
         }
+        else if (c == EOF)
+        {
+          fprintf(stderr, "Multiline comment reached EOF before ending, exiting...\n");
+          return SCANNER_ERR;
+        }
         break;
       case STATE_MULTI_LINE_COMMENT_END:
-        if (c == '/' || c == EOF)
+        if (c == '/')
         {
 #ifdef DEBUG
           fprintf(stderr, "[Multi line comment] ");
 #endif
           token->type = TYPE_EMPTY;
           return SCANNER_SUCC;
+        }
+        else if (c == EOF)
+        {
+          fprintf(stderr, "Multiline comment reached EOF before ending, exiting...\n");
+          return SCANNER_ERR;
         }
         else
         {
