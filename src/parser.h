@@ -204,7 +204,8 @@ eRC commandBlock();
  * @note <commands> -> <cmd> EOL <commands>
  * @note <commands> -> eps
  * @return eRC @see returnCodes
- * @post Token will be prepared for other processing
+ * @pre Expecting token to be pre-prepared
+ * @post Token will stay at the RIGHT CURLY BRACKET
  */
 eRC commands();
 
@@ -212,28 +213,147 @@ eRC commands();
  * @brief Parse command \n
  *        See notes for acceptable commands
  * @note <cmd> -> ID <statement>
- * @note <cmd> -> if <expression> <cmd_block> else <cmd_block>
+ * @note <cmd> -> if <expression> <cmd_block> <if_else>
  * @note <cmd> -> for <for_definition> ; <expression> ; <for_assignment> <cmd_block>
  * @note <cmd> -> <return_cmd>
  * @return eRC @see returnCodes
  * @pre Expecting token to be pre-prepared
- * @post
+ * @post Token will be prepared for other processing
  */
 eRC command();
-// STATEMENTS
+
+/**
+ * @brief Parse statement part of 'ID <statement>' command \n
+ *        This is used for funcion call or definition & assignment for variables
+ * @note <statement> -> <id_mul> = <assignment>
+ * @note <statement> -> ( <arguments> )
+ * @note <statement> -> := <expression>
+ * @note <statement> -> <unary> <expression>
+ * @return eRC @see returnCodes
+ * @pre Expecting token to be pre-prepared
+ * @post Token will be prepared for other processing
+ */
 eRC statement();
-eRC statementMul();
+
+/**
+ * @brief Parse multiple IDs \n
+ *        If there is more IDs on the left side of the assignment
+ * @note <id_mul> -> , ID <id_mul>
+ * @note <id_mul> -> eps
+ * @return eRC @see returnCodes
+ * @pre Expecting token to be pre-prepared
+ * @post Token will be prepared for other processing (or at least should be)
+ */
+eRC multipleID();
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   ASSIGN & DEFINE CHECK                                       *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+/**
+ * @brief Parse assignment (expression side) \n
+ *        Check <expression> and expression count in case of multiple IDs & validates function return in case of
+ *        function call
+ * @note <assignment> -> <expression> <expr_n>
+ * @note <assignment> -> ID ( <arguments> )
+ * @return eRC @see returnCodes
+ * @pre Expects token to be pre-prepared
+ * @post Token will be prepared for other processing (or at least should be) 
+ */
 eRC assignment();
+
+/**
+ * @brief Verify unary \n
+ *        Vefifies unary and does error output in case of failure
+ * @note <unary> -> +=
+ * @note <unary> -> -=
+ * @note <unary> -> *=
+ * @note <unary> -> /=
+ * @return eRC @see returnCodes
+ * @post Token will be same as it was before this function (no changes on token)
+ */
 eRC unary();
-eRC variableIdNext();
-// IF
+
+/**
+ * @brief Check if there is more than one expression
+ * @note <expr_n> -> <expression> <expr_n>
+ * @note <expr_n> -> eps
+ * @return eRC @see returnCodes
+ * @pre Expects token to be pre-prepared
+ * @post Token should be prepared for other processing (check may be a good idea)
+ */
+eRC expressionNext();
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   IF ELSE CHECK                                               *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+/**
+ * @brief Parse else part of the if
+ * @note <if_else> -> else <if_else_st>
+ * @note <if_else> -> eps
+ * @return eRC @see returnCodes
+ * @pre 
+ * @post 
+ */
 eRC ifElse();
+
+/**
+ * @brief Parse another if following else
+ * @note <if_else_st> -> if <cmd_block> <if_else>
+ * @note <if_else_st> -> <cmd_block>
+ * @return eRC @see returnCodes
+ * @pre 
+ * @post 
+ */
 eRC ifElseExpanded();
-// FOR
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   FOR CHECK                                                   *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+/**
+ * @brief Parse definitoon of variable for for (can be empty)
+ * @note <for_definition> -> ID := <expression>
+ * @note <for_definition> -> eps
+ * @return eRC @see returnCodes
+ * @pre 
+ * @post 
+ */
 eRC forDefine();
+
+/**
+ * @brief Parse assignment to variable for for (can be empty)
+ * @note <for_assignment> -> ID = <expression>
+ * @note <for_assignment> -> eps
+ * @return eRC @see returnCodes
+ * @pre Expects token to be pre-prepared for processing
+ * @post 
+ */
 eRC forAssign();
-// RETURNS
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   RETURN CHECK                                                *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+/**
+ * @brief Parse return command
+ * @note <return_cmd> -> return <return_stat>
+ * @note <return_cmd> -> eps
+ * @return eRC @see returnCodes
+ * @pre 
+ * @post 
+ */
 eRC returnCommand();
+
+/**
+ * @brief Parse return statement
+ * @note <return_stat> -> <expression>
+ * @note <return_stat> -> eps
+ * @return eRC @see returnCodes
+ * @pre 
+ * @post 
+ */
 eRC returnStatement();
 
 #endif

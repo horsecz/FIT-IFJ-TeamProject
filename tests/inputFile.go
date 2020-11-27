@@ -3,7 +3,9 @@
 package main // Test
 
 func newFnc(in int, ou string, ca bool) (int, string) {
-	i1 := 5
+	var1 /* test*/ := 5
+	var2 += in
+	return var1, "hello"
 }
 
 func main() {

@@ -75,15 +75,16 @@
  *                                                               * 
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
-stNodePtr stFunctions;      /** Symboltable for functions (only fucntions are global) */
-stStack stack;              /** Global stack for symtables                            */
-stID currentFnc;            /** To remember current function (for lookup)             */
-Token* tk;                  /** Token store - global                                  */
-int token;                  /** Token return code store - global                      */
-int mainFound = 0;          /** Was `function main` found in program?                 */
-char errText[MAX_ERR_MSG];  /** Error text msg (if error occurs)                      */
-bool printLastToken;        /** For error message - if last token may be printed      */
-bool argRet = false;        /** Arguments and returns switch for function parsing     */
+stNodePtr stFunctions;      /**< Symboltable for functions (only fucntions are global) */
+stStack stack;              /**< Global stack for symtables                            */
+stID currentFnc;            /**< To remember current function (for lookup)             */
+Token* tk;                  /**< Token store - global                                  */
+int token;                  /**< Token return code store - global                      */
+int mainFound = 0;          /**< Was `function main` found in program?                 */
+char errText[MAX_ERR_MSG];  /**< Error text msg (if error occurs)                      */
+bool printLastToken;        /**< For error message - if last token may be printed      */
+bool argRet = false;        /**< Arguments and returns switch for function parsing     */
+int numberOfIDs = 0;        /**< Counter of IDs on the left side of the assignment, this is needed to check correct number of expressions on the left side or correct number of returns from function call */
 //InstructionsList* il;
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
@@ -557,226 +558,62 @@ eRC commands() {
     return result;
 }
 
-// TODO: Consider redo of this function (split to several functions)
 eRC command() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
-    // rule: <cmd> -> ID <statement>
-    if (tk->type == TYPE_IDENTIFIER) {
-        getToken(token, tk);
-        result = statement();
-        if (result != RC_OK) return result;
-        getToken(token, tk);
-    } else if (tk->type == TYPE_KEYWORD) {
-        switch (tk->attribute.keyword) {
-            case KEYWORD_IF: // rule: <cmd> -> if <expression> <cmd_block> <if_else>
-                // <expression>
-                getToken(token, tk);
-                // TODO -> handle <expression>
-
-                // <cmd_block>
-                getToken(token, tk);
-                result = commandBlock();
-                if (result != RC_OK) return result;
-
-                // <if_else>
-                result = ifElse();
-                if (result != RC_OK) return result;
-                break;
-            case KEYWORD_FOR: // rule: <cmd> -> for ...
-                // <for_definition>
-                result = forDefine();
-                if (result != RC_OK) return result;
-
-                // ;
-                if (tk->type != TYPE_SEMICOLON) {
-                    setErrMsg("expected ';' after for cycle definition");
-                    return RC_ERR_SYNTAX_ANALYSIS;
-                }
-
-                // <expression>
-                // TODO -> handle <expression>
-
-                // <for_assignment>
-                result = forAssign();
-                if (result != RC_OK) return result;
-
-                // <cmd_block>
-                result = commandBlock();
-                if (result != RC_OK) return result;
-                break;
-            case KEYWORD_RETURN: // rule: <cmd> -> <return_cmd>
-                result = returnCommand();
-                if (result != RC_OK) return result;
-                break;
-            default:
-                setErrMsg("expected keyword 'if', 'for' or 'return'");
-                result = RC_ERR_SYNTAX_ANALYSIS;
-                break;
-        }
-        //getToken(token, tk);
-    }
-    // else rule: <return_cmd> -> eps => <cmd> -> eps
-
-    return result;
-}
-
-eRC returnStatement() {
-    debugPrint("rule %s", __func__);
-    eRC result = RC_OK;
-    getToken(token, tk);
-
-    // rule: <return_stat> -> <expression>
-    // TODO -> handle expression
-
-    // rule: <return_stat> -> eps
-    // TODO -> if not expression -> else do nothing
-    return result;
-}
-
-eRC returnCommand() {
-    debugPrint("rule %s", __func__);
-    // rule: <return_cmd> -> return <return_stat>
-    eRC result = RC_OK;
-
-    if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_RETURN) {
-        setErrMsg("expected keyword 'return'");
-        return RC_ERR_SYNTAX_ANALYSIS;
-    }
-
-    result = returnStatement();
-    if (result != RC_OK) return result;
-
-    return result;
-}
-
-eRC forAssign() {
-    debugPrint("rule %s", __func__);
-    eRC result = RC_OK;
-    getToken(token, tk);
-
-    // rule: <for_assignment> -> ID = <expression>
-    if (tk->type == TYPE_IDENTIFIER) {
-        getToken(token, tk);
-        if (tk->type != TYPE_ASSIGN) {
-            setErrMsg("expected '=' after identifier [for assignment]");
-            return RC_ERR_SYNTAX_ANALYSIS;
-        }
-        // TODO -> handle <expression>
-    }
-
-    return result;
-}
-
-eRC forDefine() {
-    debugPrint("rule %s", __func__);
-    eRC result = RC_OK;
-    getToken(token, tk);
-
-    // rule: <for_definition> -> ID := <expression>
-    if (tk->type == TYPE_IDENTIFIER) {
-        // := <expression>
-        getToken(token, tk);
-        if (tk->type != TYPE_DECLARATIVE_ASSIGN) {
-            setErrMsg("expected ':=' after identifier [for definition]");
-            return RC_ERR_SYNTAX_ANALYSIS;
-        }
-        // TODO -> handle <expression>
-    }
-    // else rule: <for_definition> -> eps
-
-    return result;
-}
-
-eRC statementMul() {
-    debugPrint("rule %s", __func__);
-    eRC result = RC_OK;
-    getToken(token, tk);
-
-    // rule: <stat_mul> -> <expression>
-    // TODO -> handle <expression>
-
-    // rule: <stat_mul> -> ID ( <arguments> )
-    if (tk->type != TYPE_IDENTIFIER) {
-        setErrMsg("expected identifier [multiple statement]");
-        return RC_ERR_SYNTAX_ANALYSIS;
-    }
-
-    getToken(token, tk);
-    if (tk->type != TYPE_LEFT_BRACKET) {
-        setErrMsg("expected '(' after identifier");
-        return RC_ERR_SYNTAX_ANALYSIS;
-    }
-
-    result = arguments();
-    if (result != RC_OK) return result;
-    if (tk->type != TYPE_RIGHT_BRACKET) {
-        setErrMsg("expected ')' after argument types");
-        return RC_ERR_SYNTAX_ANALYSIS;
-    }
-
-    return result;
-}
-
-eRC variableIdNext() {
-    debugPrint("rule %s", __func__);
-    eRC result = RC_OK;
-
-    // rule: <var_id_n> -> , ID <var_id_n>
-    if (tk->type == TYPE_COMMA) {
-        getToken(token, tk);
-        if (tk->type != TYPE_IDENTIFIER) {
-            setErrMsg("expected next identifier after ','");
-            return RC_ERR_SYNTAX_ANALYSIS;
-        }
-        getToken(token, tk);
-        result = variableIdNext(); // TODO -> i dont like this
-        if (result != RC_OK) return result;
-    }
-    // else rule: <var_id_n> -> eps
-
-    return result;
-}
-
-eRC assignment() {
-    debugPrint("rule %s", __func__);
-    eRC result = RC_OK;
     switch (tk->type) {
-        case TYPE_IDENTIFIER: // rule: <assignment> -> ID ( <arguments> )
-            getToken(token, tk);
-            if (tk->type != TYPE_LEFT_BRACKET) {
-                setErrMsg("expected '(' after identifier");
-                return RC_ERR_SYNTAX_ANALYSIS;
-            }
-            result = arguments();
+        case TYPE_IDENTIFIER:                           // ID <statement>
+            debugPrint("<%s> -> ID <statement>", __func__);
+            getToken(token, tk);                        // Get next token for statement
+            result = statement();                       // Parse statement
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_BRACKET) {
-                setErrMsg("expected ')' after function arguments");
-                return RC_ERR_SYNTAX_ANALYSIS;
+            break;
+        case TYPE_KEYWORD:                              // Other commands (not a variable or function)(if, for)
+             switch (tk->attribute.keyword) {
+                case KEYWORD_IF:                        // if <expression> <cmd_block> <if_else>
+                    debugPrint("<%s> -> if <expression> <cmd_block> <if_else>", __func__);
+
+                    // TODO -> handle <expression> -> requires semantic analysis
+               
+                    result = commandBlock();            // Parse block of commands (inside of if)
+                    if (result != RC_OK) return result;
+
+                    result = ifElse();                  // Parse if else
+                    if (result != RC_OK) return result;
+                    break;
+                case KEYWORD_FOR:                       // for <for_definition> ; <expression> ; <for_assignment>
+                    debugPrint("<%s> -> for <for_definition> ; <expression> ; <for_assignment>", __func__);
+
+                    result = forDefine();               // Parse definiton section of for
+                    if (result != RC_OK) return result;
+
+                    if (tk->type != TYPE_SEMICOLON) {   // After definition must be ';'
+                        setErrMsg("expected ';' after for cycle definition");
+                        return RC_ERR_SYNTAX_ANALYSIS;
+                    }
+
+                    // TODO -> handle <expression> -> requires semantic analysis
+
+                    result = forAssign();               // Parse assignment section of for
+                    if (result != RC_OK) return result;
+
+                    result = commandBlock();            // Parse block of commands (inside of for)
+                    if (result != RC_OK) return result;
+                    break;
+                case KEYWORD_RETURN:                    // <<return_cmd>
+                    debugPrint("<%s> -> <return_cmd>", __func__);
+
+                    result = returnCommand();           // Parse return
+                    if (result != RC_OK) return result;
+                    break;
+                default:
+                    setErrMsg("expected keyword 'if', 'for' or 'return'");
+                    result = RC_ERR_SYNTAX_ANALYSIS;
+                    break;
             }
             break;
         default:
-            // rule: <assignment> -> <expression>
-            // TODO -> handle expression
-            break;
-    }
-
-    return result;
-}
-
-eRC unary() {
-    debugPrint("rule %s", __func__);
-    eRC result = RC_OK;
-    switch (tk->type) {
-        case TYPE_PLUS_ASSIGN: // rules: <unary> -> += or -= or *= or /=
-        case TYPE_MINUS_ASSIGN:
-        case TYPE_MULTIPLY_ASSIGN:
-        case TYPE_DIVIDE_ASSIGN:
-            break;
-        default:
-            setErrMsg("expected unary assignment token '+=', '-=', '*=' or '/='");
-            result = RC_ERR_SYNTAX_ANALYSIS;
             break;
     }
 
@@ -788,33 +625,156 @@ eRC statement() {
     eRC result = RC_OK;
 
     switch (tk->type) {
-        case TYPE_ASSIGN: // rule: <statement> -> = <assignment>
-            getToken(token, tk);
-            result = assignment();
-            if (result != RC_OK) return result;
-            break;
-        case TYPE_LEFT_BRACKET: // rule: <statement> -> ( <arguments> )
-            result = arguments();
+        case TYPE_LEFT_BRACKET:                         // ( <arguments> )
+            debugPrint("<%s> -> ( <arguments> )", __func__);
+
+            result = arguments();                       // Parse arguments
             if (result != RC_OK) return result;
             if (tk->type != TYPE_RIGHT_BRACKET) {
                 setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             break;
-        case TYPE_DECLARATIVE_ASSIGN: // rule: <statement> -> := <assignment>
-            getToken(token, tk);
-            result = assignment();
+        case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
+            getToken(token, tk);                        // Get the next token (move past = to <assignment>)
+            result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
             break;
-        default: // rule: <statement> -> <unary> <expression>
-            result = unary();
+        case TYPE_DECLARATIVE_ASSIGN:                   // := <expression>
+            getToken(token, tk);                        // Get the next token (move past := to <assignment>)
+            result = assignment();                      // Parse assignment
+            if (result != RC_OK) return result;
+            break;
+        case TYPE_PLUS_ASSIGN:
+        case TYPE_MINUS_ASSIGN:
+        case TYPE_MULTIPLY_ASSIGN:
+        case TYPE_DIVIDE_ASSIGN:                        // <unary> <expression>
+            result = unary();                           // Parse unary (just do a re-check) TODO: consider removing
             if (result != RC_OK) return result;
             getToken(token, tk);
-            // TODO -> handle expression
+            // TODO -> handle <expression> -> requires semantic analysis
+            break;
+        default:                                        // <id_mul> = <assignment>
+            result = multipleID();                      // Parse multiple IDs
+            if (result != RC_OK) return result;
+            if (tk->type != TYPE_ASSIGN) {
+                setErrMsg("expected '=' after multiple IDs");
+                return RC_ERR_SYNTAX_ANALYSIS;
+            }
+            getToken(token, tk);                        // Get the next token (move past = to <assignment>)
+            result = assignment();                      // Parse assignment
+            if (result != RC_OK) return result;
             break;
     }
 
     return result;
+}
+
+eRC multipleID() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+
+    if (tk->type == TYPE_COMMA) {                   // , ID <id_mul>
+        numberOfIDs++;                              // There are 2 IDs now, need 2 expressions or fnc with 2 return types
+        getToken(token, tk);                        // Get the next token (move past , )
+        if (tk->type != TYPE_IDENTIFIER) {
+            setErrMsg("expected ID after ','");
+            return RC_ERR_SYNTAX_ANALYSIS;
+        }
+        getToken(token, tk);                        // Prepare token for another multipleID call
+        result = multipleID();                      // Parse multiple IDs
+        if (result != RC_OK) return result;
+    }
+
+    return result;
+}
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   ASSIGN & DEFINE CHECK                                       *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+eRC assignment() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+
+    switch (tk->type) {
+        case TYPE_IDENTIFIER:                       // ID ( <arguments> )
+            getToken(token, tk);                    // Get the next token (move past '(')
+            if (tk->type != TYPE_LEFT_BRACKET) {
+                setErrMsg("expected '(' after identifier");
+                return RC_ERR_SYNTAX_ANALYSIS;
+            }
+            result = arguments();                   // Parse arguments
+            if (result != RC_OK) return result;
+            if (tk->type != TYPE_RIGHT_BRACKET) {
+                setErrMsg("expected ')' after function arguments");
+                return RC_ERR_SYNTAX_ANALYSIS;
+            }
+            getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
+            break;
+        default:                                    // <expression> <expr_n>
+            // TODO -> handle <expression> -> requires semantic analysis
+            result = expressionNext();
+            if (result != RC_OK) return result;
+            break;
+    }
+
+    return result;
+}
+
+eRC unary() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+
+    switch (tk->type) {
+        case TYPE_PLUS_ASSIGN:                      // +=
+        case TYPE_MINUS_ASSIGN:                     // -=
+        case TYPE_MULTIPLY_ASSIGN:                  // *=
+        case TYPE_DIVIDE_ASSIGN:                    // /=
+            break;
+        default:
+            setErrMsg("expected unary assignment token '+=', '-=', '*=' or '/='");
+            result = RC_ERR_SYNTAX_ANALYSIS;
+            break;
+    }
+
+    return result;
+}
+
+eRC expressionNext() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+
+    if (tk->type == TYPE_COMMA) {
+        if(--numberOfIDs < 0) {
+            setErrMsg("expected less expressions on the right side of the assignment");
+            result = RC_ERR_SYNTAX_ANALYSIS;
+        }
+        // TODO -> handle <expression> -> requires semantic analysis
+        result = expressionNext();
+        if (result != RC_OK) return result;
+    }
+
+    return result;
+}
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   IF ELSE CHECK                                               *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+eRC ifElse() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+    switch (tk->attribute.keyword) {
+        case KEYWORD_ELSE: // rule: <if_else> -> else <if_else_st>
+            getToken(token, tk);
+            result = ifElseExpanded();
+            if (result != RC_OK) return result;
+        default:
+            break;
+    }
+
+    return RC_OK;
 }
 
 eRC ifElseExpanded() {
@@ -840,17 +800,76 @@ eRC ifElseExpanded() {
     return result;
 }
 
-eRC ifElse() {
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   FOR CHECK                                                   *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+eRC forDefine() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    switch (tk->attribute.keyword) {
-        case KEYWORD_ELSE: // rule: <if_else> -> else <if_else_st>
-            getToken(token, tk);
-            result = ifElseExpanded();
-            if (result != RC_OK) return result;
-        default:
-            break;
+    getToken(token, tk);
+
+    // rule: <for_definition> -> ID := <expression>
+    if (tk->type == TYPE_IDENTIFIER) {
+        // := <expression>
+        getToken(token, tk);
+        if (tk->type != TYPE_DECLARATIVE_ASSIGN) {
+            setErrMsg("expected ':=' after identifier [for definition]");
+            return RC_ERR_SYNTAX_ANALYSIS;
+        }
+        // TODO -> handle <expression>
+    }
+    // else rule: <for_definition> -> eps
+
+    return result;
+}
+
+eRC forAssign() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+    getToken(token, tk);
+
+    // rule: <for_assignment> -> ID = <expression>
+    if (tk->type == TYPE_IDENTIFIER) {
+        getToken(token, tk);
+        if (tk->type != TYPE_ASSIGN) {
+            setErrMsg("expected '=' after identifier [for assignment]");
+            return RC_ERR_SYNTAX_ANALYSIS;
+        }
+        // TODO -> handle <expression>
     }
 
-    return RC_OK;
+    return result;
+}
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   RETURN CHECK                                                *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+eRC returnCommand() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+
+    if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_RETURN) {
+        setErrMsg("expected keyword 'return'");
+        return RC_ERR_SYNTAX_ANALYSIS;
+    }
+
+    result = returnStatement();
+    if (result != RC_OK) return result;
+
+    return result;
+}
+
+eRC returnStatement() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+    getToken(token, tk);
+
+    // rule: <return_stat> -> <expression>
+    // TODO -> handle expression
+
+    // rule: <return_stat> -> eps
+    // TODO -> if not expression -> else do nothing
+    return result;
 }
