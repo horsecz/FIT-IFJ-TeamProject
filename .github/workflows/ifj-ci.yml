@@ -49,12 +49,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Set up Go 1.15
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.15
     - uses: actions/checkout@v2
     - name: Build compiler (according to Makefile)
       run: make
-    - name: Prepare enviroment (0)
-      run: sudo cp -a tests/ifj-testsuite/. .
-    - name: Prepare enviroment (1)
-      run: rm -rf tests/*.go tests/ifj-testsuite
     - name: Run Kamil's tests
-      run: sudo python2 testsuite.py --compiler compilerIFJ2020
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020
