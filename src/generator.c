@@ -630,6 +630,7 @@ void generateCode() {
     }
 
     fprintf(stdout, "%s\n", output);
+    free(output);
 }
 
 void setUpCodeInternal(intFC i) {
