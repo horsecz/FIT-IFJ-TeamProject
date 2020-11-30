@@ -624,7 +624,7 @@ int getToken (Token *token)
         }
         break;
       case STATE_STRING_HEXA_START:
-        if ((c > 47 && c < 57) || (c > 64 && c < 71) || (c > 96 && c < 103))
+        if ((c > 47 && c < 58) || (c > 64 && c < 71) || (c > 96 && c < 103))
         {
           hexaHold[0] = c;
           state = STATE_STRING_HEXA_END;
@@ -638,7 +638,7 @@ int getToken (Token *token)
         }
         break;
       case STATE_STRING_HEXA_END:
-        if ((c > 47 && c < 57) || (c > 64 && c < 71) || (c > 96 && c < 103))
+        if ((c > 47 && c < 58) || (c > 64 && c < 71) || (c > 96 && c < 103))
         {
           hexaHold[1] = c;
           long tmp = strtol(hexaHold, NULL, 16);
