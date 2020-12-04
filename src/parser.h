@@ -14,6 +14,7 @@
 #include "scanner.h"
 #include "symtable.h"
 #include "returns.h"
+#include "precedent.h"
 
 /**
  * @brief Main parser logic \n

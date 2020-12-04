@@ -565,6 +565,7 @@ eRC command() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
+
     switch (tk->type) {
         case TYPE_IDENTIFIER:                           // ID <statement>
             debugPrint("<%s> -> ID <statement>", __func__);
@@ -576,9 +577,11 @@ eRC command() {
              switch (tk->attribute.keyword) {
                 case KEYWORD_IF:                        // if <expression> <cmd_block> <if_else>
                     debugPrint("<%s> -> if <expression> <cmd_block> <if_else>", __func__);
+                    getToken(token, tk);                // Step over IF
 
-                    // TODO -> handle <expression> -> requires semantic analysis
-               
+                    result = precedent_analys(tk, NULL, &stack); // Evaluate expression
+                    if (result != RC_OK) return result;
+
                     result = commandBlock();            // Parse block of commands (inside of if)
                     if (result != RC_OK) return result;
 

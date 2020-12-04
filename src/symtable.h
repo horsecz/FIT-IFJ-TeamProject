@@ -369,6 +369,19 @@ eRC stStackDelete ( stStack *stack, stID identifier );
 stNodePtr stStackLookUp ( stStack *stack, stID identificator );
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   WORK WITH WHOLE STACK                                       *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+/**
+ * @brief 
+ * 
+ * @param stack 
+ * @param identificator 
+ * @return stVarType 
+ */
+stVarType stVarTypeLookUp ( stStack *stack, stID identificator );
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
  *                       STACK  HELPER                           * 
  *                                                               *
