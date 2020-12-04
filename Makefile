@@ -15,8 +15,8 @@ OUT=compilerIFJ2020
 MAIN=ifj2020
 
 # source and test folder
-SRC=src/
-TEST=tests/
+SRC=src
+TEST=tests
 
 #
 # MAKE
@@ -26,34 +26,25 @@ make: src $(MAIN)
 
 # PARTS
 
-scanner.o: $(SRC)scanner.c $(SRC)scanner.h $(SRC)str.h
-	$(CC) $(CCFLAGS) -c $< -o $(SRC)scanner.o
+scanner.o: $(SRC)/scanner.c $(SRC)/scanner.h $(SRC)/str.h
+	$(CC) $(CCFLAGS) -c $< -o $(SRC)/scanner.o
 
-parser.o: $(SRC)parser.c $(SRC)parser.h $(SRC)symtable.h $(SRC)str.h $(SRC)returns.h
-	$(CC) $(CCFLAGS) -c $< -o $(SRC)parser.o
+#parser.o: $(SRC)/parser.c $(SRC)/parser.h $(SRC)/symtable.h $(SRC)/str.h
+#	$(CC) $(CCFLAGS) -c $< -o $(SRC)/parser.o
 
-returns.o: $(SRC)returns.c $(SRC)returns.h
-	$(CC) $(CCFLAGS) -c $< -o $(SRC)returns.o
+str.o: $(SRC)/str.c $(SRC)/str.h
+	$(CC) $(CCFLAGS) -c $< -o $(SRC)/str.o
 
-str.o: $(SRC)str.c $(SRC)str.h
-	$(CC) $(CCFLAGS) -c $< -o $(SRC)str.o
-
-symtable.o: $(SRC)symtable.c $(SRC)symtable.h $(SRC)str.h
-	$(CC) $(CCFLAGS) -c $< -o $(SRC)symtable.o
-	
-precedent.o: $(SRC)precedent.c $(SRC)precedent.h $(SRC)scanner.h $(SRC)symstack.h $(SRC)returns.h $(SRC)str.h
-	$(CC) $(CCFLAGS) -c $< -o $(SRC)precedent.o
-	
-symstack.o: $(SRC)symstack.c $(SRC)symstack.h $(SRC)symtable.h $(SRC)scanner.h
-	$(CC) $(CCFLAGS) -c $< -o $(SRC)symstack.o
+symtable.o: $(SRC)/symtable.c $(SRC)/symtable.h $(SRC)/str.h
+	$(CC) $(CCFLAGS) -c $< -o $(SRC)/symtable.o
 
 # MAIN
 
-$(MAIN).o: $(MAIN).c $(MAIN).h $(SRC)scanner.h $(SRC)str.h $(SRC)symtable.h $(SRC)parser.h $(SRC)returns.h
+$(MAIN).o: $(MAIN).c $(MAIN).h $(SRC)/scanner.h $(SRC)/str.h $(SRC)/symtable.h
 	$(CC) $(CCFLAGS) -c $<
 	
-$(MAIN): $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o
-	$(CC) $(CCFLAGS) $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o -o $(OUT)
+$(MAIN): $(MAIN).o $(SRC)/scanner.o $(SRC)/str.o $(SRC)/symtable.o
+	$(CC) $(CCFLAGS) $(MAIN).o $(SRC)/scanner.o $(SRC)/str.o $(SRC)/symtable.o -o ../$(OUT)
 
 #
 # ADDITIONAL FEATURES
@@ -63,19 +54,16 @@ $(MAIN): $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $
 
 debug: $(MAIN)-d
 
-$(SRC)scanner-d.o: $(SRC)scanner.c $(SRC)scanner.h $(SRC)str.h
-	$(CC) $(CCFlAGS) -DDEBUG -c $< -o $(SRC)scanner-d.o
+$(SRC)/scanner-d.o: $(SRC)/scanner.c $(SRC)/scanner.h $(SRC)/str.h
+	$(CC) $(CCFlAGS) -DDEBUG -c $< -o $(SRC)/scanner-d.o
 
-$(SRC)parser-d.o: $(SRC)parser.c $(SRC)parser.h $(SRC)symtable.h $(SRC)str.h $(SRC)returns.h
-	$(CC) $(CCFlAGS) -DDEBUG -c $< -o $(SRC)parser-d.o
-
-$(MAIN)-d: $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o
-	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o -o $(OUT)
+$(MAIN)-d: $(MAIN).o $(SRC)/scanner-d.o $(SRC)/str.o $(SRC)/symtable.o
+	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o $(SRC)/scanner-d.o $(SRC)/str.o $(SRC)/symtable.o -o $(OUT)
 
 # CLEAN MAKE OUTPUT(S)
 
 clean:
-	rm -rf src/*.o tests/*.o t-* *.o $(OUT)
+	rm -rf src/*.o test/*.o *.o $(OUT)
 
 # HELP
 
@@ -96,15 +84,16 @@ test-c: symtest
 
 # SYMTABLE TEST
 
-$(TEST)symtest.o: $(TEST)symtest.c $(SRC)symtable.h $(SRC)returns.h $(SRC)str.h
-	$(CC) $(CCFLAGS) -c $< -o $(TEST)symtest.o
+$(TEST)/symtest.o: $(TEST)/symtest.c $(SRC)/symtable.h
+	$(CC) $(CCFLAGS) -c $< -o $(TEST)/symtest.o
 
-symtest: $(TEST)symtest.o $(SRC)symtable.o $(SRC)returns.o $(SRC)str.o
-	$(CC) $(CCFLAGS) $(TEST)symtest.o $(SRC)symtable.o $(SRC)returns.o $(SRC)str.o -o t-symtable
+symtest: $(TEST)/symtest.o symtable.o
+	$(CC) $(CCFLAGS) $(TEST)/symtest.o $(SRC)/symtable.o -o t-symtable
 
 # RUN TESTS
 
 test: test-c runtests
 
 runtests:
+	clear
 	./t-*

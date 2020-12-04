@@ -9,7 +9,8 @@
 #ifndef IFJ2020_H
 #define IFJ2020_H
 
-#include "parser.h"
+#include "scanner.h"
+#include "str.h"
 
 // TODO
 
