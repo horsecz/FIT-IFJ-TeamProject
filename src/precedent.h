@@ -1,3 +1,5 @@
+
+
 #ifndef _PRECEDENT_H
 #define _PRECEDENT_H
 
@@ -10,7 +12,6 @@
 #define SEM_ERROR_PARAM 9
 #define SEM_ERROR_OTHER 9
 #define ZERO_DIVISION   9
-#define TOKEN_ERROR     9
 #define INTERNAL_ERROR  99
 
 #include <stdio.h>

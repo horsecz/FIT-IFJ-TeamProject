@@ -1,3 +1,4 @@
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdarg.h>
@@ -9,18 +10,17 @@ void symstackInit(symStack* stack){
   stack->top = NULL;
 }
 
-bool symstackPush(symStack* stack, Token_type token){
+bool symstackPush(symStack* stack, TokenType token){
   symStackItem* nitem = (symStackItem*)malloc(sizeof(symStackItem));
 
   if(nitem != NULL){
-    nitem->tokenType = token;
+    nitem->token_Type = token;
     nitem->inte = 0;
     nitem->flt = 0.0;
     nitem->next = stack->top;
     nitem->nazev = NULL;
-    Dynamic_string str;
-    d_string_init(&str);
-    nitem->string = &str;
+    nitem->string = NULL;
+    nitem->boolen = NULL;
     stack->top = nitem;
     return true;
   }else{
@@ -46,8 +46,8 @@ void symstackPopMore(symStack* stack, int howmany){
   }
 }
 
-Token_type symstackTop(symStack* stack){
-  return stack->top->tokenType;
+TokenType symstackTop(symStack* stack){
+  return stack->top->token_Type;
 }
 
 void symstackFree(symStack* stack){

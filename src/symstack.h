@@ -1,3 +1,4 @@
+
 #ifndef _SYMSTACK_H
 #define _SYMSTACK_H
 #include<stdio.h>
@@ -11,10 +12,11 @@
 
 //polozka stacku
 typedef struct stackItem {
-  TokenType tokenType;
+  TokenType token_Type;
   int inte;
   double flt;
-  string* string;
+  bool boolen;
+  string string;
   struct stackItem *next;
   char* nazev;
 } symStackItem;
