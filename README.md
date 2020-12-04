@@ -1,22 +1,19 @@
-# VUT-FIT: PROJEKT: Formalni jazyky a prekladace a Algoritmy
+# {BUT@FIT} [Project to Formal languages and compilers](https://www.fit.vut.cz/study/course/13981/.en) & [Algorithms](https://www.fit.vut.cz/study/course/IAL/.en)
 
-- Implementace prekladace imperativniho jazyka IFJ20,
-- projekt pro 3 - 4 clenny tym,
-- zadano 23. 09. 2020,
-- finalni odevzdani 8. 12. 2020.
+## Assignment
+- Implementation of IFJ20 language compiler
+- Assigned 23. 09. 2020
+- Final deadline for submission 8. 12. 2020
 
-
-# Kratky popis, detaily
-
-- Jazyk IFJ20 je podmnozinou jazyka Go,
-- cilovym jazykem je IFJcode20,
-- prekladac je naprogramovan v jazyce C,
-- implementace parseru probehla za pomoci LL gramatiky a precedencni tabulky,
-- tabulka symbolu byla implementovana pomoci binarniho stromu (varianta I projektu).
+## Project details
+- IFJ20 language is subset of Go language
+- Target language is IFJcode20
+- We are writing this project in language C
+- For symbol table implementation we are using BST (Binary Search Tree, Variation I of the project)
+  - [Symtable header can be found here](src/symtable.h) and [implementation here](src/symtable.c)
 
 
-# Autori
-
+## Authors
 - Dominik Horky
   - @horsecz        (xhorky32@stud.fit.vutbr.cz)
 - Roman Janiczek

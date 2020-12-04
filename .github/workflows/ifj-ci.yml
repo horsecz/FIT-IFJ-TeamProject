@@ -1,0 +1,80 @@
+name: IFJ Project CHECK
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: <BUILD> Compile
+      run: make
+    
+  tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: <SETUP> Set up Go 1.15
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.15
+
+    - uses: actions/checkout@v2
+    - name: <TESTSUITE> Build compiler
+      run: make
+    - name: <TESTSUITE> Run Kamil's tests (all)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020
+    - name: <TESTSUITE> Run Kamil's tests (lex)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/lex
+    - name: <TESTSUITE> Run Kamil's tests (syn)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/syn
+    - name: <TESTSUITE> Run Kamil's tests (sem)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/sem
+    - name: <TESTSUITE> Run Kamil's tests (exe)
+      working-directory: ./tests/ifj-testsuite
+      run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/exe
+
+    - name: <DEBUG> Compile
+      run: make
+    - name: <DEBUG> Try running compiled program
+      continue-on-error: true
+      run: ./compilerIFJ2020 < tests/main.go
+    - name: <DEBUG> Compile with debug
+      run: make debug
+    - name: <DEBUG> Run debug - Empty function (main)
+      continue-on-error: true
+      run: ./compilerIFJ2020 < tests/emptyFunc.go
+    - name: <DEBUG> Run debug - Function newFnc with arguments, return type and function call inside
+      continue-on-error: true
+      run: ./compilerIFJ2020 < tests/fncCallFuncArgRet.go
+    - name: <DEBUG> Run debug - Run main go file (test functionality of 'normal' go program)
+      continue-on-error: true
+      run: ./compilerIFJ2020 < tests/main.go
+
+    - name: <TESTS> Run our own custom tests
+      run: make test
+
+  archive:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: <ARCHIVE> Create archive file
+        working-directory: ./deploy
+        run: python3 deploy.py
+      - name: <ARCHIVE> Push archive
+        working-directory: ./deploy
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'stud.vut@czleteron.net'
+          git add xhorky32.tgz
+          git commit -m "Automated archive creation"
+          git push

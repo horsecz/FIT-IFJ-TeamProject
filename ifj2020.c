@@ -22,25 +22,15 @@ int main()
   token->type = TYPE_EMPTY;
   token->attribute.keyword = KEYWORD_EMPTY;
 
-  int holdResponse;
+  int holdResponse = parser(token); //parser(&SymbolTable, &InstructionsList, token);
 
-  while (token->type != TYPE_EOF)
-  {
-    holdResponse = getToken(token);
-    if (holdResponse != 0)
-    {
-      // free up token from memory
-      free(token);
-
-      printf("Error in scanner, exiting...\n");
-      return holdResponse;
-    }
     // add cleanup of string (fixes a lot of bugs - 80 bytes lost remaining)
-    if (token->type == TYPE_IDENTIFIER || token->type == TYPE_STRING)
-      strFree(&token->attribute.string);
-  }
+  if (token->type == TYPE_IDENTIFIER || token->type == TYPE_STRING)
+    strFree(&token->attribute.string);
 
   free(token);
+  //st_destruct(SymbolTable);
+  //instructionsList_destruct(InstructionsList);
 
-  return 0;
+  return holdResponse;
 }
