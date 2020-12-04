@@ -6,8 +6,6 @@
 #include "precedent.h"
 #include "str.h"
 
-
-
 int precedent_analys(Token* help, Token* tokeng, TokenType* Type){
 
 	symStack *stack = malloc(sizeof(symStack)); 	
@@ -25,11 +23,9 @@ int precedent_analys(Token* help, Token* tokeng, TokenType* Type){
 	{
 
 	}
-	
+  
 	if((a = idkfunkce(stack, tokeng, Type))){
-
 		return a;	
-
 	}
 	
 
@@ -37,7 +33,6 @@ int precedent_analys(Token* help, Token* tokeng, TokenType* Type){
 	{	
 
 		getToken(tokeng);					// ziskame token
-
 		a = idkfunkce(stack, tokeng, Type);				// zavolame funkci pro zpracovani token
 		if (a != SYNTAX_OK){
 			return SEM_ERROR_OTHER;
@@ -48,12 +43,6 @@ int precedent_analys(Token* help, Token* tokeng, TokenType* Type){
 
 int idkfunkce(symStack *stack, Token* token, TokenType* Type){
 		TokenType top = StackTopTerm(stack);						// do top nahrajeme nejvyssi terminal ze stacku
-
-
-
-		
-		
- 
 
 		if (token->type == TYPE_IDENTIFIER || token->type == TYPE_INT || token->type == TYPE_STRING  || token->type == TYPE_FLOAT64 || token->type == TYPE_BOOL)							//TODO je potreba zjitit co vse jsou identifikatory
 		{ 
@@ -78,8 +67,6 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type){
 					string str;
 					strInit(&str);					
 					strCopyString(stack->top->string, &token->attribute.string);
-
-					
 				}
 				else if (token->type == TYPE_FLOAT64)
 				{
@@ -331,7 +318,6 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type){
 				symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
 
 				reduction(stack);					// proved redukci
-
 				int b = idkfunkce(stack, token, Type);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci   (E ==
 
 				if (b != SYNTAX_OK)

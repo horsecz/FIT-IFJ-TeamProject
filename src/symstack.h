@@ -1,4 +1,3 @@
-
 #ifndef _SYMSTACK_H
 #define _SYMSTACK_H
 #include<stdio.h>

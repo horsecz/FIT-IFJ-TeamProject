@@ -1,5 +1,3 @@
-
-
 #ifndef _PRECEDENT_H
 #define _PRECEDENT_H
 
