@@ -1,17 +1,17 @@
-/*************************************************************
-*  Předmět: IFJ / IAL                                        *
-*  Projekt: Implementace compilátoru imperativního jazyka    *
-*  Soubor:  precedent.h                                      *
-*  Tým: 087                                                  *
-*  Varianta: 1                                               *
-*  Autoři:  Jan Pospíšil    <xpospi94>                       *
-*           Radek Sahliger  <xsahli00>                       *
-*           Michal Jireš    <xjires02>                       *
-*           Čermák Attila   <xcerma38>                       *
-**************************************************************/
-
 #ifndef _PRECEDENT_H
 #define _PRECEDENT_H
+
+#define SCANNER_OK      0
+#define SYNTAX_OK       0
+#define SCANNER_ERROR   9   
+#define SYNTAX_ERROR    9
+#define SEM_ERROR_DEF 	9
+#define SEM_ERROR_TYPE  9
+#define SEM_ERROR_PARAM 9
+#define SEM_ERROR_OTHER 9
+#define ZERO_DIVISION   9
+#define TOKEN_ERROR     9
+#define INTERNAL_ERROR  99
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,21 +22,17 @@
 #include "error.h"
 #include "string.h"
 
-int precedent_analys(Token* help);
+int precedent_analys(Token* help, Token* tokeng, TokenType* Type);
 
-int idkfunkce(symStack *stack, Token* token);
+int idkfunkce(symStack *stack, Token* token, TokenType* Type);
 
-Token_type StackTopTerm (symStack *stack);
+TokenType StackTopTerm (symStack *stack);
 
 int stackPushOpen(symStack *stack); 
 
 symStackItem* stackPosition(symStack *stack, int j);
 
 int reduction(symStack *stack);
-
-void setGlobalVariables(Token* tok, tSymtable* glob);
-
-void setLocTable(tSymtable* local);
 
 void setInFunction(bool in);
 
