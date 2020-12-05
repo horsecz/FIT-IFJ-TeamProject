@@ -18,7 +18,7 @@ typedef struct stackItem {
   bool boolen;
   string string;
   struct stackItem *next;
-  char* nazev;
+  string nazev;
 } symStackItem;
 
 //stack

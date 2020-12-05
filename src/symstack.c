@@ -18,7 +18,6 @@ bool symstackPush(symStack* stack, TokenType token){
     nitem->inte = 0;
     nitem->flt = 0.0;
     nitem->next = stack->top;
-    nitem->nazev = NULL;
     strInit(&nitem->string);
     nitem->boolen = NULL;
     stack->top = nitem;

@@ -5,12 +5,13 @@
 
 #define SCANNER_OK      0
 #define SYNTAX_OK       0
-#define SCANNER_ERROR   9   
-#define SYNTAX_ERROR    9
-#define SEM_ERROR_DEF 	9
-#define SEM_ERROR_TYPE  9
-#define SEM_ERROR_PARAM 9
-#define SEM_ERROR_OTHER 9
+#define SCANNER_ERROR   1   
+#define SYNTAX_ERROR    2
+#define SEM_ERROR_DEF 	3
+#define SEM_ERROR_TYPE  4
+#define SEM_ERROR_TYPECOMP 5
+#define SEM_ERROR_PARAM 6
+#define SEM_ERROR_OTHER 7
 #define ZERO_DIVISION   9
 #define INTERNAL_ERROR  99
 
@@ -23,9 +24,9 @@
 #include "error.h"
 #include "string.h"
 
-int precedent_analys(Token* help, Token* tokeng, TokenType* Type);
+int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars);
 
-int idkfunkce(symStack *stack, Token* token, TokenType* Type);
+int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars);
 
 TokenType StackTopTerm (symStack *stack);
 
