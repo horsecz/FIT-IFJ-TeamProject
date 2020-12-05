@@ -40,6 +40,12 @@ str.o: $(SRC)str.c $(SRC)str.h
 
 symtable.o: $(SRC)symtable.c $(SRC)symtable.h $(SRC)str.h
 	$(CC) $(CCFLAGS) -c $< -o $(SRC)symtable.o
+	
+precedent.o: $(SRC)precedent.c $(SRC)precedent.h $(SRC)scanner.h $(SRC)symstack.h $(SRC)returns.h $(SRC)str.h
+	$(CC) $(CCFLAGS) -c $< -o $(SRC)precedent.o
+	
+symstack.o: $(SRC)symstack.c $(SRC)symstack.h $(SRC)symtable.h $(SRC)scanner.h
+	$(CC) $(CCFLAGS) -c $< -o $(SRC)symstack.o
 
 generator.o: $(SRC)generator.c $(SRC)generator.h
 	$(CC) $(CCFLAGS) -c $< -o $(SRC)generator.o
@@ -49,8 +55,8 @@ generator.o: $(SRC)generator.c $(SRC)generator.h
 $(MAIN).o: $(MAIN).c $(MAIN).h $(SRC)scanner.h $(SRC)str.h $(SRC)symtable.h $(SRC)parser.h $(SRC)returns.h $(SRC)generator.h
 	$(CC) $(CCFLAGS) -c $<
 	
-$(MAIN): $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)generator.o
-	$(CC) $(CCFLAGS) $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)generator.o -o $(OUT)
+$(MAIN): $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o
+	$(CC) $(CCFLAGS) $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o -o $(OUT)
 
 #
 # ADDITIONAL FEATURES
@@ -66,13 +72,13 @@ $(SRC)scanner-d.o: $(SRC)scanner.c $(SRC)scanner.h $(SRC)str.h
 $(SRC)parser-d.o: $(SRC)parser.c $(SRC)parser.h $(SRC)symtable.h $(SRC)str.h $(SRC)returns.h
 	$(CC) $(CCFlAGS) -DDEBUG -c $< -o $(SRC)parser-d.o
 
-$(MAIN)-d: $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)generator.o
-	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)generator.o -o $(OUT)
+$(MAIN)-d: $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o
+	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o -o $(OUT)
 
 # CLEAN MAKE OUTPUT(S)
 
 clean:
-	rm -rf src/*.o test/*.o *.o $(OUT)
+	rm -rf src/*.o tests/*.o t-* *.o $(OUT)
 
 # HELP
 
@@ -93,11 +99,11 @@ test-c: symtest
 
 # SYMTABLE TEST
 
-$(TEST)symtest.o: $(TEST)symtest.c $(SRC)symtable.h
+$(TEST)symtest.o: $(TEST)symtest.c $(SRC)symtable.h $(SRC)returns.h $(SRC)str.h
 	$(CC) $(CCFLAGS) -c $< -o $(TEST)symtest.o
 
-symtest: $(TEST)symtest.o symtable.o
-	$(CC) $(CCFLAGS) $(TEST)symtest.o $(SRC)symtable.o -o t-symtable
+symtest: $(TEST)symtest.o $(SRC)symtable.o $(SRC)returns.o $(SRC)str.o
+	$(CC) $(CCFLAGS) $(TEST)symtest.o $(SRC)symtable.o $(SRC)returns.o $(SRC)str.o -o t-symtable
 
 # RUN TESTS
 

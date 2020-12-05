@@ -132,6 +132,7 @@ int isValidEscapeCharacter (char c)
     case 'v':
     case '\\':
     case '"':
+    case 'x':
       return 1;
     default:
       return 0;
@@ -160,6 +161,8 @@ char getEscapeSequence (char c)
       return '\\';
     case '"':
       return '\"';
+    case 'x':
+      return 'x';
     default:
       return '\0';
   }
@@ -190,7 +193,7 @@ int getToken (Token *token)
         if (c == EOF)
         {
 #ifdef DEBUG
-          printf("[EOF]\n");
+          fprintf(stderr, "[EOF]\n");
 #endif
           token->type = TYPE_EOF;
           return SCANNER_SUCC;
@@ -284,7 +287,7 @@ int getToken (Token *token)
         else if (c == '(')
         {
 #ifdef DEBUG
-          printf("[(] ");
+          fprintf(stderr, "[(] ");
 #endif
           token->type = TYPE_LEFT_BRACKET;
           return SCANNER_SUCC;
@@ -292,7 +295,7 @@ int getToken (Token *token)
         else if (c == ')')
         {
 #ifdef DEBUG
-          printf("[)] ");
+          fprintf(stderr, "[)] ");
 #endif
           token->type = TYPE_RIGHT_BRACKET;
           return SCANNER_SUCC;
@@ -300,7 +303,7 @@ int getToken (Token *token)
         else if (c == '{')
         {
 #ifdef DEBUG
-          printf("[{] ");
+          fprintf(stderr, "[{] ");
 #endif
           token->type = TYPE_LEFT_CURLY_BRACKET;
           return SCANNER_SUCC;
@@ -309,14 +312,14 @@ int getToken (Token *token)
         {
           token->type = TYPE_RIGHT_CURLY_BRACKET;
 #ifdef DEBUG
-          printf("[}] ");
+          fprintf(stderr, "[}] ");
 #endif
           return SCANNER_SUCC;
         }
         else if (c == ',')
         {
 #ifdef DEBUG
-          printf("[,] ");
+          fprintf(stderr, "[,] ");
 #endif
           token->type = TYPE_COMMA;
           return SCANNER_SUCC;
@@ -324,7 +327,7 @@ int getToken (Token *token)
         else if (c == '=')
         {
 #ifdef DEBUG
-          printf("[=] ");
+          fprintf(stderr, "[=] ");
 #endif
           token->type = TYPE_ASSIGN;
           return SCANNER_SUCC;
@@ -340,7 +343,7 @@ int getToken (Token *token)
         else if (c == ';')
         {
 #ifdef DEBUG
-          printf("[;] ");
+          fprintf(stderr, "[;] ");
 #endif
           token->type = TYPE_SEMICOLON;
           return SCANNER_SUCC;
@@ -350,7 +353,7 @@ int getToken (Token *token)
           if (c == '\n')
           {
 #ifdef DEBUG
-            printf("[EOL]\n");
+            fprintf(stderr, "[EOL]\n");
 #endif
             token->type = TYPE_EOL;
             return SCANNER_SUCC;
@@ -368,48 +371,19 @@ int getToken (Token *token)
         }
         else
         {
+          fprintf(stderr, "Invalid character read, exiting...\n");
           return SCANNER_ERR;
         }
         break;
 
         /******   OPERATORS SECTION   ******/
-        /** STATE PLUS + MINUS NEEDS TO SAVE NUMBER TO CORRESPONDING VARIABLE **/
-
         /** WILL INCREMENTATION AND DECREMENTATION BE IMPLEMENTED???? **/
         /** ADDED UNARY EXTENSION **/
       case STATE_PLUS:
-        if (isdigit(c))
-        {
-          state = STATE_DIGIT;
-
-          // initialize new string and check if it was successful
-          if (strInit(&token->attribute.string))
-          {
-            token->type = TYPE_EMPTY;
-            fprintf(stderr, "Internal error when allocating string, exiting...\n");
-            return SCANNER_INTERNAL;
-          }
-
-          // set new characters to string
-          if (strAddChar(&token->attribute.string, '+'))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-        }
-        else if (c == '=')
+        if (c == '=')
         {
 #ifdef DEBUG
-          printf("[+=] ");
+          fprintf(stderr, "[+=] ");
 #endif
           token->type = TYPE_PLUS_ASSIGN;
           return SCANNER_SUCC;
@@ -417,7 +391,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("[+] ");
+          fprintf(stderr, "[+] ");
 #endif
           ungetc(c, stdin);
           token->type = TYPE_PLUS;
@@ -425,38 +399,10 @@ int getToken (Token *token)
         }
         break;
       case STATE_MINUS:
-        if (isdigit(c))
-        {
-          state = STATE_DIGIT_NEGATIVE;
-
-          // initialize new string and check if it was successful
-          if (strInit(&token->attribute.string))
-          {
-            token->type = TYPE_EMPTY;
-            fprintf(stderr, "Internal error when allocating string, exiting...\n");
-            return SCANNER_INTERNAL;
-          }
-
-          // set new characters to string
-          if (strAddChar(&token->attribute.string, '-'))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-        }
-        else if (c == '=')
+        if (c == '=')
         {
 #ifdef DEBUG
-          printf("[-=] ");
+          fprintf(stderr, "[-=] ");
 #endif
           token->type = TYPE_MINUS_ASSIGN;
           return SCANNER_SUCC;
@@ -464,7 +410,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("[-] ");
+          fprintf(stderr, "[-] ");
 #endif
           ungetc(c, stdin);
           token->type = TYPE_MINUS;
@@ -475,7 +421,7 @@ int getToken (Token *token)
         if (c == '=')
         {
 #ifdef DEBUG
-          printf("[*=] ");
+          fprintf(stderr, "[*=] ");
 #endif
           token->type = TYPE_MULTIPLY_ASSIGN;
           return SCANNER_SUCC;
@@ -483,7 +429,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("[*] ");
+          fprintf(stderr, "[*] ");
 #endif
           ungetc(c, stdin);
           token->type = TYPE_MULTIPLY;
@@ -501,7 +447,7 @@ int getToken (Token *token)
         else if (c == '=')
         {
 #ifdef DEBUG
-          printf("[/=] ");
+          fprintf(stderr, "[/=] ");
 #endif
           token->type = TYPE_DIVIDE_ASSIGN;
           return SCANNER_SUCC;
@@ -509,7 +455,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("[/] ");
+          fprintf(stderr, "[/] ");
 #endif
           ungetc(c, stdin);
           token->type = TYPE_DIVIDE;
@@ -535,7 +481,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("ID[%s] ", strGetStr(&token->attribute.string));
+          fprintf(stderr, "ID[%s] ", strGetStr(&token->attribute.string));
 #endif
           ungetc(c, stdin);
           token->type = TYPE_IDENTIFIER;
@@ -579,7 +525,7 @@ int getToken (Token *token)
             if (code == 18)
             {
 #ifdef DEBUG
-              printf("BOOL[true] ");
+              fprintf(stderr, "BOOL[true] ");
 #endif
               strFree(&token->attribute.string);
               token->type = TYPE_BOOL;
@@ -588,7 +534,7 @@ int getToken (Token *token)
             else if (code == 19)
             {
 #ifdef DEBUG
-              printf("BOOL[false] ");
+              fprintf(stderr, "BOOL[false] ");
 #endif
               strFree(&token->attribute.string);
               token->type = TYPE_BOOL;
@@ -597,7 +543,7 @@ int getToken (Token *token)
             else
             {
 #ifdef DEBUG
-              printf("KEY[%s] ", strGetStr(&token->attribute.string));
+              fprintf(stderr, "KEY[%s] ", strGetStr(&token->attribute.string));
 #endif
               strFree(&token->attribute.string);
               setTokenKeyword(token, code);
@@ -606,7 +552,7 @@ int getToken (Token *token)
           else
           {
 #ifdef DEBUG
-            printf("ID[%s] ", strGetStr(&token->attribute.string));
+            fprintf(stderr, "ID[%s] ", strGetStr(&token->attribute.string));
 #endif
             token->type = TYPE_IDENTIFIER;
           }
@@ -621,7 +567,7 @@ int getToken (Token *token)
         if (c == '"')
         {
 #ifdef DEBUG
-          printf("STRING[%s] ", strGetStr(&token->attribute.string));
+          fprintf(stderr, "STRING[%s] ", strGetStr(&token->attribute.string));
 #endif
           token->type = TYPE_STRING;
           return SCANNER_SUCC;
@@ -629,6 +575,11 @@ int getToken (Token *token)
         else if (c == 92)
         {
           state = STATE_STRING_SKIP;
+        }
+        else if (c == EOF)
+        {
+          fprintf(stderr, "String reached EOF before closing\", exiting...\n");
+          return SCANNER_ERR;
         }
         else
         {
@@ -644,19 +595,27 @@ int getToken (Token *token)
         }
         break;
       case STATE_STRING_SKIP:
-      {
         if (isValidEscapeCharacter(c))
         {
-          // check whether adding of char was successful
-          if (strAddChar(&token->attribute.string, getEscapeSequence(c)))
+          char tmp = getEscapeSequence(c);
+          // check if not hexa sequence
+          if (tmp == 'x')
           {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
+            state = STATE_STRING_HEXA_START;
           }
+          else
+          {
+            // check whether adding of char was successful
+            if (strAddChar(&token->attribute.string, tmp))
+            {
+              strClear(&token->attribute.string);
+              strFree(&token->attribute.string);
+              fprintf(stderr, "Unable to realloc token's attribute string.\n");
+              return SCANNER_INTERNAL;
+            }
 
-          state = STATE_STRING;
+            state = STATE_STRING;
+          }
         }
         else
         {
@@ -664,13 +623,49 @@ int getToken (Token *token)
           return SCANNER_ERR;
         }
         break;
-      }
+      case STATE_STRING_HEXA_START:
+        if ((c > 47 && c < 58) || (c > 64 && c < 71) || (c > 96 && c < 103))
+        {
+          hexaHold[0] = c;
+          state = STATE_STRING_HEXA_END;
+        }
+        else
+        {
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          fprintf(stderr, "Invalid character read for escaped hexa value, exiting...\n");
+          return SCANNER_ERR;
+        }
+        break;
+      case STATE_STRING_HEXA_END:
+        if ((c > 47 && c < 58) || (c > 64 && c < 71) || (c > 96 && c < 103))
+        {
+          hexaHold[1] = c;
+          long tmp = strtol(hexaHold, NULL, 16);
+          if (strAddChar(&token->attribute.string, (char) tmp))
+          {
+            strClear(&token->attribute.string);
+            strFree(&token->attribute.string);
+            fprintf(stderr, "Unable to realloc token's attribute string.\n");
+            return SCANNER_INTERNAL;
+          }
+          state = STATE_STRING;
+        }
+        else
+        {
+          strClear(&token->attribute.string);
+          strFree(&token->attribute.string);
+          fprintf(stderr, "Invalid character read for escaped hexa value, exiting...\n");
+          return SCANNER_ERR;
+        }
+        break;
+        break;
 
       case STATE_DIGIT:
         if (isdigit(c))
         {
-          // NEEDS FIX
-          if (token->attribute.integer == 0)
+          int64_t tmp = atoll(strGetStr(&token->attribute.string));
+          if (tmp == 0)
           {
             fprintf(stderr, "No leading zeros are supported, exiting...\n");
             return SCANNER_ERR;
@@ -722,7 +717,7 @@ int getToken (Token *token)
           token->attribute.integer = tmp;
 
 #ifdef DEBUG
-          printf("INT[%lld] ", (long long) token->attribute.integer);
+          fprintf(stderr, "INT[%lld] ", (long long) token->attribute.integer);
 #endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
@@ -739,8 +734,10 @@ int getToken (Token *token)
             fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return SCANNER_INTERNAL;
           }
-
-          state = STATE_DIGIT_WITH_EXP_AND_OP;
+          if (c == '+' || c == '-')
+            state = STATE_DIGIT_WITH_EXP_AND_OP;
+          else
+            state = STATE_DIGIT_WITH_EXP_AND_OP_NUM;
         }
         else
         {
@@ -759,107 +756,17 @@ int getToken (Token *token)
             fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return SCANNER_INTERNAL;
           }
+          state = STATE_DIGIT_WITH_EXP_AND_OP_NUM;
         }
         else
         {
-          ungetc(c, stdin);
-
-          // change from string to int and clear string
-          int64_t tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          fprintf(stderr, "Missing number after `e[+,-]`/`E[+,-]`, exiting...\n");
           strClear(&token->attribute.string);
           strFree(&token->attribute.string);
-          token->attribute.integer = tmp;
-
-#ifdef DEBUG
-          printf("INT[%lld] ", (long long) token->attribute.integer);
-#endif
-          token->type = TYPE_INT;
-          return SCANNER_SUCC;
-        }
-        break;
-
-      case STATE_DIGIT_NEGATIVE:
-        if (isdigit(c))
-        {
-          if (token->attribute.integer == 0)
-          {
-            fprintf(stderr, "No leading zeros are supported, exiting...\n");
-            return SCANNER_ERR;
-          }
-
-          // set new character to string
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-        }
-        else if (c == 'e' || c == 'E')
-        {
-          // set new character to string
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-
-          state = STATE_DIGIT_NEGATIVE_WITH_EXP;
-        }
-        else if (c == '.')
-        {
-          // set new character to string
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-
-          state = STATE_FLOAT_NEGATIVE;
-        }
-        else
-        {
-          ungetc(c, stdin);
-
-          // change from string to float and clear string
-          int64_t tmp = atoll(strGetStr(&token->attribute.string));
-          strClear(&token->attribute.string);
-          strFree(&token->attribute.string);
-          token->attribute.integer = tmp;
-
-#ifdef DEBUG
-          printf("INT[%lld] ", (long long) token->attribute.integer);
-#endif
-          token->type = TYPE_INT;
-          return SCANNER_SUCC;
-        }
-        break;
-      case STATE_DIGIT_NEGATIVE_WITH_EXP:
-        if (isdigit(c) || c == '+' || c == '-')
-        {
-          // set new character to string
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-
-          state = STATE_DIGIT_NEGATIVE_WITH_EXP_AND_OP;
-        }
-        else
-        {
-          fprintf(stderr, "Invalid format for number with exponent, exiting...\n");
           return SCANNER_ERR;
         }
         break;
-      case STATE_DIGIT_NEGATIVE_WITH_EXP_AND_OP:
+      case STATE_DIGIT_WITH_EXP_AND_OP_NUM:
         if (isdigit(c))
         {
           // set new character to string
@@ -882,7 +789,7 @@ int getToken (Token *token)
           token->attribute.integer = tmp;
 
 #ifdef DEBUG
-          printf("INT[%lld] ", (long long) token->attribute.integer);
+          fprintf(stderr, "INT[%lld] ", (long long) token->attribute.integer);
 #endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
@@ -925,7 +832,7 @@ int getToken (Token *token)
           token->attribute.float64 = tmp;
 
 #ifdef DEBUG
-          printf("FLOAT[%f] ", token->attribute.float64);
+          fprintf(stderr, "FLOAT[%f] ", token->attribute.float64);
 #endif
           token->type = TYPE_FLOAT64;
           return SCANNER_SUCC;
@@ -943,7 +850,10 @@ int getToken (Token *token)
             return SCANNER_INTERNAL;
           }
 
-          state = STATE_FLOAT_WITH_EXP_AND_OP;
+          if (c == '+' || c == '-')
+            state = STATE_FLOAT_WITH_EXP_AND_OP;
+          else
+            state = STATE_FLOAT_WITH_EXP_AND_OP_NUM;
         }
         else
         {
@@ -962,88 +872,17 @@ int getToken (Token *token)
             fprintf(stderr, "Unable to realloc token's attribute string.\n");
             return SCANNER_INTERNAL;
           }
+          state = STATE_FLOAT_WITH_EXP_AND_OP_NUM;
         }
         else
         {
-          ungetc(c, stdin);
-
-          // change from string to int and clear string
-          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
+          fprintf(stderr, "Missing number after `e[+,-]`/`E[+,-]`, exiting...\n");
           strClear(&token->attribute.string);
           strFree(&token->attribute.string);
-          token->attribute.float64 = tmp;
-
-#ifdef DEBUG
-          printf("FLOAT[%f] ", token->attribute.float64);
-#endif
-          token->type = TYPE_INT;
-          return SCANNER_SUCC;
-        }
-        break;
-
-      case STATE_FLOAT_NEGATIVE:
-        if (isdigit(c))
-        {
-          // set new character to string
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-        }
-        else if (c == 'e' || c == 'E')
-        {
-          // set new character to string
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-
-          state = STATE_FLOAT_WITH_EXP;
-        }
-        else
-        {
-          ungetc(c, stdin);
-
-          // change from string to float and clear string
-          float tmp = strtod(strGetStr(&token->attribute.string), NULL);
-          strClear(&token->attribute.string);
-          strFree(&token->attribute.string);
-          token->attribute.float64 = tmp;
-
-#ifdef DEBUG
-          printf("FLOAT[%f] ", token->attribute.float64);
-#endif
-          token->type = TYPE_FLOAT64;
-          return SCANNER_SUCC;
-        }
-        break;
-      case STATE_FLOAT_NEGATIVE_WITH_EXP:
-        if (isdigit(c) || c == '+' || c == '-')
-        {
-          // set new character to string
-          if (strAddChar(&token->attribute.string, c))
-          {
-            strClear(&token->attribute.string);
-            strFree(&token->attribute.string);
-            fprintf(stderr, "Unable to realloc token's attribute string.\n");
-            return SCANNER_INTERNAL;
-          }
-
-          state = STATE_FLOAT_NEGATIVE_WITH_EXP_AND_OP;
-        }
-        else
-        {
-          fprintf(stderr, "Invalid format for float with exponent, exiting...\n");
           return SCANNER_ERR;
         }
         break;
-      case STATE_FLOAT_NEGATIVE_WITH_EXP_AND_OP:
+      case STATE_FLOAT_WITH_EXP_AND_OP_NUM:
         if (isdigit(c))
         {
           // set new character to string
@@ -1066,7 +905,7 @@ int getToken (Token *token)
           token->attribute.float64 = tmp;
 
 #ifdef DEBUG
-          printf("FLOAT[%f] ", token->attribute.float64);
+          fprintf(stderr, "FLOAT[%f] ", token->attribute.float64);
 #endif
           token->type = TYPE_INT;
           return SCANNER_SUCC;
@@ -1079,7 +918,7 @@ int getToken (Token *token)
         if (c == '\n' || c == EOF)
         {
 #ifdef DEBUG
-          printf("[Line Comment] ");
+          fprintf(stderr, "[Line Comment] ");
 #endif
           ungetc(c, stdin);
 
@@ -1088,22 +927,33 @@ int getToken (Token *token)
         }
         break;
       case STATE_MULTI_LINE_COMMENT_START:
-        if (c == '*' || c == EOF)
+        if (c == '*')
         {
           state = STATE_MULTI_LINE_COMMENT_END;
         }
+        else if (c == EOF)
+        {
+          fprintf(stderr, "Multiline comment reached EOF before ending, exiting...\n");
+          return SCANNER_ERR;
+        }
         break;
       case STATE_MULTI_LINE_COMMENT_END:
-        if (c == '/' || c == EOF)
+        if (c == '/')
         {
 #ifdef DEBUG
-          printf("[Multi line comment] ");
+          fprintf(stderr, "[Multi line comment] ");
 #endif
           token->type = TYPE_EMPTY;
           return SCANNER_SUCC;
         }
+        else if (c == EOF)
+        {
+          fprintf(stderr, "Multiline comment reached EOF before ending, exiting...\n");
+          return SCANNER_ERR;
+        }
         else
         {
+          ungetc(c, stdin);
           state = STATE_MULTI_LINE_COMMENT_START;
         }
         break;
@@ -1113,7 +963,7 @@ int getToken (Token *token)
         if (c == '=')
         {
 #ifdef DEBUG
-          printf("[:=] ");
+          fprintf(stderr, "[:=] ");
 #endif
           token->type = TYPE_DECLARATIVE_ASSIGN;
           return SCANNER_SUCC;
@@ -1127,7 +977,7 @@ int getToken (Token *token)
         if (c == '=')
         {
 #ifdef DEBUG
-          printf("[!=] ");
+          fprintf(stderr, "[!=] ");
 #endif
           token->type = TYPE_NOT_EQUALS;
           return SCANNER_SUCC;
@@ -1136,7 +986,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("[!] ");
+          fprintf(stderr, "[!] ");
 #endif
           token->type = TYPE_NOT;
           return SCANNER_SUCC;
@@ -1146,7 +996,7 @@ int getToken (Token *token)
         if (c == '=')
         {
 #ifdef DEBUG
-          printf("[>=] ");
+          fprintf(stderr, "[>=] ");
 #endif
           token->type = TYPE_GREATER_OR_EQUAL;
           return SCANNER_SUCC;
@@ -1154,7 +1004,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("[>] ");
+          fprintf(stderr, "[>] ");
 #endif
           ungetc(c, stdin);
           token->type = TYPE_GREATER;
@@ -1164,7 +1014,7 @@ int getToken (Token *token)
         if (c == '=')
         {
 #ifdef DEBUG
-          printf("[<=] ");
+          fprintf(stderr, "[<=] ");
 #endif
           token->type = TYPE_LESSER_OR_EQUAL;
           return SCANNER_SUCC;
@@ -1172,7 +1022,7 @@ int getToken (Token *token)
         else
         {
 #ifdef DEBUG
-          printf("[<] ");
+          fprintf(stderr, "[<] ");
 #endif
           ungetc(c, stdin);
           token->type = TYPE_LESSER;
@@ -1184,7 +1034,7 @@ int getToken (Token *token)
         if (c == '&')
         {
 #ifdef DEBUG
-          printf("[&&] ");
+          fprintf(stderr, "[&&] ");
 #endif
           token->type = TYPE_AND;
           return SCANNER_SUCC;
@@ -1198,7 +1048,7 @@ int getToken (Token *token)
         if (c == '|')
         {
 #ifdef DEBUG
-          printf("[||] ");
+          fprintf(stderr, "[||] ");
 #endif
           token->type = TYPE_OR;
           return SCANNER_SUCC;

@@ -22,23 +22,15 @@ int main()
   token->type = TYPE_EMPTY;
   token->attribute.keyword = KEYWORD_EMPTY;
 
-  int holdResponse = parser(token, NULL); //parser(&SymbolTable, &InstructionsList, token);
+  int holdResponse = parser(token); //parser(&SymbolTable, &InstructionsList, token);
 
-  if (holdResponse != 0)
-  {
-      // free up token from memory
-      free(token);
-      return holdResponse;
-  }
-
-  /*
     // add cleanup of string (fixes a lot of bugs - 80 bytes lost remaining)
   if (token->type == TYPE_IDENTIFIER || token->type == TYPE_STRING)
-    strFree(&token->attribute.string);*/
+    strFree(&token->attribute.string);
 
   free(token);
   //st_destruct(SymbolTable);
   //instructionsList_destruct(InstructionsList);
 
-  return 0;
+  return holdResponse;
 }
