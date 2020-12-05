@@ -15,6 +15,7 @@
 #include "symtable.h"
 #include "returns.h"
 #include "precedent.h"
+#include "generator.h"
 
 /**
  * @brief Main parser logic \n

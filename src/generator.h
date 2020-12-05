@@ -113,6 +113,33 @@ void generateForScope();
 
 // } TODO
 
+/**
+ * @brief Specifies if this if (else if, else) scope will be ignored (and not generated) or not.
+ * @param ignore zero value means false (dont ignore - generate it), nonzero value means true (ignore - dont generate)
+ * @post Global variable ifelse_ignore will be set to true/false value depending on ignore value. Its default value
+ * is false (means dont ignore anything). If set to true via this functions, all if-elseif-else blocks wont be generated
+ * until this function is called again and resets this global variable to false.
+ */
+void ignoreIfScope(int ignore);
+
+/**
+ * @brief Saves identifier to global variable
+ * @param id string-name of identifier
+ */
+void generatorSaveID(char* id);
+
+/**
+ * @brief Gets last known identifier
+ * @return returns pointer to global variable identifier
+ */
+char* generatorGetID();
+
+/**
+ * @brief Generates used internal functions. If no internal functions was called (used), nothing will be generated.
+ * @pre Completed syntax and semantic analysis.
+ */
+void generateUsedInternalFunctions();
+
 /*
  * INTERNAL FUNCTIONS AND VARIABLES
  */
@@ -167,5 +194,16 @@ extern unsigned int if_cnt;
 /** @brief (internal) for scope counter **/
 extern unsigned int for_cnt;
 
+/** @brief (internal) ignoring if-elseif-else scopes, default: false **/
+extern bool ifelse_ignore;
+
+/** @brief (internal) is current if-elseif-else scope open (not closed?) **/
+extern bool ifelse_open;
+
+/** @brief (internal) last known identifier **/
+extern char* identifier;
+
+/** @brief (internal) which internal functions were used (and will be generated) **/
+extern intFC internalFuncsUsed[11];
 
 #endif //GENERATOR_H

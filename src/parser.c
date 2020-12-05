@@ -159,6 +159,7 @@ eRC program() {
         case TYPE_KEYWORD:
             result = prolog();                      // <prolog> part of the rule <program>
             if (result != RC_OK) return result;
+            generateHeader();                       // generate ifjcode20 header and program body
             result = eolM();                        // <eol_m> part of the rule for <program>
             if (result != RC_OK) return result;
             result = functionsBlock();              // <functions> part of the rule for <program>
@@ -167,7 +168,7 @@ eRC program() {
                 setErrMsg("expected 'EOF'");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            //TODO: Generate code?
+            generateUsedInternalFunctions();
             return result;
         default:
             setErrMsg("expected TYPE_KEYWORD");
@@ -281,6 +282,8 @@ eRC function() {
         setErrMsg("expected function identifier after 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
+        // Generate beginning of function
+        generateFunction(strGetStr(&tk->attribute.string));
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
         stStackInsert(&stack, strGetStr(&(tk->attribute.string)), ST_N_FUNCTION, UNKNOWN);
         currentFnc = strGetStr(&(tk->attribute.string));// Save what is the identifier of the function we are currently parsing
@@ -311,6 +314,7 @@ eRC function() {
 
     result = commandBlock();                            // Parse command block of the function
     if (result != RC_OK) return result;
+    generateFuncEnd();
 
     return result;
 }
@@ -354,6 +358,7 @@ eRC arguments() {
 
     getToken(token, tk);                                // Get the token with the ID or others (eps)
     if (tk->type == TYPE_IDENTIFIER) {
+        generateFuncArgument(strGetStr(&tk->attribute.string));
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
         if (result != RC_OK) return result;
@@ -376,6 +381,7 @@ eRC argumentNext() {
             return RC_ERR_SYNTAX_ANALYSIS;
         }
 
+        generateFuncArgument(strGetStr(&tk->attribute.string));
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
         if (result != RC_OK) return result;
@@ -570,6 +576,7 @@ eRC command() {
     switch (tk->type) {
         case TYPE_IDENTIFIER:                           // ID <statement>
             debugPrint("<%s> -> ID <statement>", __func__);
+            generatorSaveID(strGetStr(&tk->attribute.string));
             getToken(token, tk);                        // Get next token for statement
             result = statement();                       // Parse statement
             if (result != RC_OK) return result;
@@ -582,6 +589,7 @@ eRC command() {
 
                     result = precedent_analys(tk, NULL, &stack); // Evaluate expression
                     if (result != RC_OK) return result;
+                    // if (expression == true) generateIfScope();
 
                     result = commandBlock();            // Parse block of commands (inside of if)
                     if (result != RC_OK) return result;
@@ -641,6 +649,10 @@ eRC statement() {
                 setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
+            if (strcmp(generatorGetID(), "print"))
+                generateFuncCall(generatorGetID());
+            // else
+            //  print(datatype_arg1); print(datatype_arg2); (...)
             getToken(token, tk);
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
@@ -649,6 +661,7 @@ eRC statement() {
             if (result != RC_OK) return result;
             break;
         case TYPE_DECLARATIVE_ASSIGN:                   // := <expression>
+            generateDefinition(generatorGetID());
             getToken(token, tk);                        // Get the next token (move past := to <assignment>)
             result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
@@ -661,6 +674,7 @@ eRC statement() {
             if (result != RC_OK) return result;
             getToken(token, tk);
             // TODO -> handle <expression> -> requires semantic analysis
+            // generateAssignment(identifier);
             break;
         default:                                        // <id_mul> = <assignment>
             result = multipleID();                      // Parse multiple IDs
@@ -707,6 +721,7 @@ eRC assignment() {
 
     switch (tk->type) {
         case TYPE_IDENTIFIER:                       // ID ( <arguments> )
+            // save this ID for later ... funcCallID
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
                 setErrMsg("expected '(' after identifier");
@@ -718,10 +733,13 @@ eRC assignment() {
                 setErrMsg("expected ')' after function arguments");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
+            // generateFuncCall(funcCallID);
+            // generateAssignment(identifier1); generateAssignment(identifier2); (...)
             getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
             break;
         default:                                    // <expression> <expr_n>
             // TODO -> handle <expression> -> requires semantic analysis
+            // generateAssignment(identifier1);
             result = expressionNext();
             if (result != RC_OK) return result;
             break;
@@ -759,6 +777,7 @@ eRC expressionNext() {
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
         // TODO -> handle <expression> -> requires semantic analysis
+        // generateAssignment(identifier);
         result = expressionNext();
         if (result != RC_OK) return result;
     }
@@ -779,6 +798,7 @@ eRC ifElse() {
             result = ifElseExpanded();
             if (result != RC_OK) return result;
         default:
+            generateIfScopeEnd();
             break;
     }
 
@@ -793,6 +813,7 @@ eRC ifElseExpanded() {
         // rule: <if_else_st> -> if <cmd_block> <if_else_st_n>
         // <cmd_block>
         getToken(token, tk);
+        // if (expression == true) generateIfScope();   // expression ... there should be 'else if <expression> <cmdblock>'
         result = commandBlock();
         if (result != RC_OK) return result;
 
@@ -801,6 +822,7 @@ eRC ifElseExpanded() {
         if (result != RC_OK) return result;
     } else {
         // else rule: <if_else_st> -> <cmd_block>
+        // if (expression == false) generateIfScope();      // expression ... in line 591 in command(); or upper (804)
         result = commandBlock();
         if (result != RC_OK) return result;
     }
@@ -876,6 +898,7 @@ eRC returnStatement() {
 
     // rule: <return_stat> -> <expression>
     // TODO -> handle expression
+    // note: after expression handle, its result will be (pushed) on top of stack (last expr. -> top)
 
     // rule: <return_stat> -> eps
     // TODO -> if not expression -> else do nothing

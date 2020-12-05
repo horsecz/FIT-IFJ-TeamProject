@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 /** macros for converting 'C code' into 'string literal' (used in generating internal functions) **/
 #define toString(code) #code
@@ -57,6 +58,17 @@ char* funcName = NULL;
 unsigned int if_cnt = 0;
 unsigned int for_cnt = 0;
 
+/** will be if scope printed or not? **/
+bool ifelse_ignore = false;
+
+/** if-elseif-else scope is open **/
+bool ifelse_open = false;
+
+/** last known identifier **/
+char* identifier = NULL;
+
+/** used internal functions **/
+intFC internalFuncsUsed[11] = { 0 };
 
 /*
  *
@@ -514,16 +526,9 @@ void generateHeader() {
 
 void generateFunction(const char* fName)  {
     funcName = (char*) fName;
-    intFC i = INPUTS;
-    int res = isFuncInternal(&i, fName);
 
     // not 0 -> strcmp diff in all variations -> not generating internal function
-    if (res) {
-        fprintf(stdout, "\nLABEL $%s\n\nCREATEFRAME\nPUSHFRAME\n", fName);
-    } else {
-        setUpCodeInternal(i);
-        generateCodeInternal();
-    }
+    fprintf(stdout, "\nLABEL $%s\n\nCREATEFRAME\nPUSHFRAME\n", fName);
 }
 
 void generateFuncArgument(char* argName) {
@@ -557,8 +562,6 @@ void generateFuncEnd() {
 void generateDefinition(char* name) {
     // DEFVAR LF@name
     fprintf(stdout, "DEFVAR LF@%s\n", name);
-    // POPS LF@name
-    generateAssignment(name);
 }
 
 void generateAssignment(char* name) {
@@ -570,13 +573,43 @@ void generatePrint(DataType type) {
 }
 
 void generateIfScope() {
-    fprintf(stdout, "JUMP IF$%d\n\n", if_cnt);
-    fprintf(stdout, "LABEL IF$%d\nCREATEFRAME\nPUSHFRAME\n", if_cnt);
-    if_cnt++;
+    if (!ifelse_ignore) {
+        fprintf(stdout, "JUMP IF$%d\n\n", if_cnt);
+        fprintf(stdout, "LABEL IF$%d\nCREATEFRAME\nPUSHFRAME\n", if_cnt);
+        if_cnt++;
+        ifelse_open = true;
+    }
 }
 
 void generateIfScopeEnd() {
-    fprintf(stdout, "POPFRAME\n\n");
+    if (!ifelse_ignore && ifelse_open) {
+        fprintf(stdout, "POPFRAME\n\n");
+        ifelse_open = false;
+    }
+}
+
+void ignoreIfScope(int ignore) {
+    if (ignore)
+        ifelse_ignore = true;
+    else
+        ifelse_ignore = false;
+}
+
+void generatorSaveID(char* id) {
+    identifier = id;
+}
+
+char* generatorGetID() {
+    return identifier;
+}
+
+void generateUsedInternalFunctions() {
+    for (intFC i = INPUTS; i <= CHR; i++) {
+        if (internalFuncsUsed[i]) {
+            setUpCodeInternal(i);
+            generateCodeInternal();
+        }
+    }
 }
 
 /*
@@ -654,11 +687,13 @@ int isFuncInternal(intFC* counter, const char* fName) {
     int res = 1;
     while(internalFuncNames[i] != NULL) {
         res = strcmp(fName, internalFuncNames[i++]);
-        if (!res) {
-            i--;
+        if (!res) { // strcmp = 0 <=> no difference
+            i--; // need to go by 1 back because of i++ upper
             break;
         }
     }
+
+    internalFuncsUsed[i]++; // marks internal function as used so it will be generated
     *counter = i;
     return res;
 }
