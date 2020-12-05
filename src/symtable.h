@@ -373,11 +373,11 @@ stNodePtr stStackLookUp ( stStack *stack, stID identificator );
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 /**
- * @brief 
- * 
- * @param stack 
- * @param identificator 
- * @return stVarType 
+ * @brief Looks throught the stack for variable
+ * @note Goes through all variable symtables to find variable desired
+ * @param stack Stack of variables (and global function -> GST -> bottom of the stack)
+ * @param identificator Name of the variable we want to find
+ * @return stVarType Type of the variable @see stVarTypes
  */
 stVarType stVarTypeLookUp ( stStack *stack, stID identificator );
 

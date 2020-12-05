@@ -78,6 +78,7 @@
 stNodePtr stFunctions;      /**< Symboltable for functions (only fucntions are global) */
 stStack stack;              /**< Global stack for symtables                            */
 stID currentFnc;            /**< To remember current function (for lookup)             */
+stID currentVar;            /**< To remember current variable (for type set and lookup)*/
 Token* tk;                  /**< Token store - global                                  */
 int token;                  /**< Token return code store - global                      */
 int mainFound = 0;          /**< Was `function main` found in program?                 */

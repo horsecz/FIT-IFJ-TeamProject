@@ -431,6 +431,14 @@ stNodePtr stStackLookUp ( stStack *stack, stID identificator ) {
 }
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
+ *   WORK WITH WHOLE STACK                                       *
+ *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
+
+stVarType stVarTypeLookUp ( stStack *stack, stID identificator ) {
+    return UNKNOWN;
+}
+
+/*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
  *                       STACK  HELPER                           * 
  *                                                               *
