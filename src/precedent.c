@@ -505,26 +505,26 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_INTEGER);
 						stack->top->inte = 420;							//nahodna hodnota aby hodnota nebyla 0 dela to pak bordel pri deleni
-						printf("PUSHS LF@%s\n", druhej->nazev);
+						printf("PUSHS LF@%s\n", *druhej->nazev.str);
 					}
 					if (druhej->token_Type == TYPE_FLOAT64)
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_FLOAT);
 						stack->top->inte = 420.0;						//nahodna hodnota aby hodnota nebyla 0 dela to pak bordel pri deleni
-						printf("PUSHS LF@%s\n", druhej->nazev);
+						printf("PUSHS LF@%s\n", *druhej->nazev.str);
 					}
 					if (druhej->token_Type == TYPE_STRING)
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_STRING);
-						printf("PUSHS LF@%s\n", druhej->nazev);
+						printf("PUSHS LF@%s\n", *druhej->nazev.str);
 					}
 					if (druhej->token_Type == TYPE_BOOL)
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_BOOL);
-						printf("PUSHS LF@%s\n", druhej->nazev);
+						printf("PUSHS LF@%s\n", *druhej->nazev.str);
 					}
 				}
 				else if (&druhej->nazev == NULL)	//pokud je null znamena to ze to neni promnenna
@@ -568,92 +568,27 @@ int reduction(symStack *stack){
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_STRING);
-						printf("PUSHS string@%s\n", druhej->string);
+						printf("PUSHS string@%s\n", druhej->string.str);
 					}
 					if (druhej->token_Type == TYPE_BOOL)
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_BOOL);
-						printf("PUSHS string@%s\n", druhej->boolen);
+						if (druhej->boolen= true)
+						{
+							printf("PUSHS bool@true\n");
+						}
+						else if (druhej->boolen= false)
+						{
+							printf("PUSHS bool@false\n");
+						}
+						
 					}
 				}
 			}
 
 			
 		}
-
-
-
-
-
-
-
-
-
-	/*
-
-	printf("PUSHS int@%d\n", stack->top->inte);
-	printf("PUSHS float@%a\n", stack->top->flt);
-	printf("PUSHS string@%s\n", stack->top->string->string);
-
-		if (i == 3)
-		{
-			symstackPop(stack);
-			help=symstackTop(stack);
-			symStackItem* temp2 = malloc(sizeof(symStackItem));
-			if(stack->top->nazev != NULL){
-				if(in_function2){
-					if(symtableSearch(local, stack->top->nazev) != NULL)
-						printf("PUSHS LF@%s\n", stack->top->nazev);
-					else if(symtableSearch(global, stack->top->nazev) != NULL)
-						printf("PUSHS GF@%s\n", stack->top->nazev);
-					else
-						return SEM_ERROR_DEF;
-				}else{
-					printf("PUSHS GF@%s\n", stack->top->nazev);
-				}
-			}
-			if (help == TYPE_INT)
-			{
-				if(stack->top->nazev == NULL)
-					printf("PUSHS int@%d\n", stack->top->inte);
-				temp2->inte = stack->top->inte;
-				symstackPopMore(stack, 2);
-				symstackPush(stack,TOKEN_PREC_INTEGER);
-				stack->top->inte = temp2->inte;
-				
-			}
-			else if (help == TYPE_FLOAT64)
-			{
-				if(stack->top->nazev == NULL)
-					printf("PUSHS float@%a\n", stack->top->flt);
-				stack->top->flt = temp2->flt;
-				symstackPopMore(stack, 2);
-				symstackPush(stack,TOKEN_PREC_FLOAT);
-				stack->top->flt = temp2->flt;
-			}
-			else if (help ==TYPE_STRING)
-			{
-				if(stack->top->nazev == NULL)
-					printf("PUSHS string@%s\n", stack->top->string->string);
-				temp2->string = stack->top->string;
-				symstackPopMore(stack, 2);
-				symstackPush(stack,TOKEN_PREC_STRING);
-				stack->top->string = temp2->string;
-			}
-			else
-			{
-				free(temp2);
-				return SYNTAX_ERROR;	
-			}
-			free(temp2);
-			
-		}
-		else
-		{
-
-			return SYNTAX_ERROR;
-		}*/
 	}
 	else if (topterm == TYPE_RIGHT_BRACKET) // hotovo provede  redukci zavorek
 	{
