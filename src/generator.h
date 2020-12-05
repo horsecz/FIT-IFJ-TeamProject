@@ -104,14 +104,19 @@ void generateIfScope();
 
 /**
  * @brief Generates end of if (else if, else) scope
+ * @pre Expects that for cycle code will be run at least once (use info from expression result)
  */
 void generateIfScopeEnd();
 
-// TODO {
-
+/**
+ * @brief Generates beginning of for cycle scope
+ */
 void generateForScope();
 
-// } TODO
+/**
+ * @brief Generates end of for cycle scope
+ */
+void generateForScopeEnd();
 
 /**
  * @brief Specifies if this if (else if, else) scope will be ignored (and not generated) or not.

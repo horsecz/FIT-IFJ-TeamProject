@@ -588,6 +588,17 @@ void generateIfScopeEnd() {
     }
 }
 
+void generateForScope() {
+    fprintf(stdout, "JUMP FOR$%d\n\n", for_cnt);
+    fprintf(stdout, "LABEL FOR$%d\nCREATEFRAME\nPUSHFRAME\n", for_cnt);
+}
+
+void generateForScopeEnd() {
+    // TODO: when / how do I get result of FOR EXPRESSION?
+    fprintf(stdout, "JUMPIFEQ FOR$%d LF@result bool@true\nPOPFRAME\n\n", for_cnt);
+    for_cnt++;
+}
+
 void ignoreIfScope(int ignore) {
     if (ignore)
         ifelse_ignore = true;
