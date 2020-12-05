@@ -47,13 +47,16 @@ precedent.o: $(SRC)precedent.c $(SRC)precedent.h $(SRC)scanner.h $(SRC)symstack.
 symstack.o: $(SRC)symstack.c $(SRC)symstack.h $(SRC)symtable.h $(SRC)scanner.h
 	$(CC) $(CCFLAGS) -c $< -o $(SRC)symstack.o
 
+generator.o: $(SRC)generator.c $(SRC)generator.h
+	$(CC) $(CCFLAGS) -c $< -o $(SRC)generator.o
+
 # MAIN
 
-$(MAIN).o: $(MAIN).c $(MAIN).h $(SRC)scanner.h $(SRC)str.h $(SRC)symtable.h $(SRC)parser.h $(SRC)returns.h
+$(MAIN).o: $(MAIN).c $(MAIN).h $(SRC)scanner.h $(SRC)str.h $(SRC)symtable.h $(SRC)parser.h $(SRC)returns.h $(SRC)generator.h
 	$(CC) $(CCFLAGS) -c $<
 	
-$(MAIN): $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o
-	$(CC) $(CCFLAGS) $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o -o $(OUT)
+$(MAIN): $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o
+	$(CC) $(CCFLAGS) $(MAIN).o $(SRC)scanner.o $(SRC)str.o $(SRC)symtable.o $(SRC)parser.o $(SRC)returns.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o -o $(OUT)
 
 #
 # ADDITIONAL FEATURES
@@ -69,8 +72,8 @@ $(SRC)scanner-d.o: $(SRC)scanner.c $(SRC)scanner.h $(SRC)str.h
 $(SRC)parser-d.o: $(SRC)parser.c $(SRC)parser.h $(SRC)symtable.h $(SRC)str.h $(SRC)returns.h
 	$(CC) $(CCFlAGS) -DDEBUG -c $< -o $(SRC)parser-d.o
 
-$(MAIN)-d: $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o
-	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o -o $(OUT)
+$(MAIN)-d: $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o
+	$(CC) $(CCFLAGS) -DDEBUG $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)returns.o $(SRC)parser-d.o $(SRC)precedent.o $(SRC)symstack.o $(SRC)generator.o -o $(OUT)
 
 # CLEAN MAKE OUTPUT(S)
 
