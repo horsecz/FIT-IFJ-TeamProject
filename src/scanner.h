@@ -18,7 +18,7 @@
 // include files for working with dynamic string
 #include "str.h"
 
-char hexaHold[2];
+extern char hexaHold[2];
 
 typedef enum
 {

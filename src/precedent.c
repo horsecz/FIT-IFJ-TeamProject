@@ -90,7 +90,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 				{
 					
 					stVarType help2;
-					help2 = stVarTypeLookUp(Vars, token->attribute.string);
+					help2 = stVarTypeLookUp(Vars, strGetStr(&token->attribute.string));
 
 					if (help2 == INT)
 					{

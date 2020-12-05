@@ -55,8 +55,6 @@ char* funcName = NULL;
  */
 
 unsigned int if_cnt = 0;
-unsigned int else_cnt = 0;
-unsigned int elseif_cnt = 0;
 unsigned int for_cnt = 0;
 
 

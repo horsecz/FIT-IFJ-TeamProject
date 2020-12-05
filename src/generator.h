@@ -162,16 +162,10 @@ extern const char* internalFuncNames[];
 extern char* code;
 
 /** @brief (internal) if scope counter **/
-extern int if_cnt;
-
-/** @brief (internal) else scope counter **/
-extern int else_cnt;
-
-/** @brief (internal) else if scope counter **/
-extern int elseif_cnt;
+extern unsigned int if_cnt;
 
 /** @brief (internal) for scope counter **/
-extern int for_cnt;
+extern unsigned int for_cnt;
 
 
 #endif //GENERATOR_H

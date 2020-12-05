@@ -17,6 +17,8 @@
 #define SCANNER_MISSING_TOKEN 2
 #define SCANNER_INTERNAL 99
 
+char hexaHold[2] = { 0 };
+
 int isReservedKeyword (string *str)
 {
   // maybe this is not the best approach (discussion necessary)
