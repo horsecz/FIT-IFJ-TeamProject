@@ -11,15 +11,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 /** macros for converting 'C code' into 'string literal' (used in generating internal functions) **/
 #define toString(code) #code
 #define convertToString(code) toString(code)
 
-/** set ups code variable and outputs it to stdout via generateCode function **/
-#define GEN_CODE(codeToGen) \
-    code = codeToGen;       \
-    generateCode();         \
+/** generates pop code **/
+#define GEN_POP(name) fprintf(stdout, "POPS LF@%s\n", name);
+
+/** generates push code **/
+#define GEN_PUSH(name) fprintf(stdout, "PUSHS LF@%s\n", name);
 
 /** maximum number of characters 1 function identifier can contain **/
 #define MAX_FNAME 255
@@ -49,12 +51,20 @@ char* code = NULL;
 char* funcName = NULL;
 
 /*
+ * SCOPE COUNTERS
+ */
+
+unsigned int if_cnt = 0;
+unsigned int else_cnt = 0;
+unsigned int elseif_cnt = 0;
+unsigned int for_cnt = 0;
+
+
+/*
  *
  * DEFINITIONS OF IFJ20 BUILT-IN FUNCTIONS
  *
  */
-
-// all these functions return 6 if bad datatype in function argument has been given (via semantic analysis)
 
 /* inputX functions: read 1 line (ended with EOL) from stdin
  * returns 0 if ok to second return value, 1 if error (missing input value, wrong format)
@@ -62,7 +72,7 @@ char* funcName = NULL;
 
 // returns read line without EOL
 #define inputs()  \n \
-    LABEL _INPUTS    \n \
+    LABEL _inputs    \n \
                      \n \
     CREATEFRAME      \n \
     PUSHFRAME        \n \
@@ -90,7 +100,7 @@ char* funcName = NULL;
 // hexadecimal numbers are supported
 // reads and returns int number
 #define inputi()    \n \
-    LABEL _INPUTI   \n \
+    LABEL _inputi   \n \
                     \n \
     CREATEFRAME     \n \
     PUSHFRAME       \n \
@@ -113,9 +123,10 @@ char* funcName = NULL;
                     \n \
     RETURN
 
+
 // reads and returns float64 number
 #define inputf()    \n \
-    LABEL _INPUTF   \n \
+    LABEL _inputf   \n \
                     \n \
     CREATEFRAME     \n \
     PUSHFRAME       \n \
@@ -140,7 +151,7 @@ char* funcName = NULL;
 
 // reads and returns bool value
 #define inputb()    \n \
-    LABEL _INPUTB   \n \
+    LABEL _inputb   \n \
                     \n \
     CREATEFRAME     \n \
     PUSHFRAME       \n \
@@ -164,41 +175,37 @@ char* funcName = NULL;
     RETURN
 
 /* print function
- * prints to stdout values of arguments given (not separated), no return value
- * count ... the count of pushes / arguments that will print work with
+ * prints to stdout values of arguments given (in stack), no return value
  */
-void print(int count) {
-    //somewhere before print: generateCode(pushPrintArguments())
+void print(DataType arg_type) {
+    char* type = NULL;
+    switch (arg_type) {
+        case INT_T:
+            type = "INT";
+            break;
+        case FLOAT64_T:
+            type = "FLOAT";
+            break;
+        case STRING_T:
+            type = "STRING";
+            break;
+        case BOOL_T:
+            type = "BOOL";
+            break;
+        default:
+            fprintf(stderr, "ERROR: CODE GENERATOR: unknown type in internal function print()\n");
+            break;
+    }
 
-
-    //generateCode(print_start())
-    //for (int i = 0; i < count; i++) {
-    //generateCode(print_process(arguments))
-    //generateCode(print_end())
-    //}
+    fprintf(stdout, "POPS GF@?PRINT_%s?\nWRITE GF@?PRINT_%s?\n", type, type);
 }
-
-#define print_start() \n \
-    LABEL _PRINT      \n \
-                      \n \
-    CREATEFRAME       \n \
-    PUSHFRAME         \n \
-    DEFVAR LF@out
-
-#define print_process()  \n \
-    POPS LF@out             \n \
-    WRITE LF@out
-
-#define print_end() \n \
-    POPFRAME        \n \
-    RETURN
 
 /* number datatypes conversion */
 
 // i ... int
 // returns float value of argument i
 #define int2float() \n \
-    LABEL _INT2FLOAT \n \
+    LABEL _int2float \n \
                      \n \
     CREATEFRAME      \n \
     PUSHFRAME        \n \
@@ -228,7 +235,7 @@ void print(int count) {
 // f .. float64
 // returns int value of argument f
 #define float2int() \n \
-    LABEL _FLOAT2INT \n \
+    LABEL _float2int \n \
                      \n \
     CREATEFRAME      \n \
     PUSHFRAME        \n \
@@ -261,7 +268,7 @@ void print(int count) {
 // s ... string
 // returns (int) length (number of characters, including \n \n, etc.) of s string
 #define funclen()  \n \
-    LABEL _FUNCLEN  \n \
+    LABEL _funclen  \n \
                     \n \
     CREATEFRAME     \n \
     PUSHFRAME       \n \
@@ -297,7 +304,7 @@ void print(int count) {
 // second return value (int) is 0 if ok, or 1 if i is not in interval <0, len(s)>,
 // or n < 0
 #define substr() \n \
-    LABEL _SUBSTR   \n \
+    LABEL _substr   \n \
                 \n \
     CREATEFRAME \n \
     PUSHFRAME   \n \
@@ -385,7 +392,7 @@ void print(int count) {
 // on position i in string s
 // second return value (int) is 0 if ok or 1 if i is not in interval <0, len(s)-1>
 #define ord()    \n \
-    LABEL _ORD      \n \
+    LABEL _ord      \n \
                 \n \
     CREATEFRAME \n \
     PUSHFRAME   \n \
@@ -440,7 +447,7 @@ void print(int count) {
 // which ASCII code is given in argument i
 // second return value (int) is 0 if ok, or 1 if i is not in interval <0, 255>
 #define chr()  \n \
-    LABEL _CHR  \n \
+    LABEL _chr  \n \
                 \n \
     CREATEFRAME \n \
     PUSHFRAME   \n \
@@ -483,9 +490,18 @@ void print(int count) {
 
 // IFJcode20 header for interpret + beginning of program (jumps to $MAIN function)
 #define ic20int_header() .IFJcode20 \n \
-                \n \
-    CALL $MAIN  \n \
-    EXIT int@0  \n \
+                    \n\
+    DEFVAR GF@?AX?  \n\
+    DEFVAR GF@?BX?  \n\
+    DEFVAR GF@?CX?  \n                 \
+    DEFVAR GF@?PRINT_INT? \n                     \
+    DEFVAR GF@?PRINT_FLOAT? \n        \
+    DEFVAR GF@?PRINT_STRING? \n       \
+    DEFVAR GF@?PRINT_BOOL?    \n         \
+    \n\
+    CALL $main       \n\
+    EXIT int@0      \n\
+
 
 /*
  *
@@ -495,110 +511,74 @@ void print(int count) {
 
 void generateHeader() {
     code = convertToString(ic20int_header());
-    generateCode();
+    generateCodeInternal();
 }
 
-void generateFunction(const char* fName, ...)  {
+void generateFunction(const char* fName)  {
     funcName = (char*) fName;
     intFC i = INPUTS;
-    int res = 1;
-
-    // check if fName isnt internal function name
-    while(internalFuncNames[i] != NULL) {
-        res = strcmp(funcName, internalFuncNames[i++]);
-        if (!res) {
-            i--;
-            break;
-        }
-    }
-
-    // push func arguments to stack
-    // (...) TODO
+    int res = isFuncInternal(&i, fName);
 
     // not 0 -> strcmp diff in all variations -> not generating internal function
     if (res) {
-        char label[7+MAX_FNAME] = { 0 };
-
-        // if generated function is main
-        if (!strcmp(funcName, "main")) {
-            strcpy(label, "\nLABEL $MAIN");
-        } else {
-            strcpy(label, "\nLABEL $");
-            strcat(label, funcName);
-        }
-
-        char frame[] = "CREATEFRAME\nPUSHFRAME\n";
-        GEN_CODE(label);
-        GEN_CODE(frame);
+        fprintf(stdout, "\nLABEL $%s\n\nCREATEFRAME\nPUSHFRAME\n", fName);
     } else {
         setUpCodeInternal(i);
-        generateCode();
+        generateCodeInternal();
     }
 }
 
-void generateDefinition(char* name, unsigned int scope) {
-    // DEFVAR LF@name
-    char new_variable[10+MAX_IDNAME+1+10] = "DEFVAR LF@";
-    char scopeChar[10] = { 0 };
-    sprintf(scopeChar, "%u", scope);
-
-    strncat(new_variable, name, MAX_IDNAME);
-    strcat(new_variable, "$");
-    strcat(new_variable, scopeChar);
-
-    GEN_CODE(new_variable);
-
-    generateAssignment(name, scope);
+void generateFuncArgument(char* argName) {
+    GEN_PUSH(argName);
 }
 
 void generateFuncCall(char* fName) {
-    // CALL fName
-    funcName = fName;
-    char func_call[6+MAX_FNAME] = "CALL ";
+    // CALL $fName or CALL _fname
+    char fName_sep = '\0';
 
     // Check if fName isnt internal func name
     intFC i = INPUTS;
-    int res = 1;
-
-    while(internalFuncNames[i] != NULL) {
-        res = strcmp(funcName, internalFuncNames[i++]);
-        if (!res) {
-            i--;
-            break;
-        }
-    }
-
-    // To upper case chars
-    char funcInt[MAX_FNAME] = { 0 };
-    strncat(funcInt, fName, MAX_FNAME);
-    for (int j = 0; funcInt[j] != '\0'; j++)
-        funcInt[j] = toupper(funcInt[j]);
+    int res = isFuncInternal(&i, fName);
 
     if (res) // user function
-        strcat(func_call, "$");
+        fName_sep = '$';
     else // internal function
-        strcat(func_call, "_");
+        fName_sep = '_';
 
-    strncat(func_call, funcInt, MAX_FNAME);
-    GEN_CODE(func_call);
+    fprintf(stdout, "CALL %c%s\n", fName_sep, fName);
 }
 
-void generateAssignment(char* name, unsigned int scope) {
-    // POP LF@name
-    char pop_variable[7+MAX_IDNAME+2] = "POPS LF@";
-    char scopeChar[10] = { 0 };
-    sprintf(scopeChar, "%u", scope);
-
-    strncat(pop_variable, name, MAX_IDNAME);
-    strcat(pop_variable, "$");
-    strcat(pop_variable, scopeChar);
-
-    GEN_CODE(pop_variable);
+void generateFuncReturn(char* retName) {
+    GEN_PUSH(retName);
 }
 
 void generateFuncEnd() {
-    char popReturn[] = "POPFRAME\n\nRETURN";
-    GEN_CODE(popReturn);
+    fprintf(stdout, "POPFRAME\n\nRETURN\n");
+}
+
+void generateDefinition(char* name) {
+    // DEFVAR LF@name
+    fprintf(stdout, "DEFVAR LF@%s\n", name);
+    // POPS LF@name
+    generateAssignment(name);
+}
+
+void generateAssignment(char* name) {
+    GEN_POP(name);
+}
+
+void generatePrint(DataType type) {
+    print(type);
+}
+
+void generateIfScope() {
+    fprintf(stdout, "JUMP IF$%d\n\n", if_cnt);
+    fprintf(stdout, "LABEL IF$%d\nCREATEFRAME\nPUSHFRAME\n", if_cnt);
+    if_cnt++;
+}
+
+void generateIfScopeEnd() {
+    fprintf(stdout, "POPFRAME\n\n");
 }
 
 /*
@@ -607,7 +587,7 @@ void generateFuncEnd() {
  *
  */
 
-void generateCode() {
+void generateCodeInternal() {
     // get rid of spaces created by macros
     char* output = (char*) calloc(sizeof(char)*strlen(code)+2, 1);
     if (code != NULL && output != NULL) {
@@ -647,9 +627,6 @@ void setUpCodeInternal(intFC i) {
         case INPUTB:
             code = convertToString(inputb());
             break;
-        case PRINT:
-            code = convertToString(print()); /**< todo not working now **/
-            break;
         case INT2FLOAT:
             code = convertToString(int2float());
             break;
@@ -669,6 +646,21 @@ void setUpCodeInternal(intFC i) {
             code = convertToString(chr());
             break;
         default:
+            code = NULL;
             break;
     }
+}
+
+int isFuncInternal(intFC* counter, const char* fName) {
+    int i = *counter;
+    int res = 1;
+    while(internalFuncNames[i] != NULL) {
+        res = strcmp(fName, internalFuncNames[i++]);
+        if (!res) {
+            i--;
+            break;
+        }
+    }
+    *counter = i;
+    return res;
 }
