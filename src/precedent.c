@@ -505,26 +505,26 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_INTEGER);
 						stack->top->inte = 420;							//nahodna hodnota aby hodnota nebyla 0 dela to pak bordel pri deleni
-						printf("PUSHS LF@%s\n", *druhej->nazev.str);
+						printf("PUSHS LF@%s\n", druhej->nazev.str);
 					}
 					if (druhej->token_Type == TYPE_FLOAT64)
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_FLOAT);
 						stack->top->inte = 420.0;						//nahodna hodnota aby hodnota nebyla 0 dela to pak bordel pri deleni
-						printf("PUSHS LF@%s\n", *druhej->nazev.str);
+						printf("PUSHS LF@%s\n", druhej->nazev.str);
 					}
 					if (druhej->token_Type == TYPE_STRING)
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_STRING);
-						printf("PUSHS LF@%s\n", *druhej->nazev.str);
+						printf("PUSHS LF@%s\n", druhej->nazev.str);
 					}
 					if (druhej->token_Type == TYPE_BOOL)
 					{
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_BOOL);
-						printf("PUSHS LF@%s\n", *druhej->nazev.str);
+						printf("PUSHS LF@%s\n", druhej->nazev.str);
 					}
 				}
 				else if (&druhej->nazev == NULL)	//pokud je null znamena to ze to neni promnenna
