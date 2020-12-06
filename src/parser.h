@@ -286,6 +286,14 @@ eRC unary();
  */
 eRC expressionNext();
 
+/**
+ * @brief Parse arguments of function call
+ * @note <arguments_fc> -> ( <arguments_fc> )
+ * @note <arguments_fc> -> ( )
+ * @return eRC @see returnCodes
+ */
+eRC funcCallArguments();
+
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *   IF ELSE CHECK                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
@@ -357,12 +365,5 @@ eRC returnCommand();
  * @post 
  */
 eRC returnStatement();
-
-/**
- * @brief Parse arguments of function call
- * @note <arguments_fc> -> ( <arguments_fc> )
- * @note <arguments_fc> -> ( )
- */
-eRC funcCallArguments();
 
 #endif

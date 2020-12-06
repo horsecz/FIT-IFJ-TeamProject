@@ -75,17 +75,19 @@
  *                                                               * 
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
-stNodePtr stFunctions = NULL;      /**< Symboltable for functions (only fucntions are global) */
-stStack stack;              /**< Global stack for symtables                            */
-stID currentFnc;            /**< To remember current function (for lookup)             */
-stID currentVar;            /**< To remember current variable (for type set and lookup)*/
-Token* tk;                  /**< Token store - global                                  */
-int token;                  /**< Token return code store - global                      */
-int mainFound = 0;          /**< Was `function main` found in program?                 */
-char errText[MAX_ERR_MSG];  /**< Error text msg (if error occurs)                      */
-bool printLastToken;        /**< For error message - if last token may be printed      */
-bool argRet = false;        /**< Arguments and returns switch for function parsing     */
-int numberOfIDs = 0;        /**< Counter of IDs on the left side of the assignment, this is needed to check correct number of expressions on the left side or correct number of returns from function call */
+stNodePtr stFunctions = NULL;   /**< Symboltable for functions (only fucntions are global) */
+stStack stack;                  /**< Global stack for symtables                            */
+stID currentFnc;                /**< To remember current function (for lookup)             */
+stID currentVar;                /**< To remember current variable (for type set and lookup)*/
+Token* tk;                      /**< Token store - global                                  */
+TokenType precType;             /**< For work with precedent analysis                      */
+int token;                      /**< Token return code store - global                      */
+int mainFound = 0;              /**< Was `function main` found in program?                 */
+char errText[MAX_ERR_MSG];      /**< Error text msg (if error occurs)                      */
+bool printLastToken;            /**< For error message - if last token may be printed      */
+bool fncDef = true;             /**< Parsing function definiton (for arguments)            */
+bool argRet = false;            /**< Arguments and returns switch for function parsing     */
+int numberOfIDs = 0;            /**< Counter of IDs on the left side of the assignment, this is needed to check correct number of expressions on the left side or correct number of returns from function call */
 //InstructionsList* il;
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
@@ -131,9 +133,8 @@ eRC parser(Token* tkn) {
         }
         iPrint(result, true, errText);
     }
-
     #ifdef DEBUG
-    displayBST(stFunctions);
+    displayBST(stackGetTopSt(&stack));
     #endif
     debugPrint("-> Syntax analysis %s.", (result ? "failed" : "OK"));
 
@@ -299,7 +300,12 @@ eRC function() {
         setErrMsg("expected '(' after function identifier");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
+    // TODO: Check this
+    stNodePtr stVars = NULL;
+    stackPushSt(&stack, &stVars);                       // Entering new scope (function)	
+    stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
 
+    fncDef = true;
     argRet = false;                                     // Parsing arguments -> argRet = false
     result = arguments();                               // Parse function arguments
     if (result != RC_OK) return result;
@@ -312,10 +318,16 @@ eRC function() {
     argRet = true;                                      // Parsing arguments -> argRet = true
     result = functionReturn();                          // Parse function return types
     if (result != RC_OK) return result;
+    fncDef = false;
 
     result = commandBlock();                            // Parse command block of the function
     if (result != RC_OK) return result;
     generateFuncEnd();
+    // TODO: Symtable check	
+    #ifdef DEBUG
+    displayBST(stackGetTopSt(&stack));
+    #endif
+    stDestruct(stackPopSt(&stack));                     // End of the scope (function)
 
     return result;
 }
@@ -360,6 +372,8 @@ eRC arguments() {
     getToken(token, tk);                                // Get the token with the ID or others (eps)
     if (tk->type == TYPE_IDENTIFIER) {
         generateFuncArgument(strGetStr(&tk->attribute.string));
+        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        currentVar = strGetStr(&tk->attribute.string);
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
         if (result != RC_OK) return result;
@@ -383,6 +397,8 @@ eRC argumentNext() {
         }
 
         generateFuncArgument(strGetStr(&tk->attribute.string));
+        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        currentVar = strGetStr(&tk->attribute.string);
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
         if (result != RC_OK) return result;
@@ -400,31 +416,43 @@ eRC type() {
     if (tk->type == TYPE_KEYWORD) {
         switch (tk->attribute.keyword) {
             case KEYWORD_INT:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), INT);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), INT, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stStackLookUp(&stack, currentFnc), INT);
+                        stVarSetType(stStackLookUp(&stack, currentVar), INT);
+                    } else if (argRet) {
+                        stFncSetType(stStackLookUp(&stack, currentFnc), INT, -1);
+                    }
                 }
                 break;
             case KEYWORD_FLOAT64:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), FLOAT64);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stStackLookUp(&stack, currentFnc), FLOAT64);
+                        stVarSetType(stStackLookUp(&stack, currentVar), FLOAT64);
+                    } else if (argRet) {
+                        stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64, -1);
+                    }
                 }
                 break;
             case KEYWORD_STRING:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), STRING);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), STRING, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stStackLookUp(&stack, currentFnc), STRING);
+                        stVarSetType(stStackLookUp(&stack, currentVar), STRING);
+                    } else if (argRet) {
+                        stFncSetType(stStackLookUp(&stack, currentFnc), STRING, -1);
+                    }
                 }
                 break;
             case KEYWORD_BOOL:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), BOOL);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), BOOL, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stStackLookUp(&stack, currentFnc), BOOL);
+                        stVarSetType(stStackLookUp(&stack, currentVar), BOOL);
+                    } else if (argRet) {
+                        stFncSetType(stStackLookUp(&stack, currentFnc), BOOL, -1);
+                    }
                 }
                 break;
             default:
@@ -578,6 +606,8 @@ eRC command() {
         case TYPE_IDENTIFIER:                           // ID <statement>
             debugPrint("<%s> -> ID <statement>", __func__);
             generatorSaveID(strGetStr(&tk->attribute.string));
+            stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);	
+            currentVar = strGetStr(&tk->attribute.string);
             getToken(token, tk);                        // Get next token for statement
             result = statement();                       // Parse statement
             if (result != RC_OK) return result;
@@ -587,13 +617,28 @@ eRC command() {
                 case KEYWORD_IF:                        // if <expression> <cmd_block> <if_else>
                     debugPrint("<%s> -> if <expression> <cmd_block> <if_else>", __func__);
                     getToken(token, tk);                // Step over IF
-
-                    result = precedent_analys(tk, NULL, &stack); // Evaluate expression
+                    // TODO: Check functionality of this part	
+                    result = precedent_analys(tk, &precType, &stack); // Evaluate expression
                     if (result != RC_OK) return result;
+                    if (precType != TYPE_BOOL) {	
+                        iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "result of IF expression is not bool");	
+                        return RC_ERR_SEMANTIC_TYPECOMP;	
+                    }
                     // if (expression == true) generateIfScope();
+
+                    // TODO: Check this
+                    stNodePtr stVars = NULL;
+                    stackPushSt(&stack, &stVars);       // Entering new scope (if 1)	
+                    stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
 
                     result = commandBlock();            // Parse block of commands (inside of if)
                     if (result != RC_OK) return result;
+
+                    // TODO: Symtable check	
+                    #ifdef DEBUG
+                    displayBST(stackGetTopSt(&stack));
+                    #endif
+                    stDestruct(stackPopSt(&stack));     // End of the scope (if 1)
 
                     result = ifElse();                  // Parse if else
                     if (result != RC_OK) return result;
@@ -609,6 +654,10 @@ eRC command() {
                         return RC_ERR_SYNTAX_ANALYSIS;
                     }
 
+                    getToken(token, tk);                // Step over FOR
+                    // TODO: Check functionality of this part	
+                    result = precedent_analys(tk, &precType, &stack); // Evaluate expression
+                    if (result != RC_OK) return result;
                     // TODO -> handle <expression> -> requires semantic analysis
 
                     result = forAssign();               // Parse assignment section of for
@@ -663,18 +712,25 @@ eRC statement() {
             break;
         case TYPE_DECLARATIVE_ASSIGN:                   // := <expression>
             generateDefinition(generatorGetID());
-            getToken(token, tk);                        // Get the next token (move past := to <assignment>)
-            result = assignment();                      // Parse assignment
+            getToken(token, tk);                        // Get the next token (move past := to <expression>)
+            result = precedent_analys(tk, &precType, &stack);// Evaluate expression
             if (result != RC_OK) return result;
+            stVarSetType(stStackLookUp(&stack, currentVar), precType);// Set variable type
             break;
         case TYPE_PLUS_ASSIGN:
         case TYPE_MINUS_ASSIGN:
         case TYPE_MULTIPLY_ASSIGN:
         case TYPE_DIVIDE_ASSIGN:                        // <unary> <expression>
-            result = unary();                           // Parse unary (just do a re-check) TODO: consider removing
-            if (result != RC_OK) return result;
-            getToken(token, tk);
-            // TODO -> handle <expression> -> requires semantic analysis
+            result = unary();                           // Parse unary (just do a re-check)
+            if (result != RC_OK) return result;	
+            // TODO: Check functionality of this part	
+            getToken(token, tk);                        // Step over ASSIGN	
+
+            result = precedent_analys(tk, &precType, &stack); // Evaluate expression
+            if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+                iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type (unary)");
+                return RC_ERR_SEMANTIC_TYPECOMP;	
+            }
             // generateAssignment(identifier);
             break;
         default:                                        // <id_mul> = <assignment>
@@ -739,7 +795,14 @@ eRC assignment() {
             getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
             break;
         default:                                    // <expression> <expr_n>
-            // TODO -> handle <expression> -> requires semantic analysis
+            // TODO: Check functionality of this part
+            result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
+            if (result != RC_OK) return result;
+            // TODO: This part will not work for multiple expressions 'cause of currentVar variable
+            if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+                iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
+                return RC_ERR_SEMANTIC_TYPECOMP;	
+            }
             // generateAssignment(identifier1);
             getToken(token, tk); // temporary: after expression is done, I god 1 token after expression
             generateAssignment(identifier);
@@ -779,7 +842,16 @@ eRC expressionNext() {
             setErrMsg("expected less expressions on the right side of the assignment");
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
-        // TODO -> handle <expression> -> requires semantic analysis
+        // TODO: Check functionality of this part
+        getToken(token, tk);                        // Step over COMMA	
+
+        result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
+        if (result != RC_OK) return result;
+        // TODO: This part will not work for multiple expressions 'cause of currentVar variable
+        if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+            iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
+            return RC_ERR_SEMANTIC_TYPECOMP;	
+        }
         generateAssignment(identifier);
         result = expressionNext();
         if (result != RC_OK) return result;
@@ -875,7 +947,11 @@ eRC forDefine() {
             setErrMsg("expected ':=' after identifier [for definition]");
             return RC_ERR_SYNTAX_ANALYSIS;
         }
-        // TODO -> handle <expression>
+         // TODO: Check functionality of this part
+        getToken(token, tk);                        // Step over DECLR ASSIGN	
+
+        result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
+        if (result != RC_OK) return result;
     }
     // else rule: <for_definition> -> eps
 
@@ -894,7 +970,11 @@ eRC forAssign() {
             setErrMsg("expected '=' after identifier [for assignment]");
             return RC_ERR_SYNTAX_ANALYSIS;
         }
-        // TODO -> handle <expression>
+         // TODO: Check functionality of this part
+        getToken(token, tk);                        // Step over ASSIGN	
+
+        result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
+        if (result != RC_OK) return result
     }
 
     return result;

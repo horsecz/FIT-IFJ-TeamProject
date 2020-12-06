@@ -237,7 +237,8 @@ int stDelete ( stNodePtr *symtable, stID identificator ) {
 void stFncSetType ( stNodePtr stNode, stVarType datatype, int position ) {
     if (stNode && stNode->fData) {
         if (position == -1) {
-            stNode->fData->returnType[0] = datatype;
+            stNode->fData->returnType[stNode->fData->returnNum] = datatype;
+            stNode->fData->returnNum++;
             return;
         } else if (stNode->fData->returnNum >= position) {
             stNode->fData->returnType[position] = datatype;
