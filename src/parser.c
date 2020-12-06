@@ -650,8 +650,9 @@ eRC statement() {
                 setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            if (strcmp(generatorGetID(), "print"))
-                generateFuncCall(generatorGetID());
+            char* funcID = generatorGetID();
+            if (strcmp(funcID, "print"))
+                generateFuncCall(funcID);
             // else
             //  print(datatype_arg1); print(datatype_arg2); (...)
             getToken(token, tk);
@@ -662,7 +663,7 @@ eRC statement() {
             if (result != RC_OK) return result;
             break;
         case TYPE_DECLARATIVE_ASSIGN:                   // := <expression>
-            generateDefinition(generatorGetID());
+            generateDefinitions();
             getToken(token, tk);                        // Get the next token (move past := to <assignment>)
             result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
@@ -704,6 +705,7 @@ eRC multipleID() {
             setErrMsg("expected ID after ','");
             return RC_ERR_SYNTAX_ANALYSIS;
         }
+        generatorSaveID(strGetStr(&tk->attribute.string));
         getToken(token, tk);                        // Prepare token for another multipleID call
         result = multipleID();                      // Parse multiple IDs
         if (result != RC_OK) return result;
@@ -722,7 +724,7 @@ eRC assignment() {
 
     switch (tk->type) {
         case TYPE_IDENTIFIER:                       // ID ( <arguments> )
-            // save this ID for later ... funcCallID
+            generatorSaveID(strGetStr(&tk->attribute.string));
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
                 setErrMsg("expected '(' after identifier");
@@ -734,17 +736,16 @@ eRC assignment() {
                 setErrMsg("expected ')' after function arguments");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            // generateFuncCall(funcCallID);
-            // generateAssignment(identifier1); generateAssignment(identifier2); (...)
+            generateFuncCall(generatorGetID());
+            generateAssignments();
             getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
             break;
         default:                                    // <expression> <expr_n>
             // TODO -> handle <expression> -> requires semantic analysis
-            // generateAssignment(identifier1);
-            getToken(token, tk); // temporary: after expression is done, I god 1 token after expression
-            generateAssignment(identifier);
+            getToken(token, tk); // temporary: after expression is done, I got 1 token after expression
             result = expressionNext();
             if (result != RC_OK) return result;
+            generateAssignments();
             break;
     }
 
@@ -780,7 +781,8 @@ eRC expressionNext() {
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
         // TODO -> handle <expression> -> requires semantic analysis
-        generateAssignment(identifier);
+        getToken(token, tk); // temporary: for dev purposes -> to simulate handling (1) number-only expression
+        getToken(token, tk); // temporary: expressions returns 1 token after expression (ends) -> remove after expression handling is done
         result = expressionNext();
         if (result != RC_OK) return result;
     }
