@@ -79,7 +79,7 @@ void generateFuncEnd();
  * @note variable name contains 'name' + '$' + 'number', where number is automatically assigned
  * (as count of variables in program)
  */
-void generateDefinition(char* name);
+void generateDefinitions();
 
 /**
  * @brief Generates variable assignment
@@ -88,7 +88,7 @@ void generateDefinition(char* name);
  * @pre variable MUST be defined (if not: semantic fails => this won't be called)
  * @pre value MUST be on TOP of stack
  */
-void generateAssignment(char* name);
+void generateAssignments();
 
 /**
  * @brief Internal function print (cant be written as macro), outputs 1 argument to stdout
@@ -128,13 +128,13 @@ void generateForScopeEnd();
 void ignoreIfScope(int ignore);
 
 /**
- * @brief Saves identifier to global variable
- * @param id string-name of identifier
+ * @brief Adds identifier at the end of the list for definition/assignments
+ * @param id variable identifier
  */
 void generatorSaveID(char* id);
 
 /**
- * @brief Gets last known identifier
+ * @brief Gets last added identifier
  * @return returns pointer to global variable identifier
  */
 char* generatorGetID();
@@ -170,6 +170,11 @@ typedef enum internalFunctions {
     CHR // 10
 } intFC;
 
+typedef struct identifierList {
+    char* identifier;
+    struct identifierList* next;
+} IDList;
+
 /** @brief generates internal code (includes: internal function code, header) to stdout **/
 void generateCodeInternal();
 
@@ -204,9 +209,6 @@ extern bool ifelse_ignore;
 
 /** @brief (internal) is current if-elseif-else scope open (not closed?) **/
 extern bool ifelse_open;
-
-/** @brief (internal) last known identifier **/
-extern char* identifier;
 
 /** @brief (internal) which internal functions were used (and will be generated) **/
 extern intFC internalFuncsUsed[11];

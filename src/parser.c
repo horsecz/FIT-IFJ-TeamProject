@@ -699,8 +699,9 @@ eRC statement() {
                 setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            if (strcmp(generatorGetID(), "print"))
-                generateFuncCall(generatorGetID());
+            char* funcID = generatorGetID();
+            if (strcmp(funcID, "print"))
+                generateFuncCall(funcID);
             // else
             //  print(datatype_arg1); print(datatype_arg2); (...)
             getToken(token, tk);
@@ -760,6 +761,7 @@ eRC multipleID() {
             setErrMsg("expected ID after ','");
             return RC_ERR_SYNTAX_ANALYSIS;
         }
+        generatorSaveID(strGetStr(&tk->attribute.string));
         getToken(token, tk);                        // Prepare token for another multipleID call
         result = multipleID();                      // Parse multiple IDs
         if (result != RC_OK) return result;
@@ -778,7 +780,7 @@ eRC assignment() {
 
     switch (tk->type) {
         case TYPE_IDENTIFIER:                       // ID ( <arguments> )
-            // save this ID for later ... funcCallID
+            generatorSaveID(strGetStr(&tk->attribute.string));
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
                 setErrMsg("expected '(' after identifier");
@@ -790,8 +792,8 @@ eRC assignment() {
                 setErrMsg("expected ')' after function arguments");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            // generateFuncCall(funcCallID);
-            // generateAssignment(identifier1); generateAssignment(identifier2); (...)
+            generateFuncCall(generatorGetID());
+            generateAssignments();
             getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
             break;
         default:                                    // <expression> <expr_n>
@@ -808,6 +810,7 @@ eRC assignment() {
             generateAssignment(identifier);
             result = expressionNext();
             if (result != RC_OK) return result;
+            generateAssignments();
             break;
     }
 
@@ -974,7 +977,7 @@ eRC forAssign() {
         getToken(token, tk);                        // Step over ASSIGN	
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
-        if (result != RC_OK) return result
+        if (result != RC_OK) return result;
     }
 
     return result;

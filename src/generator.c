@@ -64,11 +64,10 @@ bool ifelse_ignore = false;
 /** if-elseif-else scope is open **/
 bool ifelse_open = false;
 
-/** last known identifier **/
-char* identifier = NULL;
-
 /** used internal functions **/
 intFC internalFuncsUsed[11] = { 0 };
+
+IDList* id_list = NULL;
 
 /*
  *
@@ -559,13 +558,22 @@ void generateFuncEnd() {
     fprintf(stdout, "POPFRAME\n\nRETURN\n");
 }
 
-void generateDefinition(char* name) {
-    // DEFVAR LF@name
-    fprintf(stdout, "DEFVAR LF@%s\n", name);
+void generateDefinitions() {
+    char* name = generatorGetID();
+
+    while (name != NULL) {
+        fprintf(stdout, "DEFVAR LF@%s\n", name);
+        fprintf(stdout, "POPS LF@%s\n", name);
+        name = generatorGetID();
+    }
 }
 
-void generateAssignment(char* name) {
-    GEN_POP(name);
+void generateAssignments() {
+    char* name = generatorGetID();
+    while (name != NULL) {
+        GEN_POP(name);
+        name = generatorGetID();
+    }
 }
 
 void generatePrint(DataType type) {
@@ -607,11 +615,38 @@ void ignoreIfScope(int ignore) {
 }
 
 void generatorSaveID(char* id) {
-    identifier = id;
+    IDList* temp = id_list;
+
+    temp = (IDList*) malloc(sizeof(IDList));
+    if (temp == NULL) {
+        fprintf(stderr, "ERROR: CODE GENERATOR: unable to alloc memory for ID list structure.\n");
+        return;
+    }
+
+    temp->identifier = (char*) calloc(sizeof(char)+(strlen(id)+1), 1);
+    if (temp->identifier == NULL) {
+        fprintf(stderr, "ERROR: CODE GENERATOR: unable to alloc memory for ID (ID list struct data).\n");
+        free(temp);
+        return;
+    }
+
+    strcpy(temp->identifier, id);
+
+    temp->next = id_list;
+    id_list = temp;
 }
 
 char* generatorGetID() {
-    return identifier;
+    if (id_list == NULL)
+        return NULL;
+
+    char* id = id_list->identifier;
+
+    IDList* temp = id_list;
+    id_list = id_list->next;
+    free(temp);
+
+    return id;
 }
 
 void generateUsedInternalFunctions() {
