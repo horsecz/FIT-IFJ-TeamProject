@@ -27,7 +27,7 @@
 	} while (tokenVar->type == TYPE_EMPTY)                                              \
 
 /**
- * @brief Error msg maximum size 
+ * @brief Error msg maximum size
  */
 #define MAX_ERR_MSG 255
 
@@ -43,7 +43,7 @@
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
  *                         DEBUG MACROS                          *
- *                                                               * 
+ *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 #ifdef DEBUG
@@ -72,7 +72,7 @@
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
  *                      GLOBAL VARIABLES                         *
- *                                                               * 
+ *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 stNodePtr stFunctions;      /**< Symboltable for functions (only fucntions are global) */
@@ -86,13 +86,14 @@ int mainFound = 0;          /**< Was `function main` found in program?          
 char errText[MAX_ERR_MSG];  /**< Error text msg (if error occurs)                      */
 bool printLastToken;        /**< For error message - if last token may be printed      */
 bool argRet = false;        /**< Arguments and returns switch for function parsing     */
+bool fncDef = true;         /**< Parsing function definiton (for arguments)            */
 int numberOfIDs = 0;        /**< Counter of IDs on the left side of the assignment, this is needed to check correct number of expressions on the left side or correct number of returns from function call */
 //InstructionsList* il;
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
  *                       MAIN PARSER LOGIC                       *
- *                                                               * 
+ *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 eRC parser(Token* tkn) {
@@ -144,7 +145,7 @@ eRC parser(Token* tkn) {
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
  *               BASIC PROGRAM STRUCTURE CHECKS                  *
- *                                                               * 
+ *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 eRC program() {
@@ -165,7 +166,7 @@ eRC program() {
             if (result != RC_OK) return result;
             result = functionsBlock();              // <functions> part of the rule for <program>
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_EOF) {             // We expect 'EOF' at the end of the file ofc! 
+            if (tk->type != TYPE_EOF) {             // We expect 'EOF' at the end of the file ofc!
                 setErrMsg("expected 'EOF'");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
@@ -233,7 +234,7 @@ eRC eolR() {
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
  *                   FUNCTION RELATED CHECKS                     *
- *                                                               * 
+ *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *   GENERAL FUNCTION CHECKS                                     *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
@@ -241,7 +242,7 @@ eRC eolR() {
 eRC functionsBlock() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    
+
     // There has to be at least one function in source code!
     // - Token was already prepared by eolR() function
     if (tk->type != TYPE_KEYWORD || tk->attribute.keyword != KEYWORD_FUNC) {
@@ -283,10 +284,11 @@ eRC function() {
         setErrMsg("expected function identifier after 'func' keyword");
         return RC_ERR_SYNTAX_ANALYSIS;
     } else {
+        debugPoints(1);
         // Generate beginning of function
         generateFunction(strGetStr(&tk->attribute.string));
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
-        stStackInsert(&stack, strGetStr(&(tk->attribute.string)), ST_N_FUNCTION, UNKNOWN);
+        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN);
         currentFnc = strGetStr(&(tk->attribute.string));// Save what is the identifier of the function we are currently parsing
         // Check if function identifier is 'main' (this is so that we can check later that this was defined)
         if (!strcmp(strGetStr(&(tk->attribute.string)), "main")) {
@@ -299,7 +301,12 @@ eRC function() {
         setErrMsg("expected '(' after function identifier");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
+    
+    stNodePtr stVars;
+    stackPushSt(&stack, &stVars);                       // Entering new scope (function)
+    stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
 
+    fncDef = true;
     argRet = false;                                     // Parsing arguments -> argRet = false
     result = arguments();                               // Parse function arguments
     if (result != RC_OK) return result;
@@ -312,10 +319,7 @@ eRC function() {
     argRet = true;                                      // Parsing arguments -> argRet = true
     result = functionReturn();                          // Parse function return types
     if (result != RC_OK) return result;
-
-    stNodePtr stVars;                                   
-    stackPushSt(&stack, &stVars);                       // Entering new scope (function)
-    stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+    fncDef = false;
 
     result = commandBlock();                            // Parse command block of the function
     if (result != RC_OK) return result;
@@ -366,6 +370,9 @@ eRC arguments() {
     getToken(token, tk);                                // Get the token with the ID or others (eps)
     if (tk->type == TYPE_IDENTIFIER) {
         generateFuncArgument(strGetStr(&tk->attribute.string));
+        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined
+        currentVar = strGetStr(&tk->attribute.string);
+
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
         if (result != RC_OK) return result;
@@ -389,6 +396,8 @@ eRC argumentNext() {
         }
 
         generateFuncArgument(strGetStr(&tk->attribute.string));
+        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined
+        currentVar = strGetStr(&tk->attribute.string);
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
         if (result != RC_OK) return result;
@@ -402,35 +411,47 @@ eRC argumentNext() {
 eRC type() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    
+    // TODO: You can get here even from other place than function definition !!
     if (tk->type == TYPE_KEYWORD) {
         switch (tk->attribute.keyword) {
             case KEYWORD_INT:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), INT);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), INT, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stLookUp(stackGetBotSt(&stack), currentFnc), INT);
+                        stVarSetType(stStackLookUp(&stack, currentVar), INT);
+                    } else if (argRet) {
+                        stFncSetType(stLookUp(stackGetBotSt(&stack), currentFnc), INT, -1);
+                    }
                 }
                 break;
             case KEYWORD_FLOAT64:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), FLOAT64);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stLookUp(stackGetBotSt(&stack), currentFnc), FLOAT64);
+                        stVarSetType(stStackLookUp(&stack, currentVar), FLOAT64);
+                    } else if (argRet) {
+                        stFncSetType(stLookUp(stackGetBotSt(&stack), currentFnc), FLOAT64, -1);
+                    }
                 }
                 break;
             case KEYWORD_STRING:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), STRING);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), STRING, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stLookUp(stackGetBotSt(&stack), currentFnc), STRING);
+                        stVarSetType(stStackLookUp(&stack, currentVar), STRING);
+                    } else if (argRet) {
+                        stFncSetType(stLookUp(stackGetBotSt(&stack), currentFnc), STRING, -1);
+                    }
                 }
                 break;
             case KEYWORD_BOOL:
-                if (!argRet) {
-                    stFncSetParam(stStackLookUp(&stack, currentFnc), BOOL);
-                } else if (argRet) {
-                    stFncSetType(stStackLookUp(&stack, currentFnc), BOOL, -1);
+                if (fncDef) {
+                    if (!argRet) {
+                        stFncSetParam(stLookUp(stackGetBotSt(&stack), currentFnc), BOOL);
+                        stVarSetType(stStackLookUp(&stack, currentVar), BOOL);
+                    } else if (argRet) {
+                        stFncSetType(stLookUp(stackGetBotSt(&stack), currentFnc), BOOL, -1);
+                    }
                 }
                 break;
             default:
@@ -519,7 +540,7 @@ eRC commandBlock() {
         return RC_ERR_SYNTAX_ANALYSIS;
     }
 
-    getToken(token, tk);                            // Get next token (should be EOL)    
+    getToken(token, tk);                            // Get next token (should be EOL)
     if (tk->type != TYPE_EOL) {                     // LEFT CURLY BRACKET is followed by EOL!
         setErrMsg("expected end-of-line after '{'");
         return RC_ERR_SYNTAX_ANALYSIS;
@@ -690,7 +711,7 @@ eRC statement() {
         case TYPE_MULTIPLY_ASSIGN:
         case TYPE_DIVIDE_ASSIGN:                        // <unary> <expression>
             // TODO: Consider removing
-            result = unary();                           // Parse unary (just do a re-check) 
+            result = unary();                           // Parse unary (just do a re-check)
             if (result != RC_OK) return result;
             // TODO: Check functionality of this part
             getToken(token, tk);                        // Step over ASSIGN

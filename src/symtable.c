@@ -92,7 +92,7 @@ int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarT
         new->vData = NULL;
         new->fData->identifier = identificator;
         new->fData->returnNum = 0;
-        new->fData->defined = false;
+        new->fData->defined = true;
         new->fData->paramNum = 0;
         new->fData->innerSymtable = NULL;
     } else if (nodeType == ST_N_VARIABLE) {
