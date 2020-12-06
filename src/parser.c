@@ -644,7 +644,7 @@ eRC statement() {
         case TYPE_LEFT_BRACKET:                         // ( <arguments> )
             debugPrint("<%s> -> ( <arguments> )", __func__);
 
-            result = arguments();                       // Parse arguments
+            result = funcCallArguments();                       // Parse arguments
             if (result != RC_OK) return result;
             if (tk->type != TYPE_RIGHT_BRACKET) {
                 setErrMsg("expected ')' after arguments [of func-call]");
@@ -728,7 +728,7 @@ eRC assignment() {
                 setErrMsg("expected '(' after identifier");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            result = arguments();                   // Parse arguments
+            result = funcCallArguments();                   // Parse arguments
             if (result != RC_OK) return result;
             if (tk->type != TYPE_RIGHT_BRACKET) {
                 setErrMsg("expected ')' after function arguments");
@@ -741,6 +741,8 @@ eRC assignment() {
         default:                                    // <expression> <expr_n>
             // TODO -> handle <expression> -> requires semantic analysis
             // generateAssignment(identifier1);
+            getToken(token, tk); // temporary: after expression is done, I god 1 token after expression
+            generateAssignment(identifier);
             result = expressionNext();
             if (result != RC_OK) return result;
             break;
@@ -778,8 +780,31 @@ eRC expressionNext() {
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
         // TODO -> handle <expression> -> requires semantic analysis
-        // generateAssignment(identifier);
+        generateAssignment(identifier);
         result = expressionNext();
+        if (result != RC_OK) return result;
+    }
+
+    return result;
+}
+
+eRC funcCallArguments() {
+    debugPrint("rule %s", __func__);
+    eRC result = RC_OK;
+
+    getToken(token, tk);                                    // Get the token with the ID or others (eps)
+    if (tk->type == TYPE_IDENTIFIER) {
+        generateFuncArgument(strGetStr(&tk->attribute.string));
+        getToken(token, tk);                                 // Get the token with ',' if next argument present or ')' if this was last argument
+        if (tk->type != TYPE_COMMA) {
+            if (tk->type == TYPE_RIGHT_BRACKET)
+                return result;
+            else {
+                setErrMsg("expected ')' or ',' after (function call argument) identifier");
+                return RC_ERR_SYNTAX_ANALYSIS;
+            }
+        }
+        result = funcCallArguments();                        // Parse next argument
         if (result != RC_OK) return result;
     }
 
@@ -903,5 +928,6 @@ eRC returnStatement() {
 
     // rule: <return_stat> -> eps
     // TODO -> if not expression -> else do nothing
+    getToken(token, tk); // temporary: after expression is handled, we must have 1 token after that expression
     return result;
 }
