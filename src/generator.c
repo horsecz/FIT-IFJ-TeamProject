@@ -316,13 +316,13 @@ void print(DataType arg_type) {
     LABEL _substr   \n \
                 \n \
     CREATEFRAME \n \
-    PUSHFRAME   \n \
-    DEFVAR LF@str   \n \
-    POPS LF@str     \n \
+    PUSHFRAME   \n  \
+    DEFVAR LF@subsize   \n \
+    POP LF@subsize     \n  \
     DEFVAR LF@pos   \n \
     POPS LF@pos \n \
-    DEFVAR LF@subsize   \n \
-    POP LF@subsize     \n \
+    DEFVAR LF@str   \n \
+    POPS LF@str     \n \
     DEFVAR LF@retval    \n \
     DEFVAR LF@retval2   \n \
     MOVE LF@retval2 int@0 \n \
@@ -404,11 +404,11 @@ void print(DataType arg_type) {
     LABEL _ord      \n \
                 \n \
     CREATEFRAME \n \
-    PUSHFRAME   \n \
-    DEFVAR LF@str   \n \
-    POPS LF@str \n \
+    PUSHFRAME   \n  \
     DEFVAR LF@pos   \n \
     POPS LF@pos     \n \
+    DEFVAR LF@str   \n \
+    POPS LF@str \n \
     DEFVAR LF@retval    \n \
     DEFVAR LF@retval2   \n \
     MOVE LF@retval2 int@0   \n \
