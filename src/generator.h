@@ -109,6 +109,31 @@ void generateIfScope();
 void generateIfScopeEnd();
 
 /**
+ * @brief Generates beginning of for cycle (counter variable definition)
+ */
+void generateForBeginning();
+
+/**
+ * @brief Generates beginning of for expression (assignment + expression)
+ */
+void generateForExpression();
+
+/**
+ * @brief Generates jump condition of for cycle (get result of for expression, conditional jumps)
+ */
+void generateForCondition();
+
+/**
+ * @brief Generates label of for assignment
+ */
+void generateForAssignment();
+
+/**
+ * @brief Generates jump to for expression (after assignment is done)
+ */
+void generateForAssignmentEnd();
+
+/**
  * @brief Generates beginning of for cycle scope
  */
 void generateForScope();

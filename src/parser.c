@@ -323,6 +323,11 @@ eRC function() {
     result = commandBlock();                            // Parse command block of the function
     if (result != RC_OK) return result;
     generateFuncEnd();
+
+    do {                                            // Allow indefinite EOLs
+        getToken(token, tk);
+    } while (tk->type == TYPE_EOL);
+
     // TODO: Symtable check	
     #ifdef DEBUG
     displayBST(stackGetTopSt(&stack));
@@ -565,9 +570,6 @@ eRC commandBlock() {
         setErrMsg("expected end-of-line after '}'");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
-    do {                                            // Allow indefinite EOLs
-        getToken(token, tk);
-    } while (tk->type == TYPE_EOL);
 
     return result;
 }
@@ -624,7 +626,6 @@ eRC command() {
                         iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "result of IF expression is not bool");	
                         return RC_ERR_SEMANTIC_TYPECOMP;	
                     }
-                    // if (expression == true) generateIfScope();
 
                     // TODO: Check this
                     stNodePtr stVars = NULL;
@@ -646,6 +647,7 @@ eRC command() {
                 case KEYWORD_FOR:                       // for <for_definition> ; <expression> ; <for_assignment>
                     debugPrint("<%s> -> for <for_definition> ; <expression> ; <for_assignment>", __func__);
 
+                    generateForBeginning();
                     result = forDefine();               // Parse definiton section of for
                     if (result != RC_OK) return result;
 
@@ -655,16 +657,27 @@ eRC command() {
                     }
 
                     getToken(token, tk);                // Step over FOR
+                    generateForExpression();
                     // TODO: Check functionality of this part	
                     result = precedent_analys(tk, &precType, &stack); // Evaluate expression
                     if (result != RC_OK) return result;
                     // TODO -> handle <expression> -> requires semantic analysis
 
+                     if (tk->type != TYPE_SEMICOLON) {   // After definition must be ';'
+                         setErrMsg("expected ';' after for cycle expression");
+                         return RC_ERR_SYNTAX_ANALYSIS;
+                     }
+
+                    generateForCondition();
+                    generateForAssignment();
                     result = forAssign();               // Parse assignment section of for
                     if (result != RC_OK) return result;
+                    generateForAssignmentEnd();
 
+                    generateForScope();
                     result = commandBlock();            // Parse block of commands (inside of for)
                     if (result != RC_OK) return result;
+                    generateForScopeEnd();
                     break;
                 case KEYWORD_RETURN:                    // <<return_cmd>
                     debugPrint("<%s> -> <return_cmd>", __func__);
@@ -712,7 +725,7 @@ eRC statement() {
             if (result != RC_OK) return result;
             break;
         case TYPE_DECLARATIVE_ASSIGN:                   // := <expression>
-            generateDefinition(generatorGetID());
+            generateDefinitions();
             getToken(token, tk);                        // Get the next token (move past := to <expression>)
             result = precedent_analys(tk, &precType, &stack);// Evaluate expression
             if (result != RC_OK) return result;
@@ -807,7 +820,6 @@ eRC assignment() {
             }
             // generateAssignment(identifier1);
             getToken(token, tk); // temporary: after expression is done, I god 1 token after expression
-            generateAssignment(identifier);
             result = expressionNext();
             if (result != RC_OK) return result;
             generateAssignments();
@@ -855,7 +867,6 @@ eRC expressionNext() {
             iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
             return RC_ERR_SEMANTIC_TYPECOMP;	
         }
-        generateAssignment(identifier);
         result = expressionNext();
         if (result != RC_OK) return result;
     }
@@ -944,6 +955,7 @@ eRC forDefine() {
 
     // rule: <for_definition> -> ID := <expression>
     if (tk->type == TYPE_IDENTIFIER) {
+        generatorSaveID(strGetStr(&tk->attribute.string));
         // := <expression>
         getToken(token, tk);
         if (tk->type != TYPE_DECLARATIVE_ASSIGN) {
@@ -955,6 +967,7 @@ eRC forDefine() {
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
+        generateDefinitions();
     }
     // else rule: <for_definition> -> eps
 
@@ -968,6 +981,7 @@ eRC forAssign() {
 
     // rule: <for_assignment> -> ID = <expression>
     if (tk->type == TYPE_IDENTIFIER) {
+        generatorSaveID(strGetStr(&tk->attribute.string));
         getToken(token, tk);
         if (tk->type != TYPE_ASSIGN) {
             setErrMsg("expected '=' after identifier [for assignment]");
@@ -978,6 +992,7 @@ eRC forAssign() {
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
+        generateAssignments();
     }
 
     return result;

@@ -506,7 +506,8 @@ void print(DataType arg_type) {
     DEFVAR GF@?PRINT_INT? \n                     \
     DEFVAR GF@?PRINT_FLOAT? \n        \
     DEFVAR GF@?PRINT_STRING? \n       \
-    DEFVAR GF@?PRINT_BOOL?    \n         \
+    DEFVAR GF@?PRINT_BOOL?    \n       \
+    DEFVAR GF@?FOR_RESULT? \n \
     \n\
     CALL $main       \n\
     EXIT int@0      \n\
@@ -596,14 +597,32 @@ void generateIfScopeEnd() {
     }
 }
 
+void generateForBeginning() {
+    fprintf(stdout, "\nLABEL FOR_START$%d\n", for_cnt);
+}
+
+void generateForExpression() {
+    fprintf(stdout, "\nLABEL FOR_EXPR$%d\n", for_cnt);
+}
+
+void generateForCondition() {
+    fprintf(stdout, "POPS GF@?FOR_RESULT?\nJUMPIFEQ FOR$%d GF@?FOR_RESULT? bool@true\nJUMP FOR_END$%d", for_cnt, for_cnt);
+}
+
+void generateForAssignment() {
+    fprintf(stdout, "\n\nLABEL FOR_ASSIGN$%d\n", for_cnt);
+}
+
+void generateForAssignmentEnd() {
+    fprintf(stdout, "JUMP FOR_EXPR$%d\n", for_cnt);
+}
+
 void generateForScope() {
-    fprintf(stdout, "JUMP FOR$%d\n\n", for_cnt);
-    fprintf(stdout, "LABEL FOR$%d\nCREATEFRAME\nPUSHFRAME\n", for_cnt);
+    fprintf(stdout, "\nLABEL FOR$%d\nCREATEFRAME\nPUSHFRAME\n", for_cnt);
 }
 
 void generateForScopeEnd() {
-    // TODO: when / how do I get result of FOR EXPRESSION?
-    fprintf(stdout, "JUMPIFEQ FOR$%d LF@result bool@true\nPOPFRAME\n\n", for_cnt);
+    fprintf(stdout, "POPFRAME\nJUMP FOR_ASSIGN$%d\n\nLABEL FOR_END$%d\n\n", for_cnt, for_cnt);
     for_cnt++;
 }
 
