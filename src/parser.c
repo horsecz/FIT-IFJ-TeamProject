@@ -836,7 +836,9 @@ eRC ifElseExpanded() {
     eRC result = RC_OK;
 
     if (tk->attribute.keyword == KEYWORD_IF) {
-        // rule: <if_else_st> -> if <cmd_block> <if_else_st_n>
+        // rule: <if_else_st> -> if <expression> <cmd_block> <if_else_st_n>
+        // <expression>
+        // TODO: handle expression
         // <cmd_block>
         getToken(token, tk);
         // if (expression == true) generateIfScope();   // expression ... there should be 'else if <expression> <cmdblock>'
