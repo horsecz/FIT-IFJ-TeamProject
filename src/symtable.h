@@ -106,7 +106,7 @@ typedef struct stNode {
  * @brief Stack structure (support structure for symtable implementation)
  */
 typedef struct stStackT {
-    stNodePtr*  a[ST_MAXSTACK];         /**< Stack - storing nodes from the tree    */
+    stNodePtr  a[ST_MAXSTACK];         /**< Stack - storing nodes from the tree    */
     int         top;                    /**< Indicate top of the stack - 0 => empty */
 } stStack;
 
@@ -309,7 +309,7 @@ eRC stackStDesctruct ( stStack *stack );
  * @param stack Pointer to the stack
  * @return stNodePtr* Pointer to the symtable on the top of the stack
  */
-stNodePtr* stackGetTopSt ( stStack *stack );
+stNodePtr stackGetTopSt ( stStack *stack );
 
 /**
  * @brief  Get pointer to the symtable on the bottom of the stack 
@@ -317,7 +317,7 @@ stNodePtr* stackGetTopSt ( stStack *stack );
  * @param stack Pointer to the stack
  * @return stNodePtr* Pointer to the symtable on the bottom of the stack
  */
-stNodePtr* stackGetBotSt ( stStack *stack );
+stNodePtr stackGetBotSt ( stStack *stack );
 
 /**
  * @brief Push a new symtable to the top of the stack
@@ -333,7 +333,7 @@ eRC stackPushSt ( stStack *stack, stNodePtr *symtable );
  * @param stack Pointer to the stack
  * @return stNodePtr* Pointer to the symtable poped from the stack
  */
-stNodePtr* stackPopSt ( stStack *stack );
+stNodePtr stackPopSt ( stStack *stack );
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *   WORK SYMTABLE ON THE TOP OF THE STACK                       *
@@ -345,7 +345,7 @@ stNodePtr* stackPopSt ( stStack *stack );
  * @param stack Pointer to the stack
  * @param identifier Identifier of function or variable (char*)
  * @param nodeType Type of the node (FUNCTION, VARIABLE or UNDEFINED)
- * @param datatype Datatype of the variable (use UNKNOWN in case of working with FUNCTIONS or not known yet)
+ * @param datatype Datatype of the variable (use UNKNOWN in case of working with FUNCTIONS)
  * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
  */
 eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype );
@@ -375,7 +375,6 @@ stNodePtr stStackLookUp ( stStack *stack, stID identificator );
 /**
  * @brief Looks throught the stack for variable
  * @note Goes through all variable symtables to find variable desired
- * @note Kinda ignores that it's a stack (works with stack as an array)
  * @param stack Stack of variables (and global function -> GST -> bottom of the stack)
  * @param identificator Name of the variable we want to find
  * @return stVarType Type of the variable @see stVarTypes

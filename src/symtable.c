@@ -79,7 +79,7 @@ int sortStrings ( stID fst, stID snd ) {
 
 int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarType datatype ) {
     stNodePtr new = (stNodePtr) calloc(sizeof(struct stNode), 1);
-    if (!new) { 
+    if (!new) {
         return ST_ERROR; 
     }
 
@@ -92,7 +92,7 @@ int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarT
         new->vData = NULL;
         new->fData->identifier = identificator;
         new->fData->returnNum = 0;
-        new->fData->defined = true;
+        new->fData->defined = false;
         new->fData->paramNum = 0;
         new->fData->innerSymtable = NULL;
     } else if (nodeType == ST_N_VARIABLE) {
@@ -355,6 +355,7 @@ eRC stackStInit ( stStack *stack, stNodePtr *symtable ) {
         iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackStInit call");
         return RC_WRN_INTERNAL;
     }
+
     SInitP(stack);
     if (stack->top == ST_MAXSTACK) {
         return RC_ERR_INTERNAL;
@@ -369,12 +370,12 @@ eRC stackStDesctruct ( stStack *stack ) {
         return RC_WRN_INTERNAL;
     }
     while(stack->top >= 0) {
-        stDestruct(stack->a[stack->top--]);  // Possible segfault here
+        stDestruct(&stack->a[stack->top--]);  // Possible segfault here
     }
     return RC_OK;
 }
 
-stNodePtr* stackGetTopSt ( stStack *stack ) {
+stNodePtr stackGetTopSt ( stStack *stack ) {
     if (!stack) {
         iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackGetTopSt call");
         return NULL;
@@ -382,7 +383,7 @@ stNodePtr* stackGetTopSt ( stStack *stack ) {
     return (stack->top >= 0) ? stack->a[stack->top] : NULL;
 }
 
-stNodePtr* stackGetBotSt ( stStack *stack ) {
+stNodePtr stackGetBotSt ( stStack *stack ) {
     if (!stack) {
         iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackGetBotSt call");
         return NULL;
@@ -396,13 +397,13 @@ eRC stackPushSt ( stStack *stack, stNodePtr *symtable ) {
         return RC_WRN_INTERNAL;
     }
     if (stack->top >= 0) {
-        (*symtable)->predecessor = (*stackGetTopSt(stack));
+        (*symtable)->predecessor = stackGetTopSt(stack);
     }
     SPushP(stack, (*symtable));
     return RC_OK;
 }
 
-stNodePtr* stackPopSt ( stStack *stack ) {
+stNodePtr stackPopSt ( stStack *stack ) {
     if (!stack) {
         iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STACK] Invalid arguments for stackPopSt call");
         return NULL;
@@ -411,7 +412,8 @@ stNodePtr* stackPopSt ( stStack *stack ) {
 }
 
 eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype ) {
-    stC status = stInsert(stackGetTopSt(stack), identifier, nodeType, datatype);
+    stNodePtr topSym = stackGetTopSt(stack);
+    stC status = stInsert(&topSym, identifier, nodeType, datatype);
     if (status != ST_SUCCESS) {
         iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STATUS] Something went wrong during stStackInsert call");
     }
@@ -419,7 +421,8 @@ eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType
 }
 
 eRC stStackDelete ( stStack *stack, stID identifier ) {
-    stC status = stDelete(stackGetTopSt(stack), identifier);
+    stNodePtr topSym = stackGetTopSt(stack);
+    stC status = stDelete(&topSym, identifier);
     if (status != ST_SUCCESS) {
         iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STATUS] Something went wrong during stStackDelete call");
     }
@@ -427,7 +430,8 @@ eRC stStackDelete ( stStack *stack, stID identifier ) {
 }
 
 stNodePtr stStackLookUp ( stStack *stack, stID identificator ) {
-    return stLookUp(stackGetTopSt(stack), identificator);
+    stNodePtr topSym = stackGetTopSt(stack);
+    return stLookUp(&topSym, identificator);
 }
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
@@ -435,15 +439,6 @@ stNodePtr stStackLookUp ( stStack *stack, stID identificator ) {
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 stVarType stVarTypeLookUp ( stStack *stack, stID identificator ) {
-    if (!stack) {
-        return UNKNOWN;
-    }
-    for (int i = stack->top; i > 0; i--) {
-        if (!stLookUp(stack->a[i], identificator)) {
-            continue;
-        }
-        return stVarGetType(stLookUp(stack->a[i], identificator));
-    }
     return UNKNOWN;
 }
 
@@ -466,7 +461,7 @@ void SPushP (stStack *S, stNodePtr ptr)
         return;
     } else {
         S->top++;
-        S->a[S->top]=&ptr;
+        S->a[S->top]=ptr;
     }
 }
 
@@ -477,7 +472,7 @@ stNodePtr STopPopP (stStack *S)
         return NULL;
     }
     else {
-        return *(S->a[S->top--]);
+        return (S->a[S->top--]);
     }
 }
 
