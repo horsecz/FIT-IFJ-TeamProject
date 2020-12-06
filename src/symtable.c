@@ -435,6 +435,15 @@ stNodePtr stStackLookUp ( stStack *stack, stID identificator ) {
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 stVarType stVarTypeLookUp ( stStack *stack, stID identificator ) {
+    if (!stack) {
+        return UNKNOWN;
+    }
+    for (int i = stack->top; i > 0; i--) {
+        if (!stLookUp(stack->a[i], identificator)) {
+            continue;
+        }
+        return stVarGetType(stLookUp(stack->a[i], identificator));
+    }
     return UNKNOWN;
 }
 

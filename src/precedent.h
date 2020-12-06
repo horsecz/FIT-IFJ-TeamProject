@@ -38,4 +38,11 @@ int reduction(symStack *stack);
 
 void setInFunction(bool in);
 
+/**
+ * @brief This function creates compatibility between enums used for data types * 
+ * @param prec TokenType variable type
+ * @return stVarType variable type
+ */
+stVarType precTypeToSymtableType (TokenType prec);
+
 #endif

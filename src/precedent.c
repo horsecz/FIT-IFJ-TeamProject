@@ -1285,5 +1285,19 @@ int reduction(symStack *stack){
 	return 0;
 }
 
-    
+stVarType precTypeToSymtableType (TokenType prec) {
+	if (prec == TYPE_INT) {
+		return INT;
+	}
+	if (prec == TYPE_FLOAT64) {
+		return FLOAT64;
+	}
+	if (prec == TYPE_STRING) {
+		return STRING;
+	}
+	if (prec == TYPE_BOOL) {
+		return BOOL;
+	}
+	return UNKNOWN;
+}    
 

@@ -345,7 +345,7 @@ stNodePtr* stackPopSt ( stStack *stack );
  * @param stack Pointer to the stack
  * @param identifier Identifier of function or variable (char*)
  * @param nodeType Type of the node (FUNCTION, VARIABLE or UNDEFINED)
- * @param datatype Datatype of the variable (use UNKNOWN in case of working with FUNCTIONS)
+ * @param datatype Datatype of the variable (use UNKNOWN in case of working with FUNCTIONS or not known yet)
  * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
  */
 eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype );
@@ -375,6 +375,7 @@ stNodePtr stStackLookUp ( stStack *stack, stID identificator );
 /**
  * @brief Looks throught the stack for variable
  * @note Goes through all variable symtables to find variable desired
+ * @note Kinda ignores that it's a stack (works with stack as an array)
  * @param stack Stack of variables (and global function -> GST -> bottom of the stack)
  * @param identificator Name of the variable we want to find
  * @return stVarType Type of the variable @see stVarTypes
