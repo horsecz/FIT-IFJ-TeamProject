@@ -61,13 +61,13 @@ jobs:
       run: sudo apt install -y valgrind
     - name: <DEBUG><VALGRIND> Run debug - Empty function (main)
       continue-on-error: true
-      run: valgrind --leak-check=full --track-origins=yes ./compilerIFJ2020 < tests/emptyFunc.go
+      run: valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./compilerIFJ2020 < tests/emptyFunc.go
     - name: <DEBUG><VALGRIND> Run debug - Function newFnc with arguments, return type and function call inside
       continue-on-error: true
-      run: valgrind --leak-check=full --track-origins=yes ./compilerIFJ2020 < tests/fncCallFuncArgRet.go
+      run: valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./compilerIFJ2020 < tests/fncCallFuncArgRet.go
     - name: <DEBUG><VALGRIND> Run debug - Run main go file (test functionality of 'normal' go program)
       continue-on-error: true
-      run: valgrind --leak-check=full --track-origins=yes ./compilerIFJ2020 < tests/main.go
+      run: valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./compilerIFJ2020 < tests/main.go
 
     - name: <TESTS> Run our own custom tests
       run: make test
