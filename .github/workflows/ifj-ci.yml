@@ -21,6 +21,8 @@ jobs:
       uses: actions/setup-go@v1
       with:
         go-version: 1.15
+    - name: <VALGRIND> Setup
+      run: sudo apt install -y valgrind
 
     - uses: actions/checkout@v2
     - name: <TESTSUITE> Build compiler
@@ -34,15 +36,27 @@ jobs:
     - name: <TESTSUITE> Run Kamil's tests (lex)
       working-directory: ./tests/ifj-testsuite
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/lex
+    - name: <TESTSUITE> Log Kamil's tests (lex)
+      working-directory: ./tests/ifj-testsuite
+      run: cat log
     - name: <TESTSUITE> Run Kamil's tests (syn)
       working-directory: ./tests/ifj-testsuite
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/syn
+    - name: <TESTSUITE> Log Kamil's tests (syn)
+      working-directory: ./tests/ifj-testsuite
+      run: cat log
     - name: <TESTSUITE> Run Kamil's tests (sem)
       working-directory: ./tests/ifj-testsuite
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/sem
+    - name: <TESTSUITE> Log Kamil's tests (sem)
+      working-directory: ./tests/ifj-testsuite
+      run: cat log
     - name: <TESTSUITE> Run Kamil's tests (exe)
       working-directory: ./tests/ifj-testsuite
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/exe
+    - name: <TESTSUITE> Log Kamil's tests (exe)
+      working-directory: ./tests/ifj-testsuite
+      run: cat log
 
     - name: <DEBUG> Compile
       run: make
@@ -60,8 +74,6 @@ jobs:
     - name: <DEBUG> Run debug - Run main go file (test functionality of 'normal' go program)
       continue-on-error: true
       run: ./compilerIFJ2020 < tests/main.go
-    - name: <VALGRIND> Setup
-      run: sudo apt install -y valgrind
     - name: <DEBUG><VALGRIND> Run debug - Empty function (main)
       continue-on-error: true
       run: valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./compilerIFJ2020 < tests/emptyFunc.go
