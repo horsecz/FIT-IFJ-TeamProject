@@ -335,7 +335,8 @@ eRC function() {
     #ifdef DEBUG
     displayBST(stackGetTopSt(&stack));
     #endif
-    stDestruct(stackPopSt(&stack));                     // End of the scope (function)
+    stNodePtr destructed = stackPopSt(&stack);
+    stDestruct(&destructed);                     // End of the scope (function)
 
     return result;
 }
@@ -647,7 +648,8 @@ eRC command() {
                     #ifdef DEBUG
                     displayBST(stackGetTopSt(&stack));
                     #endif
-                    stDestruct(stackPopSt(&stack));     // End of the scope (if 1)
+                    stNodePtr destructed = stackPopSt(&stack);
+                    stDestruct(&destructed);     // End of the scope (if 1)
 
                     result = ifElse();                  // Parse if else
                     if (result != RC_OK) return result;
@@ -716,14 +718,17 @@ eRC statement() {
 
             result = funcCallArguments();                       // Parse arguments
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_BRACKET) {
+            if (!funcCall && tk->type != TYPE_RIGHT_BRACKET) {
                 setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             char* funcID = generatorGetID();
             if (strcmp(funcID, "print"))
                 generateFuncCall(funcID);
-            getToken(token, tk);
+
+            if (!funcCall)
+                getToken(token, tk);
+            funcCall = false;
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
             getToken(token, tk);                        // Get the next token (move past = to <assignment>)
@@ -807,13 +812,16 @@ eRC assignment() {
             }
             result = funcCallArguments();                   // Parse arguments
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_BRACKET) {
+            if (!funcCall && tk->type != TYPE_RIGHT_BRACKET) {
                 setErrMsg("expected ')' after function arguments");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             generateFuncCall(generatorGetID());
             generateAssignments();
-            getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
+
+            if (!funcCall)
+                getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
+            funcCall = false;
             break;
         default:                                    // <expression> <expr_n>
             // TODO: Check functionality of this part
@@ -869,7 +877,7 @@ eRC expressionNext() {
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
         // TODO: This part will not work for multiple expressions 'cause of currentVar variable
-        if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+        if (!funcCall && stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
             iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
             return RC_ERR_SEMANTIC_TYPECOMP;	
         }
@@ -878,7 +886,6 @@ eRC expressionNext() {
         if (result != RC_OK) return result;
     }
 
-    funcCall = false;
     return result;
 }
 
