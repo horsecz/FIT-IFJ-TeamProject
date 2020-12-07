@@ -168,22 +168,15 @@ stNodePtr stLookUp ( stNodePtr *symtable, stID identificator );
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 /**
- * @brief Add or change return type of the function \n
- *        If you are changing return type of the function you have to indicate its position
- *        as the returns are position sensitive, also you cannot change datatype furhter in
- *        the array if you have not defined earlir ones (ex. function return has only one return
- *        type and you try to change 3rd or later -> second is not defined)
- * @note Changing of the already defined return types probably won't be used 'cause of rules for IFJ20 language
+ * @brief Add return type of the function
  * @param stNode Pointer to the selected node of the symtable
- * @param datatype Datatype to be set from enum stDataTypes
- * @param position Position of the function return type in returnType array (-1 if you are adding new one)                 
+ * @param datatype Datatype to be set from enum stDataTypes                
  * @pre stNode is pointer to existing function node of the symtable
  * @pre datatype is from the enum stDataTypes
- * @pre position is -1 for new return type or withing range of defined return types
- * @post returnType array modified according to request (if everything is OK)
- * @post nothing changed if something is not OK (INFO on stderr)
+ * @post returnType is added to returnType array (if everything is OK)
+ * @post nothing changed if something is not OK
  */
-void stFncSetType ( stNodePtr stNode, stVarType datatype, int position );
+void stFncSetType ( stNodePtr stNode, stVarType datatype );
 
 /**
  * @brief Add or change type of the variable 

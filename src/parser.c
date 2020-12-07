@@ -287,10 +287,10 @@ eRC function() {
         // Generate beginning of function
         generateFunction(strGetStr(&tk->attribute.string));
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
-        stStackInsert(&stack, strGetStr(&(tk->attribute.string)), ST_N_FUNCTION, UNKNOWN);
-        currentFnc = strGetStr(&(tk->attribute.string));// Save what is the identifier of the function we are currently parsing
+        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN);
+        currentFnc = strGetStr(&tk->attribute.string);// Save what is the identifier of the function we are currently parsing
         // Check if function identifier is 'main' (this is so that we can check later that this was defined)
-        if (!strcmp(strGetStr(&(tk->attribute.string)), "main")) {
+        if (!strcmp(strGetStr(&tk->attribute.string), "main")) {
             mainFound++;
         }
     }
@@ -302,8 +302,9 @@ eRC function() {
     }
     // TODO: Check this
     stNodePtr stVars = NULL;
-    stackPushSt(&stack, &stVars);                       // Entering new scope (function)	
+    stConstruct(&stVars);
     stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+    stackPushSt(&stack, &stVars);                       // Entering new scope (function)	
 
     fncDef = true;
     argRet = false;                                     // Parsing arguments -> argRet = false
@@ -426,7 +427,8 @@ eRC type() {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), INT);
                         stVarSetType(stStackLookUp(&stack, currentVar), INT);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), INT, -1);
+                        debugPoints(1);
+                        stFncSetType(stStackLookUp(&stack, currentFnc), INT);
                     }
                 }
                 break;
@@ -436,7 +438,8 @@ eRC type() {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), FLOAT64);
                         stVarSetType(stStackLookUp(&stack, currentVar), FLOAT64);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64, -1);
+                        debugPoints(2);
+                        stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64);
                     }
                 }
                 break;
@@ -446,7 +449,8 @@ eRC type() {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), STRING);
                         stVarSetType(stStackLookUp(&stack, currentVar), STRING);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), STRING, -1);
+                        debugPoints(3);
+                        stFncSetType(stStackLookUp(&stack, currentFnc), STRING);
                     }
                 }
                 break;
@@ -456,7 +460,8 @@ eRC type() {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), BOOL);
                         stVarSetType(stStackLookUp(&stack, currentVar), BOOL);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), BOOL, -1);
+                        debugPoints(4);
+                        stFncSetType(stStackLookUp(&stack, currentFnc), BOOL);
                     }
                 }
                 break;

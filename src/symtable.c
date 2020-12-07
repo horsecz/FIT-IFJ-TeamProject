@@ -234,18 +234,12 @@ int stDelete ( stNodePtr *symtable, stID identificator ) {
  *                                                               * 
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
-void stFncSetType ( stNodePtr stNode, stVarType datatype, int position ) {
+void stFncSetType ( stNodePtr stNode, stVarType datatype ) {
     if (stNode && stNode->fData) {
-        if (position == -1) {
-            stNode->fData->returnType[stNode->fData->returnNum] = datatype;
-            stNode->fData->returnNum++;
-            return;
-        } else if (stNode->fData->returnNum >= position) {
-            stNode->fData->returnType[position] = datatype;
-            return;
-        }
+        stNode->fData->returnType[stNode->fData->returnNum] = datatype;
+        stNode->fData->returnNum++;
+        return;
     }
-    iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE] Invalid parameters in stFncSetType call");
 }
 
 void stVarSetType ( stNodePtr stNode, stVarType datatype ) {
