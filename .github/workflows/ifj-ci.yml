@@ -28,6 +28,9 @@ jobs:
     - name: <TESTSUITE> Run Kamil's tests (all)
       working-directory: ./tests/ifj-testsuite
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020
+    - name: <TESTSUITE> Log Kamil's tests (all)
+      working-directory: ./tests/ifj-testsuite
+      run: cat log
     - name: <TESTSUITE> Run Kamil's tests (lex)
       working-directory: ./tests/ifj-testsuite
       run: sudo python2 testsuite.py --compiler ../../compilerIFJ2020 --select tests/lex
