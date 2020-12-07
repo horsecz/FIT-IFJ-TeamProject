@@ -23,6 +23,7 @@
 #include "symstack.h"
 #include "error.h"
 #include "string.h"
+#include "parser.h"
 
 int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars);
 

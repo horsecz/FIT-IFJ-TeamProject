@@ -35,6 +35,7 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 
 		a = idkfunkce(stack, tokeng, Type, Vars);				// zavolame funkci pro zpracovani token
 		if (a != SYNTAX_OK){
+			printf("%d\n", a);
 			return a;
 		}
 	}
@@ -145,7 +146,11 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		}
 		else if (token->type == TYPE_RIGHT_BRACKET)		// jako token dojde )
 		{
-			if (top == TYPE_EOL || top == TYPE_SEMICOLON)							//pokud je na vrcholu EOL, tak se vypise chyba, protoze nejsou kompatibilni
+			if (top == TYPE_EOL && precRightBrace == true)							//pokud je na vrcholu EOL, tak se vypise chyba, protoze nejsou kompatibilni
+			{
+				precRightBrace = false;			//nekompatibilni terminaly
+			}
+			else if (top == TYPE_EOL || top == TYPE_SEMICOLON)							//pokud je na vrcholu EOL, tak se vypise chyba, protoze nejsou kompatibilni
 			{
 				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
 			}
@@ -700,7 +705,7 @@ int reduction(symStack *stack){
 					}
 					else
 					{
-						return SYNTAX_ERROR;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -743,7 +748,7 @@ int reduction(symStack *stack){
 					}
 					else
 					{	
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -798,7 +803,7 @@ int reduction(symStack *stack){
 					}
 					else
 					{
-						return SEM_ERROR_TYPE;	
+						return SEM_ERROR_TYPECOMP;	
 					}
 				}
 			}
@@ -836,7 +841,7 @@ int reduction(symStack *stack){
 					}
 					else
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 
 				}
@@ -903,7 +908,7 @@ int reduction(symStack *stack){
 					}
 					else 
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 
 				}
@@ -952,7 +957,7 @@ int reduction(symStack *stack){
 					}
 					else 
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -1018,7 +1023,7 @@ int reduction(symStack *stack){
 					}
 					else 
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -1068,7 +1073,7 @@ int reduction(symStack *stack){
 					else 
 					{
 						
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -1125,7 +1130,7 @@ int reduction(symStack *stack){
 					}
 					else
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -1184,7 +1189,7 @@ int reduction(symStack *stack){
 					}
 					else 
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -1219,7 +1224,7 @@ int reduction(symStack *stack){
 					}
 					else 
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -1254,7 +1259,7 @@ int reduction(symStack *stack){
 					}
 					else 
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
@@ -1287,7 +1292,7 @@ int reduction(symStack *stack){
 					}
 					else 
 					{
-						return SEM_ERROR_TYPE;
+						return SEM_ERROR_TYPECOMP;
 					}
 				}
 				else
