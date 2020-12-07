@@ -47,9 +47,6 @@ void tokenToString(Token* tk, string* str) {
             case KEYWORD_RETURN:
                 strcpy(add, "return");
                 break;
-            case KEYWORD_PRINT:
-                strcpy(add, "print");
-                break;
             case KEYWORD_VAR:
                 strcpy(add, "var");
                 break;
