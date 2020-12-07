@@ -673,8 +673,8 @@
       </leftHandSide>
       <rightHandSide>
         <terminalNonterminalString>
-          <terminal reference="../../../../rule[9]/rightHandSide/terminalNonterminalString/terminal[2]"/>
-          <nonterminal reference="../../../../rule[28]/rightHandSide/terminalNonterminalString/nonterminal"/>
+          <nonterminal reference="../../../../rule[31]/rightHandSide/terminalNonterminalString/nonterminal"/>
+          <nonterminal reference="../../../../rule[31]/rightHandSide/terminalNonterminalString/nonterminal[2]"/>
         </terminalNonterminalString>
       </rightHandSide>
       <correctRule>true</correctRule>
