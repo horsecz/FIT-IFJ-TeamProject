@@ -427,44 +427,44 @@ eRC type() {
         switch (tk->attribute.keyword) {
             case KEYWORD_INT:
                 if (fncDef) {
+                    debugPoints(1);
                     if (!argRet) {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), INT);
                         stVarSetType(stStackLookUp(&stack, currentVar), INT);
                     } else if (argRet) {
-                        debugPoints(1);
                         stFncSetType(stStackLookUp(&stack, currentFnc), INT);
                     }
                 }
                 break;
             case KEYWORD_FLOAT64:
                 if (fncDef) {
+                    debugPoints(2);
                     if (!argRet) {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), FLOAT64);
                         stVarSetType(stStackLookUp(&stack, currentVar), FLOAT64);
                     } else if (argRet) {
-                        debugPoints(2);
                         stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64);
                     }
                 }
                 break;
             case KEYWORD_STRING:
                 if (fncDef) {
+                    debugPoints(3);
                     if (!argRet) {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), STRING);
                         stVarSetType(stStackLookUp(&stack, currentVar), STRING);
                     } else if (argRet) {
-                        debugPoints(3);
                         stFncSetType(stStackLookUp(&stack, currentFnc), STRING);
                     }
                 }
                 break;
             case KEYWORD_BOOL:
                 if (fncDef) {
+                    debugPoints(4);
                     if (!argRet) {
                         stFncSetParam(stStackLookUp(&stack, currentFnc), BOOL);
                         stVarSetType(stStackLookUp(&stack, currentVar), BOOL);
                     } else if (argRet) {
-                        debugPoints(4);
                         stFncSetType(stStackLookUp(&stack, currentFnc), BOOL);
                     }
                 }
@@ -744,8 +744,9 @@ eRC statement() {
             getToken(token, tk);                        // Get the next token (move past := to <expression>)
             result = precedent_analys(tk, &precType, &stack);// Evaluate expression
             if (result != RC_OK) return result;
+            debugPrint("Declaring as: %d, received: %d", precTypeToSymtableType(precType), precType)
             generateDefinitions();
-            stVarSetType(stStackLookUp(&stack, currentVar), precType);// Set variable type
+            stVarSetType(stStackLookUp(&stack, currentVar), precTypeToSymtableType(precType));// Set variable type
             break;
         case TYPE_PLUS_ASSIGN:
         case TYPE_MINUS_ASSIGN:
@@ -834,7 +835,7 @@ eRC assignment() {
             if (result != RC_OK) return result;
             // TODO: This part will not work for multiple expressions 'cause of currentVar variable
             if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
-                debugPrint("Found var type: %d, assigning: %d", stVarTypeLookUp(&stack, currentVar), precType)
+                debugPrint("Found var type: %d, assigning: %d, received: %d", stVarTypeLookUp(&stack, currentVar), precTypeToSymtableType(precType), precType)
                 iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
                 return RC_ERR_SEMANTIC_TYPECOMP;	
             }
