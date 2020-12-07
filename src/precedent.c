@@ -21,7 +21,6 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 	symstackPush(stack, TYPE_EOL);	
 	int a;							// pushnuti prvni hodnoty EOL
 
-	
 	if((a = idkfunkce(stack, tokeng, Type, Vars))){
 
 		return a;	
@@ -44,7 +43,7 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 
 int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		TokenType top = StackTopTerm(stack);						// do top nahrajeme nejvyssi terminal ze stacku
-
+			
 
 
 		
@@ -64,26 +63,26 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 				if (token->type == TYPE_INT)
 				{
 					stackPushOpen(stack);				// jinak posle zacatek rozvoje
-					symstackPush(stack,TOKEN_PREC_INTEGER);				// a znak identifikatoru
+					symstackPush(stack,TYPE_INT);				// a znak identifikatoru
 					stack->top->inte = token->attribute.integer;
 
 				}
 				else if (token->type == TYPE_STRING)
 				{
 					stackPushOpen(stack);				// jinak posle zacatek rozvoje
-					symstackPush(stack,TOKEN_PREC_STRING);				// a znak identifikatoru	
+					symstackPush(stack,TYPE_STRING);				// a znak identifikatoru	
 					strCopyString(&stack->top->string, &token->attribute.string);			
 				}
 				else if (token->type == TYPE_BOOL)
 				{
 					stackPushOpen(stack);				// jinak posle zacatek rozvoje
-					symstackPush(stack,TOKEN_PREC_BOOL);				// a znak identifikatoru
+					symstackPush(stack,TYPE_BOOL);				// a znak identifikatoru
 					stack->top->boolen = token->attribute.boolean;						
 				}
 				else if (token->type == TYPE_FLOAT64)
 				{
 					stackPushOpen(stack);				// jinak posle zacatek rozvoje
-					symstackPush(stack,TOKEN_PREC_FLOAT);				// a znak identifikatoru
+					symstackPush(stack,TYPE_FLOAT64);				// a znak identifikatoru
 					stack->top->flt = token->attribute.float64;					
 				}
 				else if (token->type == TYPE_IDENTIFIER) //musi se predelat 
@@ -95,7 +94,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 					if (help2 == INT)
 					{
 						stackPushOpen(stack);				
-						symstackPush(stack, TOKEN_PREC_ID);				
+						symstackPush(stack, TYPE_INT);				
 						stack->top->inte = token->attribute.integer;
 						strInit(&stack->top->nazev); 
 						strCopyString(&stack->top->nazev, &token->attribute.string);
@@ -104,7 +103,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 					else if (help2 == STRING)
 					{
 						stackPushOpen(stack);				
-						symstackPush(stack, TOKEN_PREC_ID);			
+						symstackPush(stack, TYPE_STRING);			
 						strCopyString(&stack->top->string, &token->attribute.string);
 						strInit(&stack->top->nazev); 
 						strCopyString(&stack->top->nazev, &token->attribute.string);
@@ -112,7 +111,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 					else if (help2 == FLOAT64)
 					{
 						stackPushOpen(stack);				
-						symstackPush(stack, TOKEN_PREC_ID);				
+						symstackPush(stack, TYPE_FLOAT64);				
 						stack->top->flt = token->attribute.float64;
 						strInit(&stack->top->nazev); 
 						strCopyString(&stack->top->nazev, &token->attribute.string);
@@ -120,7 +119,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 					else if (help2 == BOOL)
 					{
 						stackPushOpen(stack);				
-						symstackPush(stack, TOKEN_PREC_ID);				
+						symstackPush(stack, TYPE_BOOL);				
 						stack->top->boolen = token->attribute.boolean;
 						strInit(&stack->top->nazev); 
 						strCopyString(&stack->top->nazev, &token->attribute.string);
@@ -154,16 +153,24 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			{
 				symstackPush(stack,TYPE_RIGHT_BRACKET);					// pushni )
 				symstackPush(stack,TOKEN_PREC_CLOSE);				// pushni konec rozvoje >
-				reduction(stack);					// a proved redukci
+				int c = reduction(stack);					// a proved redukci
+				if (c != SYNTAX_OK)
+				{
+					return c;
+				}	
 			}
 			else									//pokud je cokoliv jineho
 			{
 				symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
-				reduction(stack);					// proved redukci
+				int c = reduction(stack);
+				if (c != SYNTAX_OK)
+				{
+					return c;
+				}					// proved redukci
 				int b = idkfunkce(stack, token, Type, Vars);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci
 				if (b != SYNTAX_OK)
 				{
-					return SEM_ERROR_OTHER;
+					return b;
 				}
 			}
 		}
@@ -196,7 +203,11 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			else									// rekurzivne tocime dokud nenastane stav $E$ nebo nenastane chyba
 			{
 				symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
-				reduction(stack);					// proved redukci
+				int c = reduction(stack);					// proved redukci
+				if (c != SYNTAX_OK)
+				{
+					return c;
+				}	
 				int b = idkfunkce(stack, token, Type, Vars);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci
 				if (b != SYNTAX_OK)
 				{
@@ -209,7 +220,11 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			if (top == TYPE_PLUS || top == TYPE_MINUS || top == TYPE_MULTIPLY || top == TYPE_DIVIDE || top == TYPE_INT || top == TYPE_STRING || top == TYPE_FLOAT64 || top == TYPE_BOOL || top == TYPE_RIGHT_BRACKET) //pokud je top + - * / // i )
 			{
 				symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
-				reduction(stack);					// proved redukci
+				int c = reduction(stack);					// proved redukci
+				if (c != SYNTAX_OK)
+				{
+					return c;
+				}	
 				int b = idkfunkce(stack, token, Type, Vars);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci
 				if (b != SYNTAX_OK)
 				{
@@ -239,7 +254,11 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			if (top == TYPE_RIGHT_BRACKET || top == TYPE_INT || top == TYPE_STRING || top == TYPE_FLOAT64 || top == TYPE_BOOL || top == TYPE_MULTIPLY || top == TYPE_DIVIDE)
 			{
 				symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
-				reduction(stack);					// proved redukci
+				int c = reduction(stack);					// proved redukci
+				if (c != SYNTAX_OK)
+				{
+					return c;
+				}	
 				int b = idkfunkce(stack, token, Type, Vars);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci
 				if (b != SYNTAX_OK)
 				{
@@ -303,7 +322,11 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 				{
 					symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
 
-					reduction(stack);					// proved redukci
+					int c = reduction(stack);					// proved redukci
+					if (c != SYNTAX_OK)
+				{
+					return c;
+				}	
 
 					int b = idkfunkce(stack, token, Type, Vars);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci   (E ==
 
@@ -322,7 +345,11 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 
 				symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
 
-				reduction(stack);					// proved redukci
+				int c = reduction(stack);					// proved redukci
+				if (c != SYNTAX_OK)
+				{
+					return c;
+				}	
 
 				int b = idkfunkce(stack, token, Type, Vars);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci   (E ==
 
@@ -350,7 +377,11 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			{
 				symstackPush(stack,TOKEN_PREC_CLOSE);				//pushni konec rozvoje >
 
-				reduction(stack);					// proved redukci
+				int c = reduction(stack);					// proved redukci
+				if (c != SYNTAX_OK)
+				{
+					return c;
+				}	
 
 				int b = idkfunkce(stack, token, Type, Vars);		// zavola sebe sama rekurzivne pro vyhodnoceni dalsich redukci   (E ==
 
@@ -381,7 +412,6 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 }
 
 TokenType StackTopTerm (symStack *stack){
-
 	symStack *temp = malloc(sizeof(symStack)); 
 	temp->top = stack->top;
 	TokenType tokenhelp;
@@ -392,13 +422,14 @@ TokenType StackTopTerm (symStack *stack){
 	else
 	{
 		tokenhelp = stack->top->token_Type;
-		while(tokenhelp > TYPE_BOOL && tokenhelp < TYPE_ASSIGN)
+		while(tokenhelp > TYPE_SEMICOLON)
 		{
 	    	symStackItem* out = temp->top;
 	    	if (out->next != NULL)
 	    	{
-	    	  	temp->top = out->next;
+	    	  	temp->top = out->next;	    	  	
 	    		tokenhelp = symstackTop(temp);
+
 	    	}
 	    	else
 	    	{
@@ -406,7 +437,8 @@ TokenType StackTopTerm (symStack *stack){
 	    	}
 		}
 
-		if (tokenhelp > TYPE_NOT)
+
+		if (tokenhelp < TYPE_ASSIGN)
 		{
 			return tokenhelp;
 		}
@@ -426,7 +458,6 @@ int stackPushOpen(symStack *stack){
 
 	}else
 	{
-
 		symStackItem* temp = NULL;
 		symStackItem* prev = NULL;
 		symStackItem* nitem = (symStackItem*)malloc(sizeof(symStackItem));
@@ -437,9 +468,7 @@ int stackPushOpen(symStack *stack){
 		while(topterm != help)
 		{
 
-			
 			help = temp->token_Type;
-
 			if (topterm == help)
 			{
 				nitem->token_Type = TOKEN_PREC_OPEN;
@@ -449,10 +478,8 @@ int stackPushOpen(symStack *stack){
 
 			}else
 			{
-
 				prev = temp;
 				temp = prev->next;
-
 			}
 		}
 	}
@@ -461,7 +488,6 @@ int stackPushOpen(symStack *stack){
 
 
 symStackItem* stackPosition(symStack *stack, int j){
-
 	symStackItem* temp = stack->top;
 
 	for (int i = 0; i < j; ++i)
@@ -697,30 +723,31 @@ int reduction(symStack *stack){
 				symStackItem* treti = stackPosition(stack, 2);
 				symStackItem* ctvrtej = stackPosition(stack, 3);
 				symStackItem* patej = stackPosition(stack, 4);
-
+			
 				if (prvni->token_Type == TOKEN_PREC_CLOSE && patej->token_Type == TOKEN_PREC_OPEN && treti->token_Type == TYPE_MINUS)
-				{
+				{	
 					if (druhej->token_Type == TOKEN_PREC_INTEGER && ctvrtej->token_Type == TOKEN_PREC_INTEGER)
-					{
+					{	
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_INTEGER);
 						stack->top->inte = 420;
 						printf("SUBS\n");
-					}
+					}	
 					else if (druhej->token_Type == TOKEN_PREC_FLOAT && ctvrtej->token_Type == TOKEN_PREC_FLOAT)
 					{
+						
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_FLOAT);
 						stack->top->flt = 42.0;
 						printf("SUBS\n");
 					}
 					else
-					{
+					{	
 						return SEM_ERROR_TYPE;
 					}
 				}
 				else
-				{
+				{	
 					return SYNTAX_ERROR;
 				}
 
