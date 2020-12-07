@@ -19,14 +19,14 @@
 
 /**
  * @enum Datatypes
- * @brief to distinguish data-types of variables
- * @note compatible with @enum stDataTypes defined in symtable.h
+ * @brief To distinguish data-types of variables
+ * @note compatible with @enum TokenType defined in scanner.h
  */
 typedef enum Datatypes {
-    STRING_T = STRING,
-    INT_T = INT,
-    FLOAT64_T = FLOAT64,
-    BOOL_T = BOOL
+    STRING_T = TYPE_STRING,
+    INT_T = TYPE_INT,
+    FLOAT64_T = TYPE_FLOAT64,
+    BOOL_T = TYPE_BOOL
 } DataType;
 
 /**
@@ -44,11 +44,10 @@ void generateHeader();
 void generateFunction(const char* fName);
 
 /**
- * @brief Pushes 1 argument to stack
+ * @brief Pops 1 argument from stack
  * @param argName name of the argument (identifier)
- * @post At the top of stack is last argument of function
  */
-void generateFuncArgument(char* argName);
+void generateFuncArguments();
 
 /**
  * @brief Generates function call
@@ -169,6 +168,14 @@ char* generatorGetID();
  * @pre Completed syntax and semantic analysis.
  */
 void generateUsedInternalFunctions();
+
+/**
+ * @brief Checks if printArguments is true - if yes, pop + print (write) the value to stdout, if no, do nothing
+ * @param type Datatype of last argument pushed to stack ( why this works? @see DataType )
+ * @note Depends on variable printArguments (aka if print funcCall detected or not)
+ * @post print() function will be "called" (means last value from stack will be output to stdout) or nothing happen
+ */
+void generatorPrintCheck(DataType type);
 
 /*
  * INTERNAL FUNCTIONS AND VARIABLES

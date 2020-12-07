@@ -18,6 +18,11 @@
 #include "generator.h"
 
 /**
+ * @brief Variable for precedent (expression analysis)
+ */
+extern bool precRightBrace;
+
+/**
  * @brief Main parser logic \n
  *        Contains mainly enviroment preparation before parsing and then calls @see program() to initiate
  *        parsing. After this it checks return value and acts upon that

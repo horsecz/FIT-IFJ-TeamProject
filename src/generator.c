@@ -67,7 +67,11 @@ bool ifelse_open = false;
 /** used internal functions **/
 intFC internalFuncsUsed[11] = { 0 };
 
+/** stack-like behaving linear list for IDs **/
 IDList* id_list = NULL;
+
+/** detected print() function so arguments will be written to stdout instead pushing to stack? **/
+bool printArguments = false;
 
 /*
  *
@@ -531,9 +535,15 @@ void generateFunction(const char* fName)  {
     fprintf(stdout, "\nLABEL $%s\n\nCREATEFRAME\nPUSHFRAME\n", fName);
 }
 
-void generateFuncArgument(char* argName) {
-    GEN_PUSH(argName);
+void generateFuncArguments() {
+    char* argName = generatorGetID();
+    while (argName != NULL) {
+        fprintf(stdout, "DEFVAR LF@%s\nPOPS LF@%s\n", argName, argName);
+        argName = generatorGetID();
+    }
 }
+
+
 
 void generateFuncCall(char* fName) {
     // CALL $fName or CALL _fname
@@ -634,6 +644,9 @@ void ignoreIfScope(int ignore) {
 }
 
 void generatorSaveID(char* id) {
+    if (!strcmp(id, "print")) printArguments = true;
+    else printArguments = false;
+
     IDList* temp = id_list;
 
     temp = (IDList*) malloc(sizeof(IDList));
@@ -674,6 +687,12 @@ void generateUsedInternalFunctions() {
             setUpCodeInternal(i);
             generateCodeInternal();
         }
+    }
+}
+
+void generatorPrintCheck(DataType type) {
+    if (printArguments) {
+        print(type);
     }
 }
 

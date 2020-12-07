@@ -88,7 +88,8 @@ bool printLastToken;            /**< For error message - if last token may be pr
 bool fncDef = true;             /**< Parsing function definiton (for arguments)            */
 bool argRet = false;            /**< Arguments and returns switch for function parsing     */
 int numberOfIDs = 0;            /**< Counter of IDs on the left side of the assignment, this is needed to check correct number of expressions on the left side or correct number of returns from function call */
-//InstructionsList* il;
+bool funcCall = false;          /**< Detection of function call used in deciding whether do expression (count) check or not */
+bool precRightBrace = false;    /**< For precedent: check if right brace of func call was detected (prevent semantic errors) */
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
@@ -314,6 +315,7 @@ eRC function() {
         setErrMsg("expected ')' after function arguments");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
+    generateFuncArguments();
 
     getToken(token, tk);
     argRet = true;                                      // Parsing arguments -> argRet = true
@@ -375,9 +377,10 @@ eRC arguments() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
 
-    getToken(token, tk);                                // Get the token with the ID or others (eps)
+    getToken(token, tk);
+    // Get the token with the ID or others (eps)
     if (tk->type == TYPE_IDENTIFIER) {
-        generateFuncArgument(strGetStr(&tk->attribute.string));
+        generatorSaveID(strGetStr(&tk->attribute.string));
         stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
         currentVar = strGetStr(&tk->attribute.string);
         getToken(token, tk);                            // Get the token with the type
@@ -402,7 +405,7 @@ eRC argumentNext() {
             return RC_ERR_SYNTAX_ANALYSIS;
         }
 
-        generateFuncArgument(strGetStr(&tk->attribute.string));
+        generatorSaveID(strGetStr(&tk->attribute.string));
         stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
         currentVar = strGetStr(&tk->attribute.string);
         getToken(token, tk);                            // Get the token with the type
@@ -720,8 +723,6 @@ eRC statement() {
             char* funcID = generatorGetID();
             if (strcmp(funcID, "print"))
                 generateFuncCall(funcID);
-            // else
-            //  print(datatype_arg1); print(datatype_arg2); (...)
             getToken(token, tk);
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
@@ -858,7 +859,7 @@ eRC expressionNext() {
     eRC result = RC_OK;
 
     if (tk->type == TYPE_COMMA) {
-        if(--numberOfIDs < 0) {
+        if(!funcCall && --numberOfIDs < 0) {
             setErrMsg("expected less expressions on the right side of the assignment");
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
@@ -872,32 +873,29 @@ eRC expressionNext() {
             iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
             return RC_ERR_SEMANTIC_TYPECOMP;	
         }
+        generatorPrintCheck(precType);
         result = expressionNext();
         if (result != RC_OK) return result;
     }
 
+    funcCall = false;
     return result;
 }
 
 eRC funcCallArguments() {
     debugPrint("rule %s", __func__);
+    // rule <arguments_fc> -> <expression
     eRC result = RC_OK;
-
     getToken(token, tk);                                    // Get the token with the ID or others (eps)
-    if (tk->type == TYPE_IDENTIFIER) {
-        generateFuncArgument(strGetStr(&tk->attribute.string));
-        getToken(token, tk);                                 // Get the token with ',' if next argument present or ')' if this was last argument
-        if (tk->type != TYPE_COMMA) {
-            if (tk->type == TYPE_RIGHT_BRACKET)
-                return result;
-            else {
-                setErrMsg("expected ')' or ',' after (function call argument) identifier");
-                return RC_ERR_SYNTAX_ANALYSIS;
-            }
-        }
-        result = funcCallArguments();                        // Parse next argument
-        if (result != RC_OK) return result;
-    }
+
+    precRightBrace = true;
+    result = precedent_analys(tk, &precType, &stack);// Evaluate expression
+    if (result != RC_OK) return result;
+    generatorPrintCheck(precType);
+
+    funcCall = true;
+    result = expressionNext();
+    if (result != RC_OK) return result;
 
     return result;
 }
