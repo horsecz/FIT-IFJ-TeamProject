@@ -78,7 +78,7 @@ $(MAIN)-d: $(MAIN).o $(SRC)scanner-d.o $(SRC)str.o $(SRC)symtable.o $(SRC)return
 # CLEAN MAKE OUTPUT(S)
 
 clean:
-	rm -rf src/*.o tests/*.o t-* *.o $(OUT)
+	rm -rf src/*.o tests/*.o t-* *.o $(OUT) vgcore.*
 
 # HELP
 
