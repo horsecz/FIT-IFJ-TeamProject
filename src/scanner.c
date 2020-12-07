@@ -30,36 +30,34 @@ int isReservedKeyword (string *str)
     return 3;
   else if (strCmpConstStr(str, "return") == 0)
     return 4;
-  else if (strCmpConstStr(str, "print") == 0)
-    return 5;
   else if (strCmpConstStr(str, "var") == 0)
-    return 6;
+    return 5;
   else if (strCmpConstStr(str, "const") == 0)
-    return 7;
+    return 6;
   else if (strCmpConstStr(str, "if") == 0)
-    return 8;
+    return 7;
   else if (strCmpConstStr(str, "else") == 0)
-    return 9;
+    return 8;
   else if (strCmpConstStr(str, "switch") == 0)
-    return 10;
+    return 9;
   else if (strCmpConstStr(str, "case") == 0)
-    return 11;
+    return 10;
   else if (strCmpConstStr(str, "default") == 0)
-    return 12;
+    return 11;
   else if (strCmpConstStr(str, "for") == 0)
-    return 13;
+    return 12;
   else if (strCmpConstStr(str, "string") == 0)
-    return 14;
+    return 13;
   else if (strCmpConstStr(str, "int") == 0)
-    return 15;
+    return 14;
   else if (strCmpConstStr(str, "float64") == 0)
-    return 16;
+    return 15;
   else if (strCmpConstStr(str, "bool") == 0)
-    return 17;
+    return 16;
   else if (strCmpConstStr(str, "true") == 0)
-    return 18;
+    return 17;
   else if (strCmpConstStr(str, "false") == 0)
-    return 19;
+    return 18;
   else return 0;
 }
 
@@ -81,42 +79,39 @@ void setTokenKeyword (Token *token, int keywordType)
       token->attribute.keyword = KEYWORD_RETURN;
       break;
     case 5:
-      token->attribute.keyword = KEYWORD_PRINT;
-      break;
-    case 6:
       token->attribute.keyword = KEYWORD_VAR;
       break;
-    case 7:
+    case 6:
       token->attribute.keyword = KEYWORD_CONST;
       break;
-    case 8:
+    case 7:
       token->attribute.keyword = KEYWORD_IF;
       break;
-    case 9:
+    case 8:
       token->attribute.keyword = KEYWORD_ELSE;
       break;
-    case 10:
+    case 9:
       token->attribute.keyword = KEYWORD_SWITCH;
       break;
-    case 11:
+    case 10:
       token->attribute.keyword = KEYWORD_CASE;
       break;
-    case 12:
+    case 11:
       token->attribute.keyword = KEYWORD_DEFAULT;
       break;
-    case 13:
+    case 12:
       token->attribute.keyword = KEYWORD_FOR;
       break;
-    case 14:
+    case 13:
       token->attribute.keyword = KEYWORD_STRING;
       break;
-    case 15:
+    case 14:
       token->attribute.keyword = KEYWORD_INT;
       break;
-    case 16:
+    case 15:
       token->attribute.keyword = KEYWORD_FLOAT64;
       break;
-    case 17:
+    case 16:
       token->attribute.keyword = KEYWORD_BOOL;
   }
 }
