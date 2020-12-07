@@ -92,7 +92,7 @@ int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarT
         new->vData = NULL;
         new->fData->identifier = identificator;
         new->fData->returnNum = 0;
-        new->fData->defined = false;
+        new->fData->defined = true;
         new->fData->paramNum = 0;
         new->fData->innerSymtable = NULL;
     } else if (nodeType == ST_N_VARIABLE) {
@@ -434,7 +434,16 @@ stNodePtr stStackLookUp ( stStack *stack, stID identificator ) {
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 stVarType stVarTypeLookUp ( stStack *stack, stID identificator ) {
-    return UNKNOWN;
+    if (!stack) {
+        return UNKNOWN;
+    }
+    for (int i = stack->top; i > 0; i--) {
+        if (!stLookUp(&(stack->a[i]), identificator)) {
+            continue;
+        }
+        return stVarGetType(stLookUp(&(stack->a[i]), identificator));
+    }
+    return UNKNOWN;	    return UNKNOWN;
 }
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***

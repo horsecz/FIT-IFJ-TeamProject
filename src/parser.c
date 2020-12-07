@@ -617,7 +617,6 @@ eRC command() {
         case TYPE_IDENTIFIER:                           // ID <statement>
             debugPrint("<%s> -> ID <statement>", __func__);
             generatorSaveID(strGetStr(&tk->attribute.string));
-            stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);	
             currentVar = strGetStr(&tk->attribute.string);
             getToken(token, tk);                        // Get next token for statement
             result = statement();                       // Parse statement
@@ -735,7 +734,13 @@ eRC statement() {
             result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
             break;
-        case TYPE_DECLARATIVE_ASSIGN:                   // := <expression>
+        case TYPE_DECLARATIVE_ASSIGN:;                  // := <expression>
+            stNodePtr vars = stackGetTopSt(&stack);
+            if (stLookUp(&vars, currentVar)) {
+                iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "redefinition attempt!");
+                return RC_ERR_SEMANTIC_PROG_FUNC;
+            }
+            stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);	
             getToken(token, tk);                        // Get the next token (move past := to <expression>)
             result = precedent_analys(tk, &precType, &stack);// Evaluate expression
             if (result != RC_OK) return result;
@@ -829,11 +834,11 @@ eRC assignment() {
             if (result != RC_OK) return result;
             // TODO: This part will not work for multiple expressions 'cause of currentVar variable
             if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+                debugPrint("Found var type: %d, assigning: %d", stVarTypeLookUp(&stack, currentVar), precType)
                 iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
                 return RC_ERR_SEMANTIC_TYPECOMP;	
             }
             // generateAssignment(identifier1);
-            getToken(token, tk); // temporary: after expression is done, I god 1 token after expression
             result = expressionNext();
             if (result != RC_OK) return result;
             generateAssignments();
