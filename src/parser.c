@@ -730,10 +730,10 @@ eRC statement() {
             if (result != RC_OK) return result;
             break;
         case TYPE_DECLARATIVE_ASSIGN:                   // := <expression>
-            generateDefinitions();
             getToken(token, tk);                        // Get the next token (move past := to <expression>)
             result = precedent_analys(tk, &precType, &stack);// Evaluate expression
             if (result != RC_OK) return result;
+            generateDefinitions();
             stVarSetType(stStackLookUp(&stack, currentVar), precType);// Set variable type
             break;
         case TYPE_PLUS_ASSIGN:
