@@ -278,7 +278,11 @@ eRC function() {
         // Generate beginning of function
         generateFunction(strGetStr(&tk->attribute.string));
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
-        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN);
+        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN);
+        if (result != RC_OK) {
+            setErrMsg("redefinition attempt");
+            return RC_ERR_SEMANTIC_PROG_FUNC;
+        }
         currentFnc = strGetStr(&tk->attribute.string);// Save what is the identifier of the function we are currently parsing
         // Check if function identifier is 'main' (this is so that we can check later that this was defined)
         if (!strcmp(strGetStr(&tk->attribute.string), "main")) {
@@ -373,7 +377,11 @@ eRC arguments() {
     // Get the token with the ID or others (eps)
     if (tk->type == TYPE_IDENTIFIER) {
         generatorSaveID(strGetStr(&tk->attribute.string));
-        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        if (result != RC_OK) {
+            setErrMsg("redefinition attempt");
+            return RC_ERR_SEMANTIC_PROG_FUNC;
+        }
         currentVar = strGetStr(&tk->attribute.string);
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
@@ -398,7 +406,11 @@ eRC argumentNext() {
         }
 
         generatorSaveID(strGetStr(&tk->attribute.string));
-        stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        if (result != RC_OK) {
+            setErrMsg("redefinition attempt");
+            return RC_ERR_SEMANTIC_PROG_FUNC;
+        }
         currentVar = strGetStr(&tk->attribute.string);
         getToken(token, tk);                            // Get the token with the type
         result = type();                                // Parse type
@@ -745,7 +757,11 @@ eRC statement() {
                 iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "redefinition attempt!");
                 return RC_ERR_SEMANTIC_PROG_FUNC;
             }
-            stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);	
+            result = stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);	
+            if (result != RC_OK) {
+                setErrMsg("redefinition attempt");
+                return RC_ERR_SEMANTIC_PROG_FUNC;
+            }
             getToken(token, tk);                        // Get the next token (move past := to <expression>)
             result = precedent_analys(tk, &precType, &stack);// Evaluate expression
             if (result != RC_OK) return result;
@@ -1005,7 +1021,11 @@ eRC forDefine() {
     // rule: <for_definition> -> ID := <expression>
     if (tk->type == TYPE_IDENTIFIER) {
         currentVar = strGetStr(&tk->attribute.string);
-        stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);
+        result = stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);
+        if (result != RC_OK) {
+            setErrMsg("redefinition attempt");
+            return RC_ERR_SEMANTIC_PROG_FUNC;
+        }
         generatorSaveID(strGetStr(&tk->attribute.string));
         // := <expression>
         getToken(token, tk);
