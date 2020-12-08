@@ -1083,6 +1083,11 @@ eRC returnStatement() {
     // note: after expression handle, its result will be (pushed) on top of stack (last expr. -> top)
     do {
         getToken(token, tk);
+
+        if (tk->type == TYPE_EOL) // <return_stat> -> eps [return EOL]
+            return result;
+
+        // <return_stat> -> <expression>
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
 
@@ -1091,7 +1096,7 @@ eRC returnStatement() {
             iPrint(RC_ERR_SEMANTIC_PARAM, true, "wrong return type");
             return RC_ERR_SEMANTIC_PARAM;
         }
-        
+
         returns++;
         if (tk->type != TYPE_COMMA && returns != func->fData->returnNum) {
             char str[90] = "function ";
