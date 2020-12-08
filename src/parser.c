@@ -858,7 +858,7 @@ eRC assignment() {
     result = expressionNext();
     if (result != RC_OK) return result;
 
-    if (numberOfIDs != 0) {
+    if (numberOfIDs != 1) {
         iPrint(RC_ERR_SEMANTIC_PARAM, true, "invalid number of values on the left side of assignment");
         return RC_ERR_SEMANTIC_PARAM;
     }
