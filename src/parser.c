@@ -823,7 +823,6 @@ eRC assignment() {
                 printLastToken = 0;
                 return result;
             }
-            printf("numofids %d\n", numberOfIDs);
 
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
@@ -850,6 +849,10 @@ eRC assignment() {
     }
 
     if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+        if (stVarTypeLookUp(&stack, currentVar) == UNKNOWN) {
+            iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "undefined variable");
+            return RC_ERR_SEMANTIC_PROG_FUNC;
+        }
         debugPrint("Found var type: %d, assigning: %d, received: %d", stVarTypeLookUp(&stack, currentVar), precTypeToSymtableType(precType), precType)
         iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
         return RC_ERR_SEMANTIC_TYPECOMP;
@@ -900,6 +903,10 @@ eRC expressionNext() {
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
         if (!funcCall && stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) != precTypeToSymtableType(precType)) {
+            if (stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) == UNKNOWN) {
+                iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "undefined variable");
+                return RC_ERR_SEMANTIC_PROG_FUNC;
+            }
             iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
             return RC_ERR_SEMANTIC_TYPECOMP;	
         }

@@ -58,7 +58,9 @@ typedef enum stVarTypes {
     INT,                                /**< [BASIC] Integer data type              */
     STRING,                             /**< [BASIC] String data type               */
     FLOAT64,                            /**< [BASIC] Float data type                */
-    BOOL                                /**< [BOOLTHEN] bool data type              */
+    BOOL,                               /**< [BOOLTHEN] bool data type              */
+
+    UNDERSCORE                          /**< [INTERNAL] Underscore (accepts all)    */
 } stVarType;
 
 /**
