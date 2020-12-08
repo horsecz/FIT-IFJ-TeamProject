@@ -639,8 +639,8 @@ eRC command() {
 
                     // TODO: Check this
                     stNodePtr stVarsIf = NULL;
-                    stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 1)	
                     stInsert(&stVarsIf, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+                    stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 1)
 
                     result = commandBlock();            // Parse block of commands (inside of if)
                     if (result != RC_OK) return result;
@@ -660,8 +660,8 @@ eRC command() {
 
                     // TODO: Check this
                     stNodePtr stVarsFor = NULL;
-                    stackPushSt(&stack, &stVarsFor);       // Entering new scope (for 1)	
                     stInsert(&stVarsFor, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+                    stackPushSt(&stack, &stVarsFor);       // Entering new scope (for 1)
 
                     generateForBeginning();
                     result = forDefine();               // Parse definiton section of for
