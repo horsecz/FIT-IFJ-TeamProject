@@ -18,7 +18,14 @@ int Translate_string(string *s){
 		pismenko = s->str[i];
 		if (pismenko<33 || pismenko == 35 || pismenko == 92)
 		{
-			printf("\\0%d",  pismenko);
+			if (pismenko<10)
+			{
+				printf("\\00%d",  pismenko);
+			}else
+			{
+				printf("\\0%d",  pismenko);
+			}
+			
 		}
 		else
 		{
