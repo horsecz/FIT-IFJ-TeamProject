@@ -824,6 +824,7 @@ eRC assignment() {
                 printLastToken = 0;
                 return result;
             }
+            numberOfIDs--;
 
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
@@ -858,7 +859,7 @@ eRC assignment() {
     result = expressionNext();
     if (result != RC_OK) return result;
 
-    if (numberOfIDs != 1) {
+    if (numberOfIDs != 0) {
         iPrint(RC_ERR_SEMANTIC_PARAM, true, "invalid number of values on the left side of assignment");
         return RC_ERR_SEMANTIC_PARAM;
     }
