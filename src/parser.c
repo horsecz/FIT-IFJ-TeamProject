@@ -92,6 +92,7 @@ int numberOfIDs = 0;            /**< Counter of IDs on the left side of the assi
 int numberOfExp = 0;            /**< Temp helper value for expression compare              */
 bool funcCall = false;          /**< Detection of function call used in deciding whether do expression (count) check or not */
 bool precRightBrace = false;    /**< For precedent: check if right brace of func call was detected (prevent semantic errors) */
+bool afterIf = false;           /**< Dont check EOLs after if command block */
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
@@ -577,7 +578,7 @@ eRC commandBlock() {
     }
 
     getToken(token, tk);                            // Get next token (should be EOL)
-    if (tk->type != TYPE_EOL) {                     // RIGHT CURLY BRACKET is followed by EOL!
+    if (tk->type != TYPE_EOL && !afterIf) {                     // RIGHT CURLY BRACKET is followed by EOL!
         setErrMsg("expected end-of-line after '}'");
         return RC_ERR_SYNTAX_ANALYSIS;
     }
@@ -642,6 +643,7 @@ eRC command() {
                     stInsert(&stVarsIf, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
                     stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 1)
 
+                    afterIf = true;
                     result = commandBlock();            // Parse block of commands (inside of if)
                     if (result != RC_OK) return result;
 
@@ -901,12 +903,10 @@ eRC expressionNext() {
             setErrMsg("expected less expressions on the right side of the assignment");
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
-        // TODO: Check functionality of this part
         getToken(token, tk);                        // Step over COMMA	
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
-        // TODO: This part will not work for multiple expressions 'cause of currentVar variable
         if (!funcCall && stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) != precTypeToSymtableType(precType)) {
             iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
             return RC_ERR_SEMANTIC_TYPECOMP;	
@@ -951,6 +951,11 @@ eRC ifElse() {
             if (result != RC_OK) return result;
         default:
             generateIfScopeEnd();
+            afterIf = false;
+            if (tk->type != TYPE_EOL) {
+                setErrMsg("expected end-of-line after last if command block");
+                return RC_ERR_SYNTAX_ANALYSIS;
+            }
             break;
     }
 
@@ -968,6 +973,7 @@ eRC ifElseExpanded() {
         // <cmd_block>
         getToken(token, tk);
         // if (expression == true) generateIfScope();   // expression ... there should be 'else if <expression> <cmdblock>'
+        afterIf = true;
         result = commandBlock();
         if (result != RC_OK) return result;
 
@@ -977,6 +983,7 @@ eRC ifElseExpanded() {
     } else {
         // else rule: <if_else_st> -> <cmd_block>
         // if (expression == false) generateIfScope();      // expression ... in line 591 in command(); or upper (804)
+        afterIf = false;
         result = commandBlock();
         if (result != RC_OK) return result;
     }
@@ -1085,10 +1092,6 @@ eRC returnStatement() {
             return RC_ERR_SEMANTIC_PARAM;
         }
 
-        // func horse () (int, int, string)
-        //
-        //  return 1
-        returns++;
         if (tk->type != TYPE_COMMA && returns != func->fData->returnNum) {
             char str[90] = "function ";
             char ret[60] = { 0 };
@@ -1097,7 +1100,7 @@ eRC returnStatement() {
             iPrint(RC_ERR_SEMANTIC_PARAM, true, str);
             return RC_ERR_SEMANTIC_PARAM;
         }
-    } while (returns != stLookUp(&stFunctions, currentFnc)->fData->returnNum);
+    } while (returns++ != stLookUp(&stFunctions, currentFnc)->fData->returnNum);
 
     // rule: <return_stat> -> eps
     // TODO -> if not expression -> else do nothing
