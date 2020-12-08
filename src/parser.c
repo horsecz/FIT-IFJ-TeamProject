@@ -905,7 +905,7 @@ eRC expressionNext() {
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
-        if (!funcCall && stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) != precTypeToSymtableType(precType)) {
+        if (!funcCall && stVarTypeLookUp(&stack, currentVar) != UNDERSCORE && stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) != precTypeToSymtableType(precType)) {
             if (stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) == UNKNOWN) {
                 iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "undefined variable");
                 return RC_ERR_SEMANTIC_PROG_FUNC;
