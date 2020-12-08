@@ -824,7 +824,6 @@ eRC assignment() {
                 printLastToken = 0;
                 return result;
             }
-            numberOfIDs--;
 
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
