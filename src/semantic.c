@@ -19,7 +19,7 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
             char str[255] = {0};
             snprintf(str, 254, "function which returns %d value(s) is assigned to %d variable(s)", func->fData->returnNum, numberOfIDs);
             setErrMsg(str);
-            return RC_ERR_SEMANTIC_PARAM;
+            return RC_ERR_SEMANTIC_OTHER;
         }
 
         char str[255] = {0};
