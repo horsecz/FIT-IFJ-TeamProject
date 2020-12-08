@@ -8,7 +8,27 @@
 
 
 
+int Translate_string(string *s){
+	char pismenko;
 
+	int len = strGetLength(s);
+
+	for (int i = 0; i < len; ++i)
+	{
+		pismenko = s->str[i];
+		if (pismenko<33 || pismenko == 35 || pismenko == 92)
+		{
+			printf("\\0%d",  pismenko);
+		}
+		else
+		{
+			printf("%c", pismenko);
+		}
+		
+
+	}
+	printf("\n");
+}
 
 ////{ { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { {
 
@@ -629,7 +649,8 @@ int reduction(symStack *stack){
 					}
 					if (druhej->token_Type == TYPE_STRING)
 					{
-						printf("PUSHS string@%s\n", druhej->string.str);
+						printf("PUSHS string@");
+						Translate_string(&druhej->string);
 						symstackPopMore(stack, 3);
 						symstackPush(stack, TOKEN_PREC_STRING);
 					}
