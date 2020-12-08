@@ -28,7 +28,7 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
 
         for (int i = 0; i < func->fData->returnNum; i++) { // check types one by one
             if (i)
-                varType = stVarTypeLookUp(&stack, currentVarMul[i]);
+                varType = stVarTypeLookUp(&stack, currentVarMul[i-1]);
 
             if (retType[i] != varType) {
                 f_returnType = setErrorType(retType[i]);
