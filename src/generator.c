@@ -511,7 +511,8 @@ void print(DataType arg_type) {
     DEFVAR GF@?PRINT_FLOAT? \n        \
     DEFVAR GF@?PRINT_STRING? \n       \
     DEFVAR GF@?PRINT_BOOL?    \n       \
-    DEFVAR GF@?FOR_RESULT? \n \
+    DEFVAR GF@?FOR_RESULT? \n          \
+    DEFVAR GF@?_?   \n                 \
     \n\
     CALL $main       \n\
     EXIT int@0      \n\
@@ -573,16 +574,24 @@ void generateDefinitions() {
     char* name = generatorGetID();
 
     while (name != NULL) {
-        fprintf(stdout, "DEFVAR LF@%s\n", name);
-        fprintf(stdout, "POPS LF@%s\n", name);
-        name = generatorGetID();
+        if (!strcmp(name, "_")) {
+            fprintf(stdout, "POPS GF@?_?\n");
+        } else {
+            fprintf(stdout, "DEFVAR LF@%s\n", name);
+            fprintf(stdout, "POPS LF@%s\n", name);
+        }
+            name = generatorGetID();
     }
 }
 
 void generateAssignments() {
     char* name = generatorGetID();
     while (name != NULL) {
-        GEN_POP(name);
+        if (!strcmp(name, "_")) {
+            fprintf(stdout, "POPS GF@?_?\n");
+        } else {
+            GEN_POP(name);
+        }
         name = generatorGetID();
     }
 }
