@@ -295,6 +295,7 @@ eRC function() {
     stNodePtr stVars = NULL;
     stConstruct(&stVars);
     stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+    stInsert(&stVars, "_", ST_N_VARIABLE, UNDERSCORE);
     stackPushSt(&stack, &stVars);                       // Entering new scope (function)	
 
     fncDef = true;
@@ -750,7 +751,9 @@ eRC statement() {
             if (result != RC_OK) return result;
             debugPrint("Declaring as: %d, received: %d", precTypeToSymtableType(precType), precType)
             generateDefinitions();
-            stVarSetType(stStackLookUp(&stack, currentVar), precTypeToSymtableType(precType));// Set variable type
+            if (stVarGetType(stStackLookUp(&stack, currentVar)) != UNDERSCORE) {
+                stVarSetType(stStackLookUp(&stack, currentVar), precTypeToSymtableType(precType));// Set variable type
+            }
             break;
         case TYPE_PLUS_ASSIGN:
         case TYPE_MINUS_ASSIGN:
@@ -848,7 +851,7 @@ eRC assignment() {
         }
     }
 
-    if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+    if (stVarTypeLookUp(&stack, currentVar) != UNDERSCORE && stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
         if (stVarTypeLookUp(&stack, currentVar) == UNKNOWN) {
             iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "undefined variable");
             return RC_ERR_SEMANTIC_PROG_FUNC;
