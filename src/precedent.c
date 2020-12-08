@@ -19,6 +19,7 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 	symstackInit(stack); 	
 	symstackPush(stack, TYPE_EOL);	
 	int a;							// pushnuti prvni hodnoty EOL
+	int f;
 
 	if (tokeng->type !=2)
 	{	
@@ -31,7 +32,15 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 	while(!(StackTopTerm(stack) == TYPE_EOL && (tokeng->type == TYPE_EOL || tokeng->type == TYPE_SEMICOLON || tokeng->type == TYPE_COMMA || tokeng->type == TYPE_LEFT_CURLY_BRACKET)))							// cyklus pobezi dokud nenarazi na znak konce radku, streniku, nebo carky
 	{
 
-		getToken(tokeng);					// ziskame token
+		f = getToken(tokeng);
+		if (f == 1)
+		{
+			return f;
+		}
+		else if (f == 2 || f == 99)
+		{
+			return INTERNAL_ERROR;
+		}					
 		if (tokeng->type !=2)
 		{	
 
