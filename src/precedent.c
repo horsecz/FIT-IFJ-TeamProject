@@ -27,6 +27,10 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 		return a;	
 		}
 	}
+	if (tokeng->type == TYPE_SEMICOLON || tokeng->type == TYPE_LEFT_CURLY_BRACKET)
+	{
+		return 2;
+	}
 	
 
 	while(!(StackTopTerm(stack) == TYPE_EOL && (tokeng->type == TYPE_EOL || tokeng->type == TYPE_SEMICOLON || tokeng->type == TYPE_COMMA || tokeng->type == TYPE_LEFT_CURLY_BRACKET)))							// cyklus pobezi dokud nenarazi na znak konce radku, streniku, nebo carky
@@ -631,11 +635,11 @@ int reduction(symStack *stack){
 					}
 					if (druhej->token_Type == TYPE_BOOL)
 					{
-						if (druhej->boolen= true)
+						if (druhej->boolen== true)
 						{
 							printf("PUSHS bool@true\n");
 						}
-						else if (druhej->boolen= false)
+						else if (druhej->boolen== false)
 						{
 							printf("PUSHS bool@false\n");
 						}
