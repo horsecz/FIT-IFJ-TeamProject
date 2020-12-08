@@ -20,7 +20,7 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 	symstackPush(stack, TYPE_EOL);	
 	int a;							// pushnuti prvni hodnoty EOL
 
-	if (tokeng->type !=3)
+	if (tokeng->type !=2)
 	{	
 		if((a = idkfunkce(stack, tokeng, Type, Vars))){
 		return a;	
@@ -32,7 +32,7 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 	{
 
 		getToken(tokeng);					// ziskame token
-		if (tokeng->type !=3)
+		if (tokeng->type !=2)
 		{	
 
 			a = idkfunkce(stack, tokeng, Type, Vars);				// zavolame funkci pro zpracovani token

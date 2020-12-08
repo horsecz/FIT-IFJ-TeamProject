@@ -995,6 +995,8 @@ eRC forDefine() {
 
     // rule: <for_definition> -> ID := <expression>
     if (tk->type == TYPE_IDENTIFIER) {
+        currentVar = strGetStr(&tk->attribute.string);
+        stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);
         generatorSaveID(strGetStr(&tk->attribute.string));
         // := <expression>
         getToken(token, tk);
@@ -1007,6 +1009,7 @@ eRC forDefine() {
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
+        stVarSetType(stStackLookUp(&stack, currentVar), precTypeToSymtableType(precType));// Set variable type
         generateDefinitions();
     }
     // else rule: <for_definition> -> eps

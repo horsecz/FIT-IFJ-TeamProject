@@ -628,11 +628,11 @@ void generateForAssignmentEnd() {
 }
 
 void generateForScope() {
-    fprintf(stdout, "\nLABEL FOR$%d\nCREATEFRAME\nPUSHFRAME\n", for_cnt);
+    fprintf(stdout, "\nLABEL FOR$%d\n", for_cnt);
 }
 
 void generateForScopeEnd() {
-    fprintf(stdout, "POPFRAME\nJUMP FOR_ASSIGN$%d\n\nLABEL FOR_END$%d\n\n", for_cnt, for_cnt);
+    fprintf(stdout, "JUMP FOR_ASSIGN$%d\n\nLABEL FOR_END$%d\n\n", for_cnt, for_cnt);
     for_cnt++;
 }
 
