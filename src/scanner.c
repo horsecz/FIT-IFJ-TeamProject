@@ -957,7 +957,6 @@ int getToken (Token *token)
 #ifdef DEBUG
           fprintf(stderr, "[==] ");
 #endif
-          ungetc(c, stdin);
           token->type = TYPE_EQUALS;
           return SCANNER_SUCC;
         }
