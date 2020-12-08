@@ -480,7 +480,7 @@ int getToken (Token *token)
           return SCANNER_SUCC;
         }
       case STATE_IDENTIFIER_OR_KEYWORD:
-        if (isalpha(c))
+        if (isalpha(c) || isdigit(c))
         {
           // check whether adding of char was successful
           if (!strAddChar(&token->attribute.string, c)) continue;
@@ -492,7 +492,7 @@ int getToken (Token *token)
             return SCANNER_INTERNAL;
           }
         }
-        else if (isdigit(c) || c == '_')
+        else if (c == '_')
         {
           // check whether adding of char was successful
           if (!strAddChar(&token->attribute.string, c))
@@ -899,7 +899,7 @@ int getToken (Token *token)
 #ifdef DEBUG
           fprintf(stderr, "FLOAT[%f] ", token->attribute.float64);
 #endif
-          token->type = TYPE_INT;
+          token->type = TYPE_FLOAT64;
           return SCANNER_SUCC;
         }
         break;
