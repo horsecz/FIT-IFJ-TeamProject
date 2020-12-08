@@ -54,7 +54,7 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 		return a;	
 		}
 	}
-	if (tokeng->type == TYPE_SEMICOLON || tokeng->type == TYPE_LEFT_CURLY_BRACKET)
+	if (tokeng->type == TYPE_SEMICOLON || tokeng->type == TYPE_LEFT_CURLY_BRACKET || tokeng->type == TYPE_EOL || tokeng->type == TYPE_COMMA)
 	{
 		return 2;
 	}
