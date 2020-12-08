@@ -424,17 +424,17 @@ eRC argumentNext() {
 eRC type() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    
+
     if (tk->type == TYPE_KEYWORD) {
         switch (tk->attribute.keyword) {
             case KEYWORD_INT:
                 if (fncDef) {
                     debugPoints(1);
                     if (!argRet) {
-                        stFncSetParam(stStackLookUp(&stack, currentFnc), INT);
+                        stFncSetParam(stLookUp(&stFunctions, currentFnc), INT);
                         stVarSetType(stStackLookUp(&stack, currentVar), INT);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), INT);
+                        stFncSetType(stLookUp(&stFunctions, currentFnc), INT);
                     }
                 }
                 break;
@@ -442,10 +442,10 @@ eRC type() {
                 if (fncDef) {
                     debugPoints(2);
                     if (!argRet) {
-                        stFncSetParam(stStackLookUp(&stack, currentFnc), FLOAT64);
+                        stFncSetParam(stLookUp(&stFunctions, currentFnc), FLOAT64);
                         stVarSetType(stStackLookUp(&stack, currentVar), FLOAT64);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), FLOAT64);
+                        stFncSetType(stLookUp(&stFunctions, currentFnc), FLOAT64);
                     }
                 }
                 break;
@@ -453,10 +453,10 @@ eRC type() {
                 if (fncDef) {
                     debugPoints(3);
                     if (!argRet) {
-                        stFncSetParam(stStackLookUp(&stack, currentFnc), STRING);
+                        stFncSetParam(stLookUp(&stFunctions, currentFnc), STRING);
                         stVarSetType(stStackLookUp(&stack, currentVar), STRING);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), STRING);
+                        stFncSetType(stLookUp(&stFunctions, currentFnc), STRING);
                     }
                 }
                 break;
@@ -464,10 +464,10 @@ eRC type() {
                 if (fncDef) {
                     debugPoints(4);
                     if (!argRet) {
-                        stFncSetParam(stStackLookUp(&stack, currentFnc), BOOL);
+                        stFncSetParam(stLookUp(&stFunctions, currentFnc), BOOL);
                         stVarSetType(stStackLookUp(&stack, currentVar), BOOL);
                     } else if (argRet) {
-                        stFncSetType(stStackLookUp(&stack, currentFnc), BOOL);
+                        stFncSetType(stLookUp(&stFunctions, currentFnc), BOOL);
                     }
                 }
                 break;
@@ -1035,6 +1035,11 @@ eRC forAssign() {
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
+        if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+            debugPrint("Found var type: %d, assigning: %d, received: %d", stVarTypeLookUp(&stack, currentVar), precTypeToSymtableType(precType), precType)
+            iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
+            return RC_ERR_SEMANTIC_TYPECOMP;
+        }
         generateAssignments();
     }
 
@@ -1064,21 +1069,32 @@ eRC returnStatement() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
     int returns = 0;
+    stNodePtr GST = stackGetBotSt(&stack);;
+    stNodePtr func = NULL;
 
     // rule: <return_stat> -> <expression>
-    // TODO -> handle expression
     // note: after expression handle, its result will be (pushed) on top of stack (last expr. -> top)
     do {
         getToken(token, tk);
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
-        if ((returns < stackGetBotSt(&stack)->fData->returnNum) && (stFncGetType(stackGetBotSt(&stack))[returns] != precTypeToSymtableType(precType))) {
+
+        func = stLookUp(&GST, currentFnc);
+        if ((returns < func->fData->returnNum) && (stFncGetType(func)[returns] != precTypeToSymtableType(precType))) {
             iPrint(RC_ERR_SEMANTIC_PARAM, true, "wrong return type");
             return RC_ERR_SEMANTIC_PARAM;
         }
+
+        // func horse () (int, int, string)
+        //
+        //  return 1
         returns++;
-        if (tk->type != TYPE_COMMA && returns != stackGetBotSt(&stack)->fData->returnNum) {
-            iPrint(RC_ERR_SEMANTIC_PARAM, true, "wrong return type");
+        if (tk->type != TYPE_COMMA && returns != func->fData->returnNum) {
+            char str[90] = "function ";
+            char ret[60] = { 0 };
+            snprintf(ret, 59,"expected %d return value(s) but got %d", func->fData->returnNum, returns);
+            strcat(str, ret);
+            iPrint(RC_ERR_SEMANTIC_PARAM, true, str);
             return RC_ERR_SEMANTIC_PARAM;
         }
     } while (returns != stLookUp(&stFunctions, currentFnc)->fData->returnNum);
