@@ -3,7 +3,7 @@
 package main
 
 func alpha (a int) (int) {
-	return 6.7
+	return 6
 }
 
 func main () {

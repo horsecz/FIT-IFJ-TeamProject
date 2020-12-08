@@ -1,4 +1,4 @@
-//compiler 7
+//compiler 2 7
 //
 package alpha
 
