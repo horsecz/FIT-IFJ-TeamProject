@@ -824,9 +824,10 @@ eRC multipleID() {
 eRC assignment() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
+    result = precedent_analys(tk, &precType, &stack);
 
-    switch (tk->type) {
-        case TYPE_IDENTIFIER:                       // ID ( <arguments> )
+    if (result != RC_OK) { // ID ( ... ) -> funccall, precedent not found function ID in variable table
+        if (result == RC_ERR_SEMANTIC_OTHER)  {
             generatorSaveID(strGetStr(&tk->attribute.string));
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
@@ -843,32 +844,31 @@ eRC assignment() {
             generateAssignments();
 
             if (!funcCall)
-                getToken(token, tk);                    // This function promises that it'll prepare functions for other processing
+                getToken(token,
+                         tk);                    // This function promises that it'll prepare functions for other processing
             funcCall = false;
-            break;
-        default:                                    // <expression> <expr_n>
-            // TODO: Check functionality of this part
-            result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
-            if (result != RC_OK) return result;
-            // TODO: This part will not work for multiple expressions 'cause of currentVar variable
-            if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
-                debugPrint("Found var type: %d, assigning: %d, received: %d", stVarTypeLookUp(&stack, currentVar), precTypeToSymtableType(precType), precType)
-                iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
-                return RC_ERR_SEMANTIC_TYPECOMP;	
-            }
-            // generateAssignment(identifier1);
-            result = expressionNext();
-            if (result != RC_OK) return result;
 
-            if (numberOfIDs != 0) {
-                iPrint(RC_ERR_SEMANTIC_PARAM, true, "invalid number of values on the left side of assignment");
-                return RC_ERR_SEMANTIC_PARAM;
-            }
+            return result;
+        } else {
+            return result;
+        }
+    }
+    // TODO: This part will not work for multiple expressions 'cause of currentVar variable
+    if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+        debugPrint("Found var type: %d, assigning: %d, received: %d", stVarTypeLookUp(&stack, currentVar), precTypeToSymtableType(precType), precType)
+        iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
+        return RC_ERR_SEMANTIC_TYPECOMP;
+    }
+    // generateAssignment(identifier1);
+    result = expressionNext();
+    if (result != RC_OK) return result;
 
-            generateAssignments();
-            break;
+    if (numberOfIDs != 0) {
+        iPrint(RC_ERR_SEMANTIC_PARAM, true, "invalid number of values on the left side of assignment");
+        return RC_ERR_SEMANTIC_PARAM;
     }
 
+    generateAssignments();
     return result;
 }
 
@@ -896,7 +896,8 @@ eRC expressionNext() {
     eRC result = RC_OK;
 
     if (tk->type == TYPE_COMMA) {
-        if(!funcCall && --numberOfIDs < 0) {
+        numberOfIDs--;
+        if(!funcCall && numberOfIDs < 0) {
             setErrMsg("expected less expressions on the right side of the assignment");
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
@@ -911,7 +912,6 @@ eRC expressionNext() {
             return RC_ERR_SEMANTIC_TYPECOMP;	
         }
         generatorPrintCheck(precType);
-        numberOfIDs--;
         result = expressionNext();
         if (result != RC_OK) return result;
     }
