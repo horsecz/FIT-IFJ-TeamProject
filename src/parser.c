@@ -735,7 +735,6 @@ eRC statement() {
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
             getToken(token, tk);                        // Get the next token (move past = to <assignment>)
-            numberOfIDs++;
             result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
             break;
@@ -824,6 +823,7 @@ eRC assignment() {
                 printLastToken = 0;
                 return result;
             }
+            printf("numofids %d\n", numberOfIDs);
 
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
@@ -840,8 +840,7 @@ eRC assignment() {
             generateAssignments();
 
             if (!funcCall)
-                getToken(token,
-                         tk);                    // This function promises that it'll prepare functions for other processing
+                getToken(token,tk);                    // This function promises that it'll prepare functions for other processing
             funcCall = false;
 
             return result;

@@ -42,13 +42,13 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
 
                 return RC_ERR_SEMANTIC_TYPECOMP;
             }
-            numberOfIDs--;
         }
     } else { // function isnt in GST (not defined, but may be defined later)
         //saveFuncID, saveVariableTypes, checkLater
         // ?
     }
 
+    numberOfIDs = 0;
     return RC_OK;
 }
 
