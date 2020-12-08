@@ -26,19 +26,6 @@
 	    }                                                                               \
 	} while (tokenVar->type == TYPE_EMPTY)                                              \
 
-/**
- * @brief Error msg maximum size 
- */
-#define MAX_ERR_MSG 255
-
-/**
- * @brief Sets error string to msg specified
- * @param msg Message to be set as an error string
- */
-#define setErrMsg(msg)                                                                  \
-    do {                                                                                \
-        strncpy(errText, msg, MAX_ERR_MSG);                                             \
-    } while (0)                                                                         \
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
@@ -748,6 +735,7 @@ eRC statement() {
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
             getToken(token, tk);                        // Get the next token (move past = to <assignment>)
+            numberOfIDs++;
             result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
             break;
@@ -831,6 +819,12 @@ eRC assignment() {
     if (result != RC_OK) { // ID ( ... ) -> funccall, precedent not found function ID in variable table
         if (result == RC_ERR_SEMANTIC_OTHER)  {
             generatorSaveID(strGetStr(&tk->attribute.string));
+            result = semantic_analysis (strGetStr(&tk->attribute.string), stFunctions, stack, currentVar, currentVarMul, numberOfIDs);
+            if (result != RC_OK) {
+                printLastToken = 0;
+                return result;
+            }
+
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
                 setErrMsg("expected '(' after identifier");
@@ -855,13 +849,12 @@ eRC assignment() {
             return result;
         }
     }
-    // TODO: This part will not work for multiple expressions 'cause of currentVar variable
+
     if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
         debugPrint("Found var type: %d, assigning: %d, received: %d", stVarTypeLookUp(&stack, currentVar), precTypeToSymtableType(precType), precType)
         iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
         return RC_ERR_SEMANTIC_TYPECOMP;
     }
-    // generateAssignment(identifier1);
     result = expressionNext();
     if (result != RC_OK) return result;
 

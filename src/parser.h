@@ -16,6 +16,7 @@
 #include "returns.h"
 #include "precedent.h"
 #include "generator.h"
+#include "semantic.h"
 
 /**
  * @brief Define max size of some arrays (limits amount of functions that can be called etc.)
@@ -24,9 +25,28 @@
 #define MAX_SIZE 255
 
 /**
+ * @brief Error msg maximum size
+ */
+#define MAX_ERR_MSG 255
+
+/**
+ * @brief Sets error string to msg specified
+ * @param msg Message to be set as an error string
+ */
+#define setErrMsg(msg)                                                                  \
+    do {                                                                                \
+        strncpy(errText, msg, MAX_ERR_MSG);                                             \
+    } while (0)                                                                         \
+
+/**
  * @brief Variable for precedent (expression analysis)
  */
 extern bool precRightBrace;
+
+/**
+ * @brief Variable for error text (sharing with semantic)
+ */
+extern char errText[MAX_ERR_MSG];
 
 /**
  * @brief Main parser logic \n
