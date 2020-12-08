@@ -96,6 +96,10 @@ jobs:
       - name: <ARCHIVE> Create archive file
         working-directory: ./deploy
         run: python3 deploy.py
+      - name: <ARCHIVE> Check archive
+        working-directory: ./deploy
+        run: sh is_it_ok.sh xhorky32.tgz temp
+        continue-on-error: true
       - name: <ARCHIVE> Push archive
         working-directory: ./deploy
         run: |
