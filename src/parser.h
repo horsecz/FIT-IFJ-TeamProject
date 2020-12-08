@@ -18,6 +18,12 @@
 #include "generator.h"
 
 /**
+ * @brief Define max size of some arrays (limits amount of functions that can be called etc.)
+ * @note This should be done better (dynamically)
+ */
+#define MAX_SIZE 255
+
+/**
  * @brief Variable for precedent (expression analysis)
  */
 extern bool precRightBrace;

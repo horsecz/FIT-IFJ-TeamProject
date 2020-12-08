@@ -79,6 +79,7 @@ stNodePtr stFunctions = NULL;   /**< Symboltable for functions (only fucntions a
 stStack stack;                  /**< Global stack for symtables                            */
 stID currentFnc;                /**< To remember current function (for lookup)             */
 stID currentVar;                /**< To remember current variable (for type set and lookup)*/
+stID currentVarMul[MAX_SIZE];   /**< To remember current variable (for type set and lookup)*/
 Token* tk;                      /**< Token store - global                                  */
 TokenType precType;             /**< For work with precedent analysis                      */
 int token;                      /**< Token return code store - global                      */
@@ -88,6 +89,7 @@ bool printLastToken;            /**< For error message - if last token may be pr
 bool fncDef = true;             /**< Parsing function definiton (for arguments)            */
 bool argRet = false;            /**< Arguments and returns switch for function parsing     */
 int numberOfIDs = 0;            /**< Counter of IDs on the left side of the assignment, this is needed to check correct number of expressions on the left side or correct number of returns from function call */
+int numberOfExp = 0;            /**< Temp helper value for expression compare              */
 bool funcCall = false;          /**< Detection of function call used in deciding whether do expression (count) check or not */
 bool precRightBrace = false;    /**< For precedent: check if right brace of func call was detected (prevent semantic errors) */
 
@@ -636,9 +638,9 @@ eRC command() {
                     }
 
                     // TODO: Check this
-                    stNodePtr stVars = NULL;
-                    stackPushSt(&stack, &stVars);       // Entering new scope (if 1)	
-                    stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+                    stNodePtr stVarsIf = NULL;
+                    stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 1)	
+                    stInsert(&stVarsIf, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
 
                     result = commandBlock();            // Parse block of commands (inside of if)
                     if (result != RC_OK) return result;
@@ -647,14 +649,19 @@ eRC command() {
                     #ifdef DEBUG
                     displayBST(stackGetTopSt(&stack));
                     #endif
-                    stNodePtr destructed = stackPopSt(&stack);
-                    stDestruct(&destructed);     // End of the scope (if 1)
+                    stNodePtr destructedIf = stackPopSt(&stack);
+                    stDestruct(&destructedIf);     // End of the scope (if 1)
 
                     result = ifElse();                  // Parse if else
                     if (result != RC_OK) return result;
                     break;
                 case KEYWORD_FOR:                       // for <for_definition> ; <expression> ; <for_assignment>
                     debugPrint("<%s> -> for <for_definition> ; <expression> ; <for_assignment>", __func__);
+
+                    // TODO: Check this
+                    stNodePtr stVarsFor = NULL;
+                    stackPushSt(&stack, &stVarsFor);       // Entering new scope (for 1)	
+                    stInsert(&stVarsFor, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
 
                     generateForBeginning();
                     result = forDefine();               // Parse definiton section of for
@@ -687,6 +694,14 @@ eRC command() {
                     result = commandBlock();            // Parse block of commands (inside of for)
                     if (result != RC_OK) return result;
                     generateForScopeEnd();
+
+                    // TODO: Symtable check	
+                    #ifdef DEBUG
+                    displayBST(stackGetTopSt(&stack));
+                    #endif
+                    stNodePtr destructedFor = stackPopSt(&stack);
+                    stDestruct(&destructedFor);     // End of the scope (if 1)
+
                     break;
                 case KEYWORD_RETURN:                    // <<return_cmd>
                     debugPrint("<%s> -> <return_cmd>", __func__);
@@ -772,6 +787,7 @@ eRC statement() {
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             getToken(token, tk);                        // Get the next token (move past = to <assignment>)
+            numberOfExp = numberOfIDs;
             result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
             break;
@@ -792,6 +808,7 @@ eRC multipleID() {
             return RC_ERR_SYNTAX_ANALYSIS;
         }
         generatorSaveID(strGetStr(&tk->attribute.string));
+        currentVarMul[numberOfIDs - 1] = strGetStr(&tk->attribute.string);
         getToken(token, tk);                        // Prepare token for another multipleID call
         result = multipleID();                      // Parse multiple IDs
         if (result != RC_OK) return result;
@@ -842,6 +859,12 @@ eRC assignment() {
             // generateAssignment(identifier1);
             result = expressionNext();
             if (result != RC_OK) return result;
+
+            if (numberOfIDs != 0) {
+                iPrint(RC_ERR_SEMANTIC_PARAM, true, "invalid number of values on the left side of assignment");
+                return RC_ERR_SEMANTIC_PARAM;
+            }
+
             generateAssignments();
             break;
     }
@@ -883,11 +906,12 @@ eRC expressionNext() {
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
         // TODO: This part will not work for multiple expressions 'cause of currentVar variable
-        if (!funcCall && stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+        if (!funcCall && stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) != precTypeToSymtableType(precType)) {
             iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
             return RC_ERR_SEMANTIC_TYPECOMP;	
         }
         generatorPrintCheck(precType);
+        numberOfIDs--;
         result = expressionNext();
         if (result != RC_OK) return result;
     }
@@ -1036,14 +1060,27 @@ eRC returnCommand() {
 eRC returnStatement() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
-    getToken(token, tk);
+    int returns = 0;
 
     // rule: <return_stat> -> <expression>
     // TODO -> handle expression
     // note: after expression handle, its result will be (pushed) on top of stack (last expr. -> top)
+    do {
+        getToken(token, tk);
+        result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
+        if (result != RC_OK) return result;
+        if ((returns < stackGetBotSt(&stack)->fData->returnNum) && (stFncGetType(stackGetBotSt(&stack))[returns] != precTypeToSymtableType(precType))) {
+            iPrint(RC_ERR_SEMANTIC_PARAM, true, "wrong return type");
+            return RC_ERR_SEMANTIC_PARAM;
+        }
+        returns++;
+        if (tk->type != TYPE_COMMA && returns != stackGetBotSt(&stack)->fData->returnNum) {
+            iPrint(RC_ERR_SEMANTIC_PARAM, true, "wrong return type");
+            return RC_ERR_SEMANTIC_PARAM;
+        }
+    } while (returns != stLookUp(&stFunctions, currentFnc)->fData->returnNum);
 
     // rule: <return_stat> -> eps
     // TODO -> if not expression -> else do nothing
-    getToken(token, tk); // temporary: after expression is handled, we must have 1 token after that expression
     return result;
 }
