@@ -28,8 +28,8 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 	}
 	
 
-	while(!(StackTopTerm(stack) == TYPE_EOL && (tokeng->type == TYPE_EOL || tokeng->type == TYPE_SEMICOLON || tokeng->type == TYPE_COMMA)))							// cyklus pobezi dokud nenarazi na znak konce radku, streniku, nebo carky
-	{	
+	while(!(StackTopTerm(stack) == TYPE_EOL && (tokeng->type == TYPE_EOL || tokeng->type == TYPE_SEMICOLON || tokeng->type == TYPE_COMMA || tokeng->type == TYPE_LEFT_CURLY_BRACKET)))							// cyklus pobezi dokud nenarazi na znak konce radku, streniku, nebo carky
+	{
 
 		getToken(tokeng);					// ziskame token
 
@@ -44,7 +44,6 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 
 int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		TokenType top = StackTopTerm(stack);						// do top nahrajeme nejvyssi terminal ze stacku
-			
 
 
 		
@@ -186,19 +185,24 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 				if (stack->top->token_Type == TOKEN_PREC_INTEGER)
 				{
 					*Type = TYPE_INT;
+					return SYNTAX_OK;
 				}
 				else if (stack->top->token_Type == TOKEN_PREC_FLOAT)
 				{
 					*Type = TYPE_FLOAT64;
+					return SYNTAX_OK;
 				}
 				else if (stack->top->token_Type == TOKEN_PREC_STRING)
 				{
 					*Type = TYPE_STRING;
+					return SYNTAX_OK;
 				}
 				else if (stack->top->token_Type == TOKEN_PREC_BOOL)
 				{
 					*Type = TYPE_BOOL;
+					return SYNTAX_OK;
 				}
+				
 				return SYNTAX_OK;
 			}
 			else if (top == TYPE_LEFT_BRACKET)						//pokud je na vrcholu ( tak nastane chyba
@@ -1130,7 +1134,7 @@ int reduction(symStack *stack){
 					}
 					else
 					{
-						return SEM_ERROR_TYPECOMP;
+						return 5;
 					}
 				}
 				else

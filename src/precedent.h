@@ -21,7 +21,6 @@
 #include "scanner.h"
 #include "symtable.h"
 #include "symstack.h"
-#include "error.h"
 #include "string.h"
 #include "parser.h"
 
