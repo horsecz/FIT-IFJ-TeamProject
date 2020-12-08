@@ -185,7 +185,6 @@ int getToken (Token *token)
     // enter deterministic automaton
     switch (state)
     {
-      // TODO: Retezcovy literal specifikace escape sequence
       case STATE_START:
         if (c == EOF)
         {
@@ -323,11 +322,7 @@ int getToken (Token *token)
         }
         else if (c == '=')
         {
-#ifdef DEBUG
-          fprintf(stderr, "[=] ");
-#endif
-          token->type = TYPE_ASSIGN;
-          return SCANNER_SUCC;
+          state = STATE_ASSIGN;
         }
         else if (c == '<')
         {
@@ -956,6 +951,26 @@ int getToken (Token *token)
         break;
         /****** END COMMENTS SECTION ******/
 
+      case STATE_ASSIGN:
+        if (c == '=')
+        {
+#ifdef DEBUG
+          fprintf(stderr, "[==] ");
+#endif
+          ungetc(c, stdin);
+          token->type = TYPE_EQUALS;
+          return SCANNER_SUCC;
+        }
+        else
+        {
+#ifdef DEBUG
+          fprintf(stderr, "[=] ");
+#endif
+          ungetc(c, stdin);
+          token->type = TYPE_ASSIGN;
+          return SCANNER_SUCC;
+        }
+        break;
       case STATE_DECLARATIVE_ASSIGN:
         if (c == '=')
         {
@@ -979,12 +994,13 @@ int getToken (Token *token)
           token->type = TYPE_NOT_EQUALS;
           return SCANNER_SUCC;
         }
-          // BOOLEAN EXTENSION [without it should return 1 for missing '=']
+        // BOOLEAN EXTENSION [without it should return 1 for missing '=']
         else
         {
 #ifdef DEBUG
           fprintf(stderr, "[!] ");
 #endif
+          ungetc(c, stdin);
           token->type = TYPE_NOT;
           return SCANNER_SUCC;
         }
