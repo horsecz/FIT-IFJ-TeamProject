@@ -899,7 +899,7 @@ int getToken (Token *token)
 #ifdef DEBUG
           fprintf(stderr, "FLOAT[%f] ", token->attribute.float64);
 #endif
-          token->type = TYPE_INT;
+          token->type = TYPE_FLOAT64;
           return SCANNER_SUCC;
         }
         break;
