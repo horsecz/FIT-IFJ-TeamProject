@@ -31,7 +31,7 @@ def createArchive():
         tar.add('Makefile', 'Makefile')                         # Add Makefile to the archive
         tar.add('../doc/rozdeleni', 'rozdeleni')                # Add rozdeleni file to the archive
         tar.add('../doc/rozsireni', 'rozsireni')                # Add rozsireni file to the archvie
-#        tar.add('../doc/documentation.pdf', 'dokumentace.pdf')  # Add documentation file to the archvie
+        tar.add('../doc/tex/documentation.pdf', 'dokumentace.pdf')  # Add documentation file to the archvie
 
 if __name__ == '__main__':
     createArchive()
