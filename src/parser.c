@@ -1091,7 +1091,8 @@ eRC returnStatement() {
             iPrint(RC_ERR_SEMANTIC_PARAM, true, "wrong return type");
             return RC_ERR_SEMANTIC_PARAM;
         }
-
+        
+        returns++;
         if (tk->type != TYPE_COMMA && returns != func->fData->returnNum) {
             char str[90] = "function ";
             char ret[60] = { 0 };
@@ -1100,7 +1101,7 @@ eRC returnStatement() {
             iPrint(RC_ERR_SEMANTIC_PARAM, true, str);
             return RC_ERR_SEMANTIC_PARAM;
         }
-    } while (returns++ != stLookUp(&stFunctions, currentFnc)->fData->returnNum);
+    } while (returns != stLookUp(&stFunctions, currentFnc)->fData->returnNum);
 
     // rule: <return_stat> -> eps
     // TODO -> if not expression -> else do nothing
