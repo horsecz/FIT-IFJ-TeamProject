@@ -15,16 +15,16 @@
 
 
 int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(porovnej(a,b))
-
 	symStack *stack = malloc(sizeof(symStack)); 	
 	symstackInit(stack); 	
 	symstackPush(stack, TYPE_EOL);	
 	int a;							// pushnuti prvni hodnoty EOL
 
-	if((a = idkfunkce(stack, tokeng, Type, Vars))){
-
+	if (tokeng->type !=3)
+	{	
+		if((a = idkfunkce(stack, tokeng, Type, Vars))){
 		return a;	
-
+		}
 	}
 	
 
@@ -32,18 +32,25 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 	{
 
 		getToken(tokeng);					// ziskame token
+		if (tokeng->type !=3)
+		{	
 
-		a = idkfunkce(stack, tokeng, Type, Vars);				// zavolame funkci pro zpracovani token
-		if (a != SYNTAX_OK){
-			printf("%d\n", a);
-			return a;
+			a = idkfunkce(stack, tokeng, Type, Vars);				// zavolame funkci pro zpracovani token
+
+			if (a != SYNTAX_OK){
+				printf("%d\n", a);
+				return a;
+			}
 		}
+		
 	}
+
 	return SYNTAX_OK;
 }
 
 int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		TokenType top = StackTopTerm(stack);						// do top nahrajeme nejvyssi terminal ze stacku
+
 
 
 		
@@ -179,9 +186,12 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 		}
 		else if (token->type == TYPE_EOL || token->type == TYPE_SEMICOLON || token->type == TYPE_COMMA || token->type == TYPE_LEFT_CURLY_BRACKET)			// jako token dojde EOL TODO ZEPTAT SE NA EOL
-		{
+		{	
+			
 			if (top == TYPE_EOL )							//pokud je na vrcholu eol tak jsme uspesne zredukovali celej vyraz
 			{
+				
+
 				if (stack->top->token_Type == TOKEN_PREC_INTEGER)
 				{
 					*Type = TYPE_INT;
@@ -423,6 +433,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 }
 
 TokenType StackTopTerm (symStack *stack){
+	
 	symStack *temp = malloc(sizeof(symStack)); 
 	temp->top = stack->top;
 	TokenType tokenhelp;
@@ -461,6 +472,7 @@ TokenType StackTopTerm (symStack *stack){
 }
 
 int stackPushOpen(symStack *stack){
+	
 	if(StackTopTerm(stack) == symstackTop(stack))
 	{
 
@@ -499,6 +511,7 @@ int stackPushOpen(symStack *stack){
 
 
 symStackItem* stackPosition(symStack *stack, int j){
+	
 	symStackItem* temp = stack->top;
 
 	for (int i = 0; i < j; ++i)
@@ -510,6 +523,7 @@ symStackItem* stackPosition(symStack *stack, int j){
 }
 
 int reduction(symStack *stack){
+	
 	symStackItem* temp = stack->top;
 	TokenType topterm=StackTopTerm(stack);
 	TokenType help=symstackTop(stack);
