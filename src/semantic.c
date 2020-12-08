@@ -11,6 +11,7 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
     stVarType* retType = stFncGetType(stLookUp(&stFunctions, functionName));
     stVarType varType = stVarTypeLookUp(&stack, currentVar);
     stNodePtr func = stLookUp(&stFunctions, functionName);
+    numberOfIDs++;
 
     // if function was found in GST (defined)
     if (func != NULL) {
