@@ -35,6 +35,7 @@ int Translate_string(string *s){
 
 	}
 	printf("\n");
+	return 0;
 }
 
 ////{ { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { { {
@@ -566,7 +567,6 @@ int reduction(symStack *stack){
 	
 	symStackItem* temp = stack->top;
 	TokenType topterm=StackTopTerm(stack);
-	TokenType help=symstackTop(stack);
 	int i=1;
 
 
