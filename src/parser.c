@@ -756,7 +756,6 @@ eRC statement() {
             funcCall = false;
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
-            printf("ids %d\n", numberOfIDs);
             numberOfIDs++;
             getToken(token, tk);                        // Get the next token (move past = to <assignment>)
             result = assignment();                      // Parse assignment
@@ -839,7 +838,6 @@ eRC assignment() {
     if (result != RC_OK) { // ID ( ... ) -> funccall, precedent not found function ID in variable table
         if (result == RC_ERR_SEMANTIC_OTHER)  {
             generatorSaveID(strGetStr(&tk->attribute.string));
-            printf("ids %d\n", numberOfIDs);
             result = semantic_analysis (strGetStr(&tk->attribute.string), stFunctions, stack, currentVar, currentVarMul);
             if (result != RC_OK) {
                 printLastToken = 0;
@@ -863,13 +861,11 @@ eRC assignment() {
             if (!funcCall)
                 getToken(token,tk);                    // This function promises that it'll prepare functions for other processing
             funcCall = false;
-            printf("ids2 %d\n", numberOfIDs);
             return result;
         } else {
             return result;
         }
     }
-
     if (stVarTypeLookUp(&stack, currentVar) != UNDERSCORE && stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
         if (stVarTypeLookUp(&stack, currentVar) == UNKNOWN) {
             iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "undefined variable");
@@ -879,6 +875,7 @@ eRC assignment() {
         iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
         return RC_ERR_SEMANTIC_TYPECOMP;
     }
+    numberOfIDs--;
     result = expressionNext();
     if (result != RC_OK) return result;
     debugPrint("%d", numberOfIDs);
