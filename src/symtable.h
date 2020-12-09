@@ -445,6 +445,13 @@ bool SEmptyP (stStack *S);
 eRC checkFunctions ( stNodePtr *symtable );
 
 /**
+ * @brief Helper for checkFunctions
+ * @param symtable Pointer to the symtable
+ * @return eRC @see returnCodes
+ */
+eRC checkFunctions2 ( stNodePtr *symtable );
+
+/**
  * @brief Display BST
  * @note Code from IAL C402
  * @param symtable Pointer to the symtable

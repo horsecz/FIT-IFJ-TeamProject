@@ -67,7 +67,7 @@ int main(void)
     // -> Insert one key
     fprintf(stderr, "\n-------------> INSERTING FIRST KEY\n");
 
-    res = stInsert(&mysym, "ABCDE", ST_N_VARIABLE, INT);
+    res = stInsert(&mysym, "ABCDE", ST_N_VARIABLE, INT, 0);
     if (res > 0)
         testmsg("OK: id ABCDE with type INT inserted into &mysym symtable");
     else if (res == 0)
@@ -83,7 +83,7 @@ int main(void)
     // -> Insert more keys
     fprintf(stderr, "\n-------------> INSERTING MORE KEYS\n");
 
-    res = stInsert(&mysym, "AAAAA", ST_N_VARIABLE, FLOAT64);
+    res = stInsert(&mysym, "AAAAA", ST_N_VARIABLE, FLOAT64, 0);
     if (res > 0)
         testmsg("OK: id AAAAA with type FLOAT64 inserted into &mysym symtable");
     else if (res == 0)
@@ -97,7 +97,7 @@ int main(void)
         detectError = true;
     }
 
-    res = stInsert(&mysym, "SSSSS", ST_N_VARIABLE, STRING);
+    res = stInsert(&mysym, "SSSSS", ST_N_VARIABLE, STRING, 0);
     if (res > 0)
         testmsg("OK: id SSSSS with type STRING inserted into &mysym symtable");
     else if (res == 0)
@@ -111,7 +111,7 @@ int main(void)
         detectError = true;
     }
 
-    res = stInsert(&mysym, "BCDEF", ST_N_VARIABLE, 0);
+    res = stInsert(&mysym, "BCDEF", ST_N_VARIABLE, 0, 0);
     if (res > 0)
         testmsg("OK: id BCDEF with type UNKNOWN inserted into &mysym symtable");
     else if (res == 0)
@@ -178,7 +178,7 @@ int main(void)
     // -> Insert existing
     fprintf(stderr, "\n-------------> RE-INSERTION\n");
 
-    res = stInsert(&mysym, "ABCDE", ST_N_VARIABLE, 0);
+    res = stInsert(&mysym, "ABCDE", ST_N_VARIABLE, 0, 0);
     if (res < 0)
         testmsg("OK: re-insert of ABCDE (which is in table) failed");
     else if (res > 0)
@@ -336,7 +336,7 @@ int main(void)
     // -> Insert one key
     fprintf(stderr, "\n-------------> INSERTING FIRST KEY\n");
 
-    res = stInsert(&mysym, "ABCDE", ST_N_FUNCTION, INT);
+    res = stInsert(&mysym, "ABCDE", ST_N_FUNCTION, INT, 0);
     if (res > 0)
         testmsg("OK: id ABCDE with type INT inserted into &mysym symtable");
     else if (res == 0)
@@ -352,7 +352,7 @@ int main(void)
     // -> Insert more keys
     fprintf(stderr, "\n-------------> INSERTING MORE KEYS\n");
 
-    res = stInsert(&mysym, "AAAAA", ST_N_FUNCTION, FLOAT64);
+    res = stInsert(&mysym, "AAAAA", ST_N_FUNCTION, FLOAT64, 0);
     if (res > 0)
         testmsg("OK: id AAAAA with type FLOAT64 inserted into &mysym symtable");
     else if (res == 0)
@@ -366,7 +366,7 @@ int main(void)
         detectError = true;
     }
 
-    res = stInsert(&mysym, "SSSSS", ST_N_FUNCTION, STRING);
+    res = stInsert(&mysym, "SSSSS", ST_N_FUNCTION, STRING, 0);
     if (res > 0)
         testmsg("OK: id SSSSS with type STRING inserted into &mysym symtable");
     else if (res == 0)
@@ -380,7 +380,7 @@ int main(void)
         detectError = true;
     }
 
-    res = stInsert(&mysym, "BCDEF", ST_N_FUNCTION, 0);
+    res = stInsert(&mysym, "BCDEF", ST_N_FUNCTION, 0, 0);
     if (res > 0)
         testmsg("OK: id BCDEF with type UNKNOWN inserted into &mysym symtable");
     else if (res == 0)
@@ -439,14 +439,14 @@ int main(void)
 
     sprintf(resultGetSet, "DONE: id ABCDE has type %d", stFncGetType(n_res)[0]);
     testmsg(resultGetSet);
-    stFncSetType(n_res, STRING, -1);
+    stFncSetType(n_res, STRING);
     sprintf(resultGetSet, "DONE: id ABCDE has now type %d", stFncGetType(n_res)[0]);
     testmsg(resultGetSet);
 
     // -> Insert existing
     fprintf(stderr, "\n-------------> RE-INSERTION\n");
 
-    res = stInsert(&mysym, "ABCDE", ST_N_VARIABLE, 0);
+    res = stInsert(&mysym, "ABCDE", ST_N_VARIABLE, 0, 0);
     if (res < 0)
         testmsg("OK: re-insert of ABCDE (which is in table) failed");
     else if (res > 0)
