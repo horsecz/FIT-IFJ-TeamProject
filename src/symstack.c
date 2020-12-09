@@ -1,4 +1,8 @@
-
+/**
+ * @file precedent.h
+ * @author Jan Pospisil (xpospi94@vutbr.cz)
+ * @brief Stack for precedent analysis
+ */
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdarg.h>

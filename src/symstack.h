@@ -1,4 +1,8 @@
-
+/**
+ * @file precedent.h
+ * @author Jan Pospisil (xpospi94@vutbr.cz)
+ * @brief Stack for precedent analysis
+ */
 #ifndef _SYMSTACK_H
 #define _SYMSTACK_H
 #include<stdio.h>
