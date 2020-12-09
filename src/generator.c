@@ -39,7 +39,7 @@ const char* internalFuncNames[] = {
         "print",
         "int2float",
         "float2int",
-        "funclen",
+        "len",
         "substr",
         "ord",
         "chr",
