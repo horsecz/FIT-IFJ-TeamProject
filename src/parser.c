@@ -956,7 +956,6 @@ eRC funcCallArguments() {
     eRC result = RC_OK;
     getToken(token, tk);                                    // Get the token with the ID or others (eps)
     precRightBrace = true;
-    printf("idsfc %d\n", numberOfIDs);
     result = precedent_analys(tk, &precType, &stack); // Evaluate expression
     if (result != RC_OK) return result;
     stNodePtr func = stLookUp(&stFunctions, currentVar);
