@@ -507,6 +507,25 @@ bool SEmptyP (stStack *S)
  *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
+eRC checkFunctions ( stNodePtr *symtable ) {
+    if (!(*symtable)) {
+        return RC_ERR_INTERNAL;
+    }
+
+    return checkFunctions2(symtable);
+}
+
+eRC checkFunctions2 ( stNodePtr *symtable ) {
+    if (!(*symtable)) {
+        return RC_OK;
+    }
+    eRC result = RC_OK;
+/*
+    result = checkFunctions(symtable->RPtr);
+    result = checkFunctions(symtable->LPtr);*/
+    return result;
+}
+
 void displayBST(stNodePtr symtable) {
     fprintf(stderr, "\n\n[SYM]=================================================\n");
     fprintf(stderr, "[SYM]\t\tBinary tree structure\n");

@@ -438,6 +438,13 @@ bool SEmptyP (stStack *S);
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 /**
+ * @brief Check symtable for undefined functions
+ * @param symtable Pointer to the symtable
+ * @return eRC @see returnCodes
+ */
+eRC checkFunctions ( stNodePtr *symtable );
+
+/**
  * @brief Display BST
  * @note Code from IAL C402
  * @param symtable Pointer to the symtable

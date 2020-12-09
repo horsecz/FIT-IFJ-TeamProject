@@ -162,6 +162,8 @@ eRC program() {
                 setErrMsg("expected 'EOF'");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
+            result = checkFunctions( &stFunctions); // Check for undefined function calls
+            if (result != RC_OK) return result;
             generateUsedInternalFunctions();
             return result;
         default:
@@ -681,6 +683,10 @@ eRC command() {
                     result = precedent_analys(tk, &precType, &stack); // Evaluate expression
                     if (result != RC_OK) return result;
                     // TODO -> handle <expression> -> requires semantic analysis
+                    if (precTypeToSymtableType(precType) != BOOL) {
+                        setErrMsg("result of for condition is not bool");
+                        return RC_ERR_SEMANTIC_TYPECOMP;
+                    }
 
                      if (tk->type != TYPE_SEMICOLON) {   // After definition must be ';'
                          setErrMsg("expected ';' after for cycle expression");
@@ -1014,25 +1020,53 @@ eRC ifElseExpanded() {
     eRC result = RC_OK;
 
     if (tk->attribute.keyword == KEYWORD_IF) {
-        // rule: <if_else_st> -> if <expression> <cmd_block> <if_else_st_n>
-        // <expression>
-        // TODO: handle expression
-        // <cmd_block>
-        getToken(token, tk);
-        // if (expression == true) generateIfScope();   // expression ... there should be 'else if <expression> <cmdblock>'
+        getToken(token, tk);                              // Step over IF
+        // TODO: Check functionality of this part	
+        result = precedent_analys(tk, &precType, &stack); // Evaluate expression
+        if (result != RC_OK) return result;
+        if (precType != TYPE_BOOL) {	
+            iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "result of IF expression is not bool");	
+            return RC_ERR_SEMANTIC_TYPECOMP;	
+        }
+
+        // TODO: Check this
+        scope++;
+        stNodePtr stVarsIf = NULL;
+        stInsert(&stVarsIf, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
+        stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 2)
+        
+        // TODO: Generator functions!!!
         afterIf = true;
         result = commandBlock();
         if (result != RC_OK) return result;
 
-        // <if_else_st_n>
+        // TODO: Symtable check	
+        #ifdef DEBUG
+        displayBST(stackGetTopSt(&stack));
+        #endif
+        stNodePtr destructedIf = stackPopSt(&stack);
+        stDestruct(&destructedIf);     // End of the scope (if 2)
+
         result = ifElse();
         if (result != RC_OK) return result;
     } else {
+        // TODO: Check this
+        scope++;
+        stNodePtr stVarsElse = NULL;
+        stInsert(&stVarsElse, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
+        stackPushSt(&stack, &stVarsElse);       // Entering new scope (else)
         // else rule: <if_else_st> -> <cmd_block>
         // if (expression == false) generateIfScope();      // expression ... in line 591 in command(); or upper (804)
         afterIf = false;
         result = commandBlock();
         if (result != RC_OK) return result;
+
+        // TODO: Symtable check	
+        #ifdef DEBUG
+        displayBST(stackGetTopSt(&stack));
+        #endif
+        stNodePtr destructedElse = stackPopSt(&stack);
+        stDestruct(&destructedElse);     // End of the scope (else)
     }
 
     return result;
