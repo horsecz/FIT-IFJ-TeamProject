@@ -179,7 +179,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 					}
 					else
 					{
-						return SEM_ERROR_OTHER;
+						return 3;
 					}
 				}
 			}
@@ -188,7 +188,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		{
 			if (top == TYPE_RIGHT_BRACKET || top == TYPE_IDENTIFIER || top == TYPE_INT || top == TYPE_STRING || top == TYPE_FLOAT64 || top == TYPE_BOOL)				//pokud je na vrcholu ) nebo identifikator, tak se vypise chyba, protoze nejsou kompatibilni
 			{
-				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
+				return SYNTAX_ERROR;				//nekompatibilni terminaly
 			}
 			else
 			{
@@ -204,7 +204,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else if (top == TYPE_EOL || top == TYPE_SEMICOLON)							//pokud je na vrcholu EOL, tak se vypise chyba, protoze nejsou kompatibilni
 			{
-				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
+				return SYNTAX_ERROR;				//nekompatibilni terminaly
 			}
 			else if (top == TYPE_LEFT_BRACKET )						//pokud na na vrchu (
 			{
@@ -299,7 +299,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else if (top == TYPE_NOT)
 			{
-				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
+				return SYNTAX_ERROR;				//nekompatibilni terminaly
 			}
 			else
 			{
@@ -334,7 +334,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else if (top == TYPE_NOT)
 			{
-				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
+				return SYNTAX_ERROR;				//nekompatibilni terminaly
 			}
 			else
 			{
@@ -353,7 +353,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		{
 			if (top >= TYPE_EQUALS && top <= TYPE_LESSER_OR_EQUAL)
 			{
-				return SEM_ERROR_OTHER; //nekompatibilni terminaly
+				return SYNTAX_ERROR; //nekompatibilni terminaly
 			}
 			else if (top == TYPE_LEFT_BRACKET || top == TYPE_EOL || top == TYPE_AND || top == TYPE_OR)
 			{
@@ -404,7 +404,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 				}
 				else
 				{
-					return SEM_ERROR_OTHER;
+					return SYNTAX_ERROR;
 				}
 			}
 			else
@@ -467,7 +467,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else
 			{
-				return SEM_ERROR_OTHER;
+				return SYNTAX_ERROR;	
 			}
 		}
 		else
