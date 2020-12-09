@@ -188,7 +188,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		{
 			if (top == TYPE_RIGHT_BRACKET || top == TYPE_IDENTIFIER || top == TYPE_INT || top == TYPE_STRING || top == TYPE_FLOAT64 || top == TYPE_BOOL)				//pokud je na vrcholu ) nebo identifikator, tak se vypise chyba, protoze nejsou kompatibilni
 			{
-				return SYNTAX_ERROR;				//nekompatibilni terminaly
+				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
 			}
 			else
 			{
@@ -204,7 +204,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else if (top == TYPE_EOL || top == TYPE_SEMICOLON)							//pokud je na vrcholu EOL, tak se vypise chyba, protoze nejsou kompatibilni
 			{
-				return SYNTAX_ERROR;				//nekompatibilni terminaly
+				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
 			}
 			else if (top == TYPE_LEFT_BRACKET )						//pokud na na vrchu (
 			{
@@ -299,7 +299,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else if (top == TYPE_NOT)
 			{
-				return SYNTAX_ERROR;				//nekompatibilni terminaly
+				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
 			}
 			else
 			{
@@ -334,7 +334,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else if (top == TYPE_NOT)
 			{
-				return SYNTAX_ERROR;				//nekompatibilni terminaly
+				return SEM_ERROR_OTHER;				//nekompatibilni terminaly
 			}
 			else
 			{
@@ -353,7 +353,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 		{
 			if (top >= TYPE_EQUALS && top <= TYPE_LESSER_OR_EQUAL)
 			{
-				return SYNTAX_ERROR; //nekompatibilni terminaly
+				return SEM_ERROR_OTHER; //nekompatibilni terminaly
 			}
 			else if (top == TYPE_LEFT_BRACKET || top == TYPE_EOL || top == TYPE_AND || top == TYPE_OR)
 			{
@@ -404,7 +404,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 				}
 				else
 				{
-					return SYNTAX_ERROR;
+					return SEM_ERROR_OTHER;
 				}
 			}
 			else
@@ -467,7 +467,7 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 			}
 			else
 			{
-				return SYNTAX_ERROR;	
+				return SEM_ERROR_OTHER;
 			}
 		}
 		else
@@ -762,8 +762,8 @@ int reduction(symStack *stack){
 					{
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_STRING);
-						printf("POPS GF@?BX?\n");
 						printf("POPS GF@?AX?\n");
+						printf("POPS GF@?BX?\n");
 						printf("CONCAT GF@?CX? GF@?BX? GF@?AX?\n");
 						printf("PUSHS GF@?CX?\n");
 					}
@@ -936,8 +936,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?BX?\n");
 						printf("POPS GF@?AX?\n");
+						printf("POPS GF@?BX?\n");
 						printf("GT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -949,8 +949,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?BX?\n");
 						printf("POPS GF@?AX?\n");
+						printf("POPS GF@?BX?\n");
 						printf("GT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -962,8 +962,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?BX?\n");
 						printf("POPS GF@?AX?\n");
+						printf("POPS GF@?BX?\n");
 						printf("GT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -1051,8 +1051,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?BX?\n");
 						printf("POPS GF@?AX?\n");
+						printf("POPS GF@?BX?\n");
 						printf("LT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -1064,8 +1064,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?BX?\n");
 						printf("POPS GF@?AX?\n");
+						printf("POPS GF@?BX?\n");
 						printf("LT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -1077,8 +1077,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?BX?\n");
 						printf("POPS GF@?AX?\n");
+						printf("POPS GF@?BX?\n");
 						printf("LT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
