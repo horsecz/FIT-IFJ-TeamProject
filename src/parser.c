@@ -142,7 +142,7 @@ eRC parser(Token* tkn) {
     stFncSetParam(stLookUp(&stFunctions, "chr"), INT);
     stFncSetType(stLookUp(&stFunctions, "chr"), STRING);
     stFncSetType(stLookUp(&stFunctions, "chr"), INT);
-    
+
     // Variables setup
     eRC result = RC_OK;
     tk = tkn;
@@ -479,6 +479,10 @@ eRC type() {
     eRC result = RC_OK;
 
     if (tk->type == TYPE_KEYWORD) {
+        if (!strcmp(currentFnc, "main")) {
+            setErrMsg("main function doesn't have params and return values!");
+            return RC_ERR_SEMANTIC_PARAM;
+        }
         switch (tk->attribute.keyword) {
             case KEYWORD_INT:
                 if (fncDef) {
