@@ -963,7 +963,7 @@ eRC funcCallArguments() {
 
     if (func == NULL) { // function not in GST
         stC result_s = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
-        if (result_s != ST_SUCCESS) return result;
+        if (result_s != ST_SUCCESS) return RC_ERR_INTERNAL;
         func = stLookUp(&stFunctions, currentVar);
         func->fData->defined = false;
     }
