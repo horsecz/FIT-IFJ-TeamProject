@@ -828,7 +828,7 @@ eRC assignment() {
     debugPrint("rule %s", __func__);
     eRC result = RC_OK;
     result = precedent_analys(tk, &precType, &stack);
-
+    debugPrint("%d", numberOfIDs);
     if (result != RC_OK) { // ID ( ... ) -> funccall, precedent not found function ID in variable table
         if (result == RC_ERR_SEMANTIC_OTHER)  {
             generatorSaveID(strGetStr(&tk->attribute.string));
@@ -873,11 +873,11 @@ eRC assignment() {
     }
     result = expressionNext();
     if (result != RC_OK) return result;
-
+    debugPrint("%d", numberOfIDs);
     if (numberOfIDs != 0) {
         printf("number of ids: %d\n", numberOfIDs);
-        iPrint(RC_ERR_SEMANTIC_PARAM, true, "invalid number of values on the left side of assignment");
-        return RC_ERR_SEMANTIC_PARAM;
+        iPrint(RC_ERR_SEMANTIC_OTHER, true, "invalid number of values on the left side of assignment");
+        return RC_ERR_SEMANTIC_OTHER;
     }
 
     generateAssignments();
