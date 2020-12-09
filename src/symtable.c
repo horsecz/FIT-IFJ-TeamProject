@@ -519,14 +519,14 @@ eRC checkFunctions2 ( stNodePtr symtable ) {
     if (!symtable) {                     // End recursion
         return RC_OK;
     }
-    if (!symtable->fData->defined) {     // Found undefined function
+    if (symtable->fData && !symtable->fData->defined) {     // Found undefined function
         return RC_ERR_SEMANTIC_PROG_FUNC;
     }
 
     eRC result = RC_OK;
 
-    result = checkFunctions(symtable->RPtr);    // Check right
-    result = checkFunctions(symtable->LPtr);    // Check left
+    result = checkFunctions2(symtable->RPtr);    // Check right
+    result = checkFunctions2(symtable->LPtr);    // Check left
 
     return result;
 }
