@@ -351,7 +351,7 @@ char* stVarGetNameS ( stNodePtr stNode ) {
         return NULL;
     }
     char* string = NULL;
-    sprintf(string, "%s_%d\0", stNode->vData->identifier, stNode->vData->scope);
+    sprintf(string, "%s_%d", stNode->vData->identifier, stNode->vData->scope);
     return string;
 }
 
