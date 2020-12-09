@@ -789,6 +789,7 @@ eRC statement() {
             if (result != RC_OK) return result;
             break;
         default:                                        // <id_mul> = <assignment>
+            numberOfIDs++;
             result = multipleID();                      // Parse multiple IDs
             if (result != RC_OK) return result;
             if (tk->type != TYPE_ASSIGN) {
