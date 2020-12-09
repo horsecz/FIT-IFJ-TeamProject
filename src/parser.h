@@ -47,6 +47,11 @@ extern bool precRightBrace;
 extern char errText[MAX_ERR_MSG];
 
 /**
+ * @brief Variable for counting number of IDs (LValues)
+ */
+extern int numberOfIDs;
+
+/**
  * @brief Main parser logic \n
  *        Contains mainly enviroment preparation before parsing and then calls @see program() to initiate
  *        parsing. After this it checks return value and acts upon that

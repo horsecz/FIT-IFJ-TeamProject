@@ -756,6 +756,8 @@ eRC statement() {
             funcCall = false;
             break;
         case TYPE_ASSIGN:                               // = <assignment>   => <id_mul> = <assignment> where <id_mul> is eps
+            printf("ids %d\n", numberOfIDs);
+            numberOfIDs++;
             getToken(token, tk);                        // Get the next token (move past = to <assignment>)
             result = assignment();                      // Parse assignment
             if (result != RC_OK) return result;
@@ -837,7 +839,8 @@ eRC assignment() {
     if (result != RC_OK) { // ID ( ... ) -> funccall, precedent not found function ID in variable table
         if (result == RC_ERR_SEMANTIC_OTHER)  {
             generatorSaveID(strGetStr(&tk->attribute.string));
-            result = semantic_analysis (strGetStr(&tk->attribute.string), stFunctions, stack, currentVar, currentVarMul, numberOfIDs);
+            printf("ids %d\n", numberOfIDs);
+            result = semantic_analysis (strGetStr(&tk->attribute.string), stFunctions, stack, currentVar, currentVarMul);
             if (result != RC_OK) {
                 printLastToken = 0;
                 return result;
@@ -860,7 +863,7 @@ eRC assignment() {
             if (!funcCall)
                 getToken(token,tk);                    // This function promises that it'll prepare functions for other processing
             funcCall = false;
-
+            printf("ids2 %d\n", numberOfIDs);
             return result;
         } else {
             return result;
@@ -880,7 +883,6 @@ eRC assignment() {
     if (result != RC_OK) return result;
     debugPrint("%d", numberOfIDs);
     if (numberOfIDs != 0) {
-        printf("number of ids: %d\n", numberOfIDs);
         iPrint(RC_ERR_SEMANTIC_OTHER, true, "invalid number of values on the left side of assignment");
         return RC_ERR_SEMANTIC_OTHER;
     }
@@ -957,8 +959,7 @@ eRC funcCallArguments() {
     eRC result = RC_OK;
     getToken(token, tk);                                    // Get the token with the ID or others (eps)
     precRightBrace = true;
-    numberOfIDs++;
-
+    printf("idsfc %d\n", numberOfIDs);
     result = precedent_analys(tk, &precType, &stack); // Evaluate expression
     if (result != RC_OK) return result;
     stNodePtr func = stLookUp(&stFunctions, currentVar);

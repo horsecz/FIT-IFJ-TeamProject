@@ -8,12 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 
-eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack, stID currentVar, stID* currentVarMul, int numberOfIDs) {
+eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack, stID currentVar, stID* currentVarMul) {
     // check if return type(s) of this function is same as variable type(s)
     stVarType* retType = stFncGetType(stLookUp(&stFunctions, functionName));
     stVarType varType = stVarTypeLookUp(&stack, currentVar);
     stNodePtr func = stLookUp(&stFunctions, functionName);
-    numberOfIDs++;
 
     // if function was found in GST (defined)
     if (func != NULL) {
@@ -45,6 +44,7 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
 
                 return RC_ERR_SEMANTIC_TYPECOMP;
             }
+            numberOfIDs--;
         }
     } else { // function isnt in GST (not defined, but may be defined later)
         //saveFuncID, saveVariableTypes, checkLater
@@ -52,7 +52,7 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
         // ?
     }
 
-    numberOfIDs = 0;
+    printf("idssem %d\n", numberOfIDs);
     return RC_OK;
 }
 

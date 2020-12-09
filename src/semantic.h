@@ -21,7 +21,7 @@
  * @param printLastToken @see parser.c
  * @return @see eRC
  */
-eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack, stID currentVar, stID* currentVarMul, int numberOfIDs);
+eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack, stID currentVar, stID* currentVarMul);
 
 /**
  * @brief Converts type to string.
