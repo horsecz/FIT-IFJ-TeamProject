@@ -125,9 +125,10 @@ eRC parser(Token* tkn) {
     stFncSetParam(stLookUp(&stFunctions, "len"), INT);
     stFncSetType(stLookUp(&stFunctions, "len"), STRING);
     stFncSetType(stLookUp(&stFunctions, "len"), INT);
-    // - func substr(s string, i int)(string, int)
+    // - func substr(s string, i int, n int)(string, int)
     stInsert(&stFunctions, "substr", ST_N_FUNCTION, UNKNOWN, 0);
     stFncSetParam(stLookUp(&stFunctions, "substr"), STRING);
+    stFncSetParam(stLookUp(&stFunctions, "substr"), INT);
     stFncSetParam(stLookUp(&stFunctions, "substr"), INT);
     stFncSetType(stLookUp(&stFunctions, "substr"), STRING);
     stFncSetType(stLookUp(&stFunctions, "substr"), INT);
@@ -151,7 +152,7 @@ eRC parser(Token* tkn) {
 
     // Start parse -> call program()
     result = program();
-    if (result != RC_OK && result != RC_WRN_INTERNAL && result != RC_ERR_INTERNAL && result != RC_ERR_SEMANTIC_PROG_FUNC) {
+    if (result != RC_OK && result != RC_WRN_INTERNAL && result != RC_ERR_INTERNAL) {
         if (printLastToken) {
             string gotStr;
             strInit(&gotStr);
@@ -987,6 +988,13 @@ eRC expressionNext() {
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	
         if (result != RC_OK) return result;
+
+        stNodePtr func = stLookUp(&stFunctions, currentVar);
+        if (funcCall && strcmp(currentVar, "print") && stFncGetParams(func)[0] != precTypeToSymtableType(precType)) {
+            setErrMsg("type of parameters of the function doesn't match");
+            printLastToken = false;
+            return RC_ERR_SEMANTIC_PARAM;
+        }
         if (!funcCall && stVarTypeLookUp(&stack, currentVar) != UNDERSCORE && stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) != precTypeToSymtableType(precType)) {
             if (stVarTypeLookUp(&stack, currentVarMul[numberOfExp - numberOfIDs - 1]) == UNKNOWN) {
                 iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "undefined variable");
