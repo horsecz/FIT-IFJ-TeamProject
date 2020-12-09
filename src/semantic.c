@@ -48,6 +48,7 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
         }
     } else { // function isnt in GST (not defined, but may be defined later)
         //saveFuncID, saveVariableTypes, checkLater
+        numberOfIDs = 0;
         // ?
     }
 
