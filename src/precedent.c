@@ -762,8 +762,8 @@ int reduction(symStack *stack){
 					{
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_STRING);
-						printf("POPS GF@?AX?\n");
 						printf("POPS GF@?BX?\n");
+						printf("POPS GF@?AX?\n");
 						printf("CONCAT GF@?CX? GF@?BX? GF@?AX?\n");
 						printf("PUSHS GF@?CX?\n");
 					}
@@ -936,8 +936,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?AX?\n");
 						printf("POPS GF@?BX?\n");
+						printf("POPS GF@?AX?\n");
 						printf("GT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -949,8 +949,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?AX?\n");
 						printf("POPS GF@?BX?\n");
+						printf("POPS GF@?AX?\n");
 						printf("GT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -962,8 +962,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?AX?\n");
 						printf("POPS GF@?BX?\n");
+						printf("POPS GF@?AX?\n");
 						printf("GT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -1051,8 +1051,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?AX?\n");
 						printf("POPS GF@?BX?\n");
+						printf("POPS GF@?AX?\n");
 						printf("LT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -1064,8 +1064,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?AX?\n");
 						printf("POPS GF@?BX?\n");
+						printf("POPS GF@?AX?\n");
 						printf("LT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
@@ -1077,8 +1077,8 @@ int reduction(symStack *stack){
 						symstackPopMore(stack, 5);
 						symstackPush(stack, TOKEN_PREC_BOOL);
 						stack->top->inte = 1;
-						printf("POPS GF@?AX?\n");
 						printf("POPS GF@?BX?\n");
+						printf("POPS GF@?AX?\n");
 						printf("LT GF@?CX? GF@?AX? GF@?BX?\n");
 						printf("PUSHS GF@?CX?\n");
 						printf("EQ GF@?CX? GF@?AX? GF@?BX?\n");
