@@ -962,8 +962,8 @@ eRC funcCallArguments() {
     stNodePtr func = stLookUp(&stFunctions, currentVar);
 
     if (func == NULL) { // function not in GST
-        result = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
-        if (result != ST_SUCCESS) return result;
+        stC result_s = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
+        if (result_s != ST_SUCCESS) return result;
         func = stLookUp(&stFunctions, currentVar);
         func->fData->defined = false;
     }

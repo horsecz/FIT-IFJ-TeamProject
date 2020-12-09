@@ -52,7 +52,6 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
         // ?
     }
 
-    printf("idssem %d\n", numberOfIDs);
     return RC_OK;
 }
 
