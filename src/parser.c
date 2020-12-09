@@ -890,7 +890,7 @@ eRC assignment() {
     result = precedent_analys(tk, &precType, &stack);
     debugPrint("%d", numberOfIDs);
     if (result != RC_OK) { // ID ( ... ) -> funccall, precedent not found function ID in variable table
-        if (result == RC_ERR_SEMANTIC_OTHER)  {
+        if (result == RC_ERR_SEMANTIC_PROG_FUNC)  {
             generatorSaveID(strGetStr(&tk->attribute.string));
             result = semantic_analysis (strGetStr(&tk->attribute.string), stFunctions, stack, currentVar, currentVarMul);
             if (result != RC_OK) {
