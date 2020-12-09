@@ -162,7 +162,7 @@ eRC program() {
                 setErrMsg("expected 'EOF'");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
-            result = checkFunctions( &stFunctions); // Check for undefined function calls
+            result = checkFunctions(stFunctions);   // Check for undefined function calls
             if (result != RC_OK) return result;
             generateUsedInternalFunctions();
             return result;
@@ -255,7 +255,7 @@ eRC functionsBlock() {
         if (mainFound) setErrMsg("multiple definitions of main");
         else setErrMsg("missing definition of main");
         printLastToken = 0;
-        return RC_ERR_SYNTAX_ANALYSIS;
+        return RC_ERR_SEMANTIC_PROG_FUNC;
     }
 
     return result;
@@ -1037,7 +1037,7 @@ eRC ifElseExpanded() {
         stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 2)
         
         generateIfScope();
-        
+
         afterIf = true;
         result = commandBlock();
         if (result != RC_OK) return result;

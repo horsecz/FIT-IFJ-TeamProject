@@ -442,14 +442,14 @@ bool SEmptyP (stStack *S);
  * @param symtable Pointer to the symtable
  * @return eRC @see returnCodes
  */
-eRC checkFunctions ( stNodePtr *symtable );
+eRC checkFunctions ( stNodePtr symtable );
 
 /**
  * @brief Helper for checkFunctions
  * @param symtable Pointer to the symtable
  * @return eRC @see returnCodes
  */
-eRC checkFunctions2 ( stNodePtr *symtable );
+eRC checkFunctions2 ( stNodePtr symtable );
 
 /**
  * @brief Display BST

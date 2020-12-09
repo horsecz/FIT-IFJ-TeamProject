@@ -507,7 +507,7 @@ bool SEmptyP (stStack *S)
  *                                                               *
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
-eRC checkFunctions ( stNodePtr *symtable ) {
+eRC checkFunctions ( stNodePtr symtable ) {
     if (!(*symtable)) {
         return RC_ERR_INTERNAL;
     }
@@ -515,14 +515,19 @@ eRC checkFunctions ( stNodePtr *symtable ) {
     return checkFunctions2(symtable);
 }
 
-eRC checkFunctions2 ( stNodePtr *symtable ) {
-    if (!(*symtable)) {
+eRC checkFunctions2 ( stNodePtr symtable ) {
+    if (!symtable) {                     // End recursion
         return RC_OK;
     }
+    if (!symtable->fData->defined) {     // Found undefined function
+        return RC_ERR_SEMANTIC_PROG_FUNC;
+    }
+
     eRC result = RC_OK;
-/*
-    result = checkFunctions(symtable->RPtr);
-    result = checkFunctions(symtable->LPtr);*/
+
+    result = checkFunctions(symtable->RPtr);    // Check right
+    result = checkFunctions(symtable->LPtr);    // Check left
+
     return result;
 }
 
