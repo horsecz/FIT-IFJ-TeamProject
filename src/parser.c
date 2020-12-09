@@ -734,8 +734,8 @@ eRC statement() {
             debugPrint("<%s> -> ( <arguments> )", __func__);
 
             // Try to inser function into GST (if already present run checks, if not insert and add arguments)
-            result = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
-            if (result == ST_ERROR) return RC_ERR_INTERNAL;
+            stC result_s = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
+            if (result_s == ST_ERROR) return RC_ERR_INTERNAL;
 
             result = funcCallArguments();                       // Parse arguments
             if (result != RC_OK) return result;
