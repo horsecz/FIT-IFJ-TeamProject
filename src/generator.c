@@ -73,6 +73,9 @@ IDList* id_list = NULL;
 /** detected print() function so arguments will be written to stdout instead pushing to stack? **/
 bool printArguments = false;
 
+/** what unary operation will be performed (+=;-=;*=;/=) **/
+TokenType unaryOperation = TYPE_EMPTY;
+
 /*
  *
  * DEFINITIONS OF IFJ20 BUILT-IN FUNCTIONS
@@ -580,7 +583,7 @@ void generateDefinitions() {
             fprintf(stdout, "DEFVAR LF@%s\n", name);
             fprintf(stdout, "POPS LF@%s\n", name);
         }
-            name = generatorGetID();
+        name = generatorGetID();
     }
 }
 
@@ -704,6 +707,38 @@ void generatorPrintCheck(DataType type) {
         print(type);
     }
 }
+
+void generatorUnaryPrepare(TokenType type, char* id) {
+    unaryOperation = type;
+    fprintf(stdout, "PUSHS LF@%s\n", id);
+}
+
+void generateUnaryExpression() {
+    char* id = generatorGetID();
+    char* instruction = NULL;
+
+    switch (unaryOperation) {
+        case TYPE_PLUS_ASSIGN:                      // +=
+            instruction = "ADDS";
+            break;
+        case TYPE_MINUS_ASSIGN:                     // -=
+            instruction = "SUBS";
+            break;
+        case TYPE_MULTIPLY_ASSIGN:                  // *=
+            instruction = "MULS";
+            break;
+        case TYPE_DIVIDE_ASSIGN:                    // /=
+            instruction = "IDIVS";
+            break;
+        default:
+            fprintf(stderr, "ERROR: CODE GENERATOR: got wrong UNARY token\n");
+            instruction = "(null)";
+            break;
+    }
+    fprintf(stdout, "%s\nPOPS LF@%s\n", instruction, id);
+    unaryOperation = TYPE_EMPTY; // resets unary operation variable
+}
+
 
 /*
  *

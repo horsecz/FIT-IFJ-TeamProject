@@ -177,6 +177,22 @@ void generateUsedInternalFunctions();
  */
 void generatorPrintCheck(DataType type);
 
+/**
+ * @brief Saves (unary) token type for later use and pushes 'id' to stack
+ * @param type type of token to be saved
+ * @param id identifier of variable
+ * @pre rule <unary>, function unary() must be called in syntax analysis
+ * @post unaryOperation variable is set to type
+ */
+void generatorUnaryPrepare(TokenType type, char* id);
+
+/**
+ * @brief Generates unary expression depending on unaryToken variable, which holds last known unary token (+= , -=, *=, /=)
+ * @pre unary() function in syntax analysis must be called and precedent (semantic analysis) must be OK
+ * @post stdout filled with unary expression instructions + unaryOperation variable is reset
+ */
+void generateUnaryExpression();
+
 /*
  * INTERNAL FUNCTIONS AND VARIABLES
  */
@@ -244,5 +260,8 @@ extern bool ifelse_open;
 
 /** @brief (internal) which internal functions were used (and will be generated) **/
 extern intFC internalFuncsUsed[11];
+
+/** @brief (internal) last known unary token variable (default state: TYPE_EMPTY) **/
+extern TokenType unaryOperation;
 
 #endif //GENERATOR_H

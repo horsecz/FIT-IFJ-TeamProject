@@ -739,8 +739,8 @@ eRC statement() {
 
             result = funcCallArguments();                       // Parse arguments
             if (result != RC_OK) return result;
-            if (tk->type != TYPE_RIGHT_BRACKET) {
-                setErrMsg("expected ')' after arguments [of func-call]");
+            if (tk->type != TYPE_EOL) {
+                setErrMsg("expected EOL after assignment with func-call");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
             char* funcID = generatorGetID();
@@ -781,16 +781,7 @@ eRC statement() {
         case TYPE_MULTIPLY_ASSIGN:
         case TYPE_DIVIDE_ASSIGN:                        // <unary> <expression>
             result = unary();                           // Parse unary (just do a re-check)
-            if (result != RC_OK) return result;	
-            // TODO: Check functionality of this part	
-            getToken(token, tk);                        // Step over ASSIGN	
-
-            result = precedent_analys(tk, &precType, &stack); // Evaluate expression
-            if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
-                iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type (unary)");
-                return RC_ERR_SEMANTIC_TYPECOMP;	
-            }
-            // generateAssignment(identifier);
+            if (result != RC_OK) return result;
             break;
         default:                                        // <id_mul> = <assignment>
             result = multipleID();                      // Parse multiple IDs
@@ -902,6 +893,17 @@ eRC unary() {
         case TYPE_MINUS_ASSIGN:                     // -=
         case TYPE_MULTIPLY_ASSIGN:                  // *=
         case TYPE_DIVIDE_ASSIGN:                    // /=
+            generatorUnaryPrepare(tk->type, currentVar);
+            getToken(token, tk); // move past unary assign token
+
+            result = precedent_analys(tk, &precType, &stack); // Evaluate expression
+            if (result != RC_OK) return result;
+            if (stVarTypeLookUp(&stack, currentVar) != precTypeToSymtableType(precType)) {
+                debugPrint("Found var type: %d, assigning: %d, received: %d", stVarTypeLookUp(&stack, currentVar), precTypeToSymtableType(precType), precType)
+                iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
+                return RC_ERR_SEMANTIC_TYPECOMP;
+            }
+            generateUnaryExpression();
             break;
         default:
             setErrMsg("expected unary assignment token '+=', '-=', '*=' or '/='");
@@ -951,13 +953,13 @@ eRC funcCallArguments() {
     getToken(token, tk);                                    // Get the token with the ID or others (eps)
 
     precRightBrace = true;
-    result = precedent_analys(tk, &precType, &stack);// Evaluate expression
+    result = precedent_analys(tk, &precType, &stack); // Evaluate expression
     if (result != RC_OK) return result;
-    if (!stLookUp(&stFunctions, currentVar)->fData->defined) {
+    if (strcmp(currentVar, "print") && !stLookUp(&stFunctions, currentVar)->fData->defined) { // do not check types if it is print(...) function
         stFncSetParam(stLookUp(&stFunctions, currentVar), precTypeToSymtableType(precType));
     } else {
         // TODO: Check arguments -> Add cycle through params (recursion call on this function or in expressionNext)
-        if (stFncGetParams(stLookUp(&stFunctions, currentVar))[0] != precTypeToSymtableType(precType)) {
+        if (strcmp(currentVar, "print") && stFncGetParams(stLookUp(&stFunctions, currentVar))[0] != precTypeToSymtableType(precType)) {
             setErrMsg("type of parameters of the function doesn't match");
             return RC_ERR_SEMANTIC_PARAM;
         }
