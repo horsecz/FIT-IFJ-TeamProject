@@ -104,10 +104,7 @@ eRC parser(Token* tkn) {
 
     // Start parse -> call program()
     result = program();
-    if (result != RC_OK) {
-        if (result == RC_ERR_SEMANTIC_OTHER)
-            printLastToken = false;
-
+    if (result != RC_OK && result != RC_WRN_INTERNAL && result != RC_ERR_INTERNAL) {
         if (printLastToken) {
             string gotStr;
             strInit(&gotStr);
@@ -282,8 +279,8 @@ eRC function() {
         // Generate beginning of function
         generateFunction(strGetStr(&tk->attribute.string));
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
-        stC result_n = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN, scope);
-        if (result_n != RC_OK) {
+        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN, scope);
+        if (result != RC_OK) {
             setErrMsg("redefinition attempt");
             return RC_ERR_SEMANTIC_PROG_FUNC;
         }
@@ -735,7 +732,6 @@ eRC statement() {
     switch (tk->type) {
         case TYPE_LEFT_BRACKET:                         // ( <arguments> )
             debugPrint("<%s> -> ( <arguments> )", __func__);
-
             // Try to inser function into GST (if already present run checks, if not insert and add arguments)
             stC result_s = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
             if (result_s == ST_ERROR) return RC_ERR_INTERNAL;
@@ -879,6 +875,7 @@ eRC assignment() {
     if (result != RC_OK) return result;
 
     if (numberOfIDs != 0) {
+        printf("number of ids: %d\n", numberOfIDs);
         iPrint(RC_ERR_SEMANTIC_PARAM, true, "invalid number of values on the left side of assignment");
         return RC_ERR_SEMANTIC_PARAM;
     }
@@ -954,18 +951,16 @@ eRC funcCallArguments() {
     // rule <arguments_fc> -> <expression
     eRC result = RC_OK;
     getToken(token, tk);                                    // Get the token with the ID or others (eps)
-
     precRightBrace = true;
+    numberOfIDs++;
+
     result = precedent_analys(tk, &precType, &stack); // Evaluate expression
     if (result != RC_OK) return result;
     stNodePtr func = stLookUp(&stFunctions, currentVar);
+
     if (func == NULL) { // function not in GST
-        stC result_s = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN, scope);
-        if (result_s != ST_SUCCESS) {
-            setErrMsg("Internal symtable error");
-            printLastToken = false;
-            return RC_ERR_INTERNAL;
-        }
+        result = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
+        if (result != ST_SUCCESS) return result;
         func = stLookUp(&stFunctions, currentVar);
         func->fData->defined = false;
     }
