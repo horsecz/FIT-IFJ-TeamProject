@@ -53,7 +53,7 @@
 #else
 #define debugPrint(msg, ...)
 #define debugPoint
-#define debugPoints
+#define debugPoints(ptNum)
 #endif
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
@@ -935,7 +935,7 @@ eRC expressionNext() {
             iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "assigning wrong type");
             return RC_ERR_SEMANTIC_TYPECOMP;	
         }
-        generatorPrintCheck(precType);
+        generatorPrintCheck((DataType)precType);
         result = expressionNext();
         if (result != RC_OK) return result;
     }
@@ -962,7 +962,7 @@ eRC funcCallArguments() {
             return RC_ERR_SEMANTIC_PARAM;
         }
     }
-    generatorPrintCheck(precType);
+    generatorPrintCheck((DataType) precType);
 
     funcCall = true;
     result = expressionNext();  // TODO: This will need to be changed and reworked most probably
@@ -983,6 +983,7 @@ eRC ifElse() {
             getToken(token, tk);
             result = ifElseExpanded();
             if (result != RC_OK) return result;
+            break;
         default:
             generateIfScopeEnd();
             afterIf = false;
