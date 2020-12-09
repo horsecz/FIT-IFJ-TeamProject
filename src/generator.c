@@ -76,6 +76,14 @@ bool printArguments = false;
 /** what unary operation will be performed (+=;-=;*=;/=) **/
 TokenType unaryOperation = TYPE_EMPTY;
 
+/** generating FOR cycle or not? (to delay defvars-definitions) **/
+bool generatingFor = false;
+
+/** delayed FOR cycle definitions will be stored here (and printed later) **/
+char* forDefinitions = NULL;
+
+#define FOR_DEFS_MAXSIZE 255*9*255+1
+
 /*
  *
  * DEFINITIONS OF IFJ20 BUILT-IN FUNCTIONS
@@ -515,6 +523,7 @@ void print(DataType arg_type) {
     DEFVAR GF@?PRINT_STRING? \n       \
     DEFVAR GF@?PRINT_BOOL?    \n       \
     DEFVAR GF@?FOR_RESULT? \n          \
+    DEFVAR GF@?IF_RESULT? \n           \
     DEFVAR GF@?_?   \n                 \
     \n\
     CALL $main       \n\
@@ -580,7 +589,16 @@ void generateDefinitions() {
         if (!strcmp(name, "_")) {
             fprintf(stdout, "POPS GF@?_?\n");
         } else {
-            fprintf(stdout, "DEFVAR LF@%s\n", name);
+            if (generatingFor) {
+                if (!strlen(forDefinitions)) {
+                    snprintf(forDefinitions, FOR_DEFS_MAXSIZE, "DEFVAR LF@%s\n", name);
+                } else {
+                    strncat(forDefinitions, "DEFVAR LF@", FOR_DEFS_MAXSIZE);
+                    strncat(forDefinitions, name, FOR_DEFS_MAXSIZE);
+                    strncat(forDefinitions, "\n", FOR_DEFS_MAXSIZE);
+                }
+            } else
+                fprintf(stdout, "DEFVAR LF@%s\n", name);
             fprintf(stdout, "POPS LF@%s\n", name);
         }
         name = generatorGetID();
@@ -604,18 +622,16 @@ void generatePrint(DataType type) {
 }
 
 void generateIfScope() {
-    if (!ifelse_ignore) {
-        fprintf(stdout, "JUMP IF$%d\n\n", if_cnt);
-        fprintf(stdout, "LABEL IF$%d\nCREATEFRAME\nPUSHFRAME\n", if_cnt);
-        if_cnt++;
-        ifelse_open = true;
-    }
+    fprintf(stdout, "POPS GF@?IF_RESULT?\nJUMPIFEQ IF$%d GF@?IF_RESULT? bool@true\nJUMP IF_END$%d\n", if_cnt, if_cnt);
+    fprintf(stdout, "LABEL IF$%d\n", if_cnt);
+    ifelse_open = true;
 }
 
 void generateIfScopeEnd() {
-    if (!ifelse_ignore && ifelse_open) {
-        fprintf(stdout, "POPFRAME\n\n");
+    if (ifelse_open) {
+        fprintf(stdout, "LABEL IF_END$%d\n", if_cnt);
         ifelse_open = false;
+        if_cnt++;
     }
 }
 
@@ -624,7 +640,7 @@ void generateForBeginning() {
 }
 
 void generateForExpression() {
-    fprintf(stdout, "\nLABEL FOR_EXPR$%d\n", for_cnt);
+    fprintf(stdout, "JUMP FOR_DEFS$%d\n\nLABEL FOR_EXPR$%d\n", for_cnt, for_cnt);
 }
 
 void generateForCondition() {
@@ -640,12 +656,24 @@ void generateForAssignmentEnd() {
 }
 
 void generateForScope() {
+    generatingFor = true;
     fprintf(stdout, "\nLABEL FOR$%d\n", for_cnt);
+    forDefinitions = (char*) calloc(sizeof(char)*FOR_DEFS_MAXSIZE, 1);
+    if (forDefinitions == NULL)
+        fprintf(stderr, "ERROR: CODE GENERATOR: unable to alloc memory for FOR cycle definitions\n");
+}
+
+void generateForScopeDefinitions() {
+    fprintf(stdout, "JUMP FOR_ASSIGN$%d\n\nLABEL FOR_DEFS$%d\n", for_cnt, for_cnt);
+    fprintf(stdout, "%s", forDefinitions);
+    fprintf(stdout, "JUMP FOR_EXPR$%d\n", for_cnt);
+    generatingFor = false;
 }
 
 void generateForScopeEnd() {
-    fprintf(stdout, "JUMP FOR_ASSIGN$%d\n\nLABEL FOR_END$%d\n\n", for_cnt, for_cnt);
+    fprintf(stdout, "\nLABEL FOR_END$%d\n\n", for_cnt);
     for_cnt++;
+    free(forDefinitions);
 }
 
 void ignoreIfScope(int ignore) {

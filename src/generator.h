@@ -138,6 +138,11 @@ void generateForAssignmentEnd();
 void generateForScope();
 
 /**
+ * @brief Generates definitions of variables, that are defined inside for cycle
+ */
+void generateForScopeDefinitions();
+
+/**
  * @brief Generates end of for cycle scope
  */
 void generateForScopeEnd();

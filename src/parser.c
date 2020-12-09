@@ -638,7 +638,7 @@ eRC command() {
                         iPrint(RC_ERR_SEMANTIC_TYPECOMP, true, "result of IF expression is not bool");	
                         return RC_ERR_SEMANTIC_TYPECOMP;	
                     }
-
+                    generateIfScope();
                     // TODO: Check this
                     scope++;
                     stNodePtr stVarsIf = NULL;
@@ -702,6 +702,7 @@ eRC command() {
                     generateForScope();
                     result = commandBlock();            // Parse block of commands (inside of for)
                     if (result != RC_OK) return result;
+                    generateForScopeDefinitions();
                     generateForScopeEnd();
 
                     // TODO: Symtable check	
