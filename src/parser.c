@@ -284,6 +284,7 @@ eRC function() {
             return RC_ERR_SEMANTIC_PROG_FUNC;
         }
         currentFnc = strGetStr(&tk->attribute.string);// Save what is the identifier of the function we are currently parsing
+        stFncSetDefined(stLookUp(&stFunctions, currentFnc), true);
         // Check if function identifier is 'main' (this is so that we can check later that this was defined)
         if (!strcmp(strGetStr(&tk->attribute.string), "main")) {
             mainFound++;
@@ -316,9 +317,6 @@ eRC function() {
     argRet = true;                                      // Parsing arguments -> argRet = true
     result = functionReturn();                          // Parse function return types
     if (result != RC_OK) return result;
-
-    stFncSetDefined(stLookUp(&stFunctions, currentFnc), true);
-
     fncDef = false;
 
     result = commandBlock();                            // Parse command block of the function
@@ -433,7 +431,6 @@ eRC type() {
         switch (tk->attribute.keyword) {
             case KEYWORD_INT:
                 if (fncDef) {
-                    debugPoints(1);
                     if (!argRet) {
                         stFncSetParam(stLookUp(&stFunctions, currentFnc), INT);
                         stVarSetType(stStackLookUp(&stack, currentVar), INT);
@@ -444,7 +441,6 @@ eRC type() {
                 break;
             case KEYWORD_FLOAT64:
                 if (fncDef) {
-                    debugPoints(2);
                     if (!argRet) {
                         stFncSetParam(stLookUp(&stFunctions, currentFnc), FLOAT64);
                         stVarSetType(stStackLookUp(&stack, currentVar), FLOAT64);
@@ -455,7 +451,6 @@ eRC type() {
                 break;
             case KEYWORD_STRING:
                 if (fncDef) {
-                    debugPoints(3);
                     if (!argRet) {
                         stFncSetParam(stLookUp(&stFunctions, currentFnc), STRING);
                         stVarSetType(stStackLookUp(&stack, currentVar), STRING);
@@ -466,7 +461,6 @@ eRC type() {
                 break;
             case KEYWORD_BOOL:
                 if (fncDef) {
-                    debugPoints(4);
                     if (!argRet) {
                         stFncSetParam(stLookUp(&stFunctions, currentFnc), BOOL);
                         stVarSetType(stStackLookUp(&stack, currentVar), BOOL);
@@ -737,7 +731,7 @@ eRC statement() {
 
             // Try to inser function into GST (if already present run checks, if not insert and add arguments)
             result = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN);
-            if (result != ST_SUCCESS || result != ST_ID_EXISTS) return RC_ERR_INTERNAL;
+            if (result == ST_ERROR) return RC_ERR_INTERNAL;
 
             result = funcCallArguments();                       // Parse arguments
             if (result != RC_OK) return result;
@@ -924,6 +918,7 @@ eRC expressionNext() {
             setErrMsg("expected less expressions on the right side of the assignment");
             result = RC_ERR_SYNTAX_ANALYSIS;
         }
+        debugPrint("get token follows");
         getToken(token, tk);                        // Step over COMMA	
 
         result = precedent_analys(tk, &precType, &stack);// Evaluate expression	

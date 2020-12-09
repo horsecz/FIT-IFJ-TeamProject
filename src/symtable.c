@@ -492,7 +492,7 @@ bool SEmptyP (stStack *S)
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 void displayBST(stNodePtr symtable) {
-    fprintf(stderr, "[SYM]=================================================\n");
+    fprintf(stderr, "\n\n[SYM]=================================================\n");
     fprintf(stderr, "[SYM]\t\tBinary tree structure\n");
     fprintf(stderr, "[SYM]=================================================\n\n");
     if (symtable != NULL) {
@@ -500,7 +500,7 @@ void displayBST(stNodePtr symtable) {
     } else {
         fprintf(stderr, "[SYM]Tree is empty\n");
     }
-    fprintf(stderr, "\n[SYM]=================================================\n");
+    fprintf(stderr, "\n[SYM]=================================================\n\n");
 }
 
 void displayBST2( stNodePtr symtable, char* sufix, char fromdir ) {
@@ -509,7 +509,8 @@ void displayBST2( stNodePtr symtable, char* sufix, char fromdir ) {
         "INT",
         "STRING",
         "FLOAT64",
-        "BOOL"
+        "BOOL",
+        "UNDERSCORE"
     };
     if (symtable != NULL) {
         char* suf2 = (char*) malloc(strlen(sufix) + 4);
