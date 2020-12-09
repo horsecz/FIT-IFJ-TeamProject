@@ -105,6 +105,9 @@ eRC parser(Token* tkn) {
     // Start parse -> call program()
     result = program();
     if (result != RC_OK) {
+        if (result == RC_ERR_SEMANTIC_OTHER)
+            printLastToken = false;
+
         if (printLastToken) {
             string gotStr;
             strInit(&gotStr);
@@ -279,8 +282,8 @@ eRC function() {
         // Generate beginning of function
         generateFunction(strGetStr(&tk->attribute.string));
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
-        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN, scope);
-        if (result != RC_OK) {
+        stC result_n = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN, scope);
+        if (result_n != RC_OK) {
             setErrMsg("redefinition attempt");
             return RC_ERR_SEMANTIC_PROG_FUNC;
         }
@@ -955,11 +958,23 @@ eRC funcCallArguments() {
     precRightBrace = true;
     result = precedent_analys(tk, &precType, &stack); // Evaluate expression
     if (result != RC_OK) return result;
-    if (strcmp(currentVar, "print") && !stLookUp(&stFunctions, currentVar)->fData->defined) { // do not check types if it is print(...) function
-        stFncSetParam(stLookUp(&stFunctions, currentVar), precTypeToSymtableType(precType));
+    stNodePtr func = stLookUp(&stFunctions, currentVar);
+    if (func == NULL) { // function not in GST
+        stC result_s = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN, scope);
+        if (result_s != ST_SUCCESS) {
+            setErrMsg("Internal symtable error");
+            printLastToken = false;
+            return RC_ERR_INTERNAL;
+        }
+        func = stLookUp(&stFunctions, currentVar);
+        func->fData->defined = false;
+    }
+
+    if (strcmp(currentVar, "print") && !func->fData->defined) { // do not check types if it is print(...) function
+        stFncSetParam(func, precTypeToSymtableType(precType));
     } else {
         // TODO: Check arguments -> Add cycle through params (recursion call on this function or in expressionNext)
-        if (strcmp(currentVar, "print") && stFncGetParams(stLookUp(&stFunctions, currentVar))[0] != precTypeToSymtableType(precType)) {
+        if (strcmp(currentVar, "print") && stFncGetParams(func)[0] != precTypeToSymtableType(precType)) {
             setErrMsg("type of parameters of the function doesn't match");
             return RC_ERR_SEMANTIC_PARAM;
         }
