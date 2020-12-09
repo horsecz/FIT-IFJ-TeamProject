@@ -85,7 +85,6 @@ int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(por
 			a = idkfunkce(stack, tokeng, Type, Vars);				// zavolame funkci pro zpracovani token
 
 			if (a != SYNTAX_OK){
-				printf("%d\n", a);
 				return a;
 			}
 		}
@@ -141,7 +140,16 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 				}
 				else if (token->type == TYPE_IDENTIFIER) //musi se predelat 
 				{
-					
+					int y =strGetLength(&token->attribute.string);
+					if (y==1)
+					{
+						char* c = strGetStr(&token->attribute.string);
+						if (*c=='_')
+						{
+							return SEM_ERROR_OTHER;
+						}
+					}
+
 					stVarType help2;
 					help2 = stVarTypeLookUp(Vars, strGetStr(&token->attribute.string));
 
