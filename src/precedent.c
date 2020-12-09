@@ -48,7 +48,8 @@ int Translate_string(string *s){
 
 
 int precedent_analys(Token* tokeng, TokenType* Type, stStack* Vars){			// if(porovnej(a,b))
-	symStack *stack = malloc(sizeof(symStack)); 	
+	*Type = TYPE_EOF;
+    symStack *stack = malloc(sizeof(symStack));
 	symstackInit(stack); 	
 	symstackPush(stack, TYPE_EOL);	
 	int a;							// pushnuti prvni hodnoty EOL
