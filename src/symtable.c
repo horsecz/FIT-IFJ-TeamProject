@@ -508,7 +508,7 @@ bool SEmptyP (stStack *S)
  *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
 
 eRC checkFunctions ( stNodePtr symtable ) {
-    if (!(*symtable)) {
+    if (!symtable) {
         return RC_ERR_INTERNAL;
     }
 
