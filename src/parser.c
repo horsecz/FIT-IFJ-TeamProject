@@ -151,7 +151,7 @@ eRC parser(Token* tkn) {
 
     // Start parse -> call program()
     result = program();
-    if (result != RC_OK && result != RC_WRN_INTERNAL && result != RC_ERR_INTERNAL) {
+    if (result != RC_OK && result != RC_WRN_INTERNAL && result != RC_ERR_INTERNAL && result != RC_ERR_SEMANTIC_PROG_FUNC) {
         if (printLastToken) {
             string gotStr;
             strInit(&gotStr);
@@ -893,7 +893,7 @@ eRC assignment() {
                 printLastToken = 0;
                 return result;
             }
-
+            currentVar = strGetStr(&tk->attribute.string);
             getToken(token, tk);                    // Get the next token (move past '(')
             if (tk->type != TYPE_LEFT_BRACKET) {
                 setErrMsg("expected '(' after identifier");
@@ -1023,6 +1023,7 @@ eRC funcCallArguments() {
         // TODO: Check arguments -> Add cycle through params (recursion call on this function or in expressionNext)
         if (strcmp(currentVar, "print") && stFncGetParams(func)[0] != precTypeToSymtableType(precType)) {
             setErrMsg("type of parameters of the function doesn't match");
+            printLastToken = false;
             return RC_ERR_SEMANTIC_PARAM;
         }
     }
