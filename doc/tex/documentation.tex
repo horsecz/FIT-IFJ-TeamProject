@@ -22,8 +22,10 @@
         
         \vspace{\stretch{0.382}}
         
-        \LARGE{Formal Languages and Compilers\\}
-        \Huge{IFJ2020}
+        \Huge{Formal Languages and Compilers\\}
+        \huge{Project documentation\\}
+        \LARGE{Team 062., variant I\\}
+        \Large{UNARY, BOOLTHEN}
         
         \vspace{\stretch{0.618}}
     \end{center}
@@ -159,7 +161,7 @@ functions which acts as LL rules (see. Figure \ref{fig:LLgramar}). If token stre
 taken from parser has invalid syntax, parser stops it's action and
 returns \texttt{2}, which indicates error in syntax analysis, also
 it can perform some necessities from semantic analysis and call \texttt{semantic\_analysis()} from \texttt{semantic.c} file and 
-\texttt{precedent\_analyse()} function from \texttt{precedent.h}.
+\texttt{precedent\_analys()} function from \texttt{precedent.h}.
 \subsubsection{Syntax analysis - Top-Down parsing}\label{syntax-analysis---top-down-parsing}
 
 For a syntax analysis we decided to use Top-Down parsing, which seemed
@@ -186,14 +188,14 @@ and then, one by one, gets next tokens and determines how to correctly evaluate 
 After that they are generated to \texttt{stdin}.
 
 \subsection{Functions}\label{functions}
-
+In this section we only specify calling other parser's functions, not generator neither semantic analysis functions.
 \begin{itemize}[itemsep=-5pt]
 \item
   Parser - Main function of compiler, prepares symtable and stack for
   further usage, then calls \texttt{program}
 \item
-  Program - Strips comments and EOLs and then calls \texttt{prolog},
-  \texttt{eolM} and \texttt{functionsBlock}
+  Program - Strips comments and EOLs and then calls \texttt{prolog()},
+  \texttt{eolM()} and \texttt{functionsBlock()}
 \item
   Prolog - Checks whether file starts with \texttt{package\ main}
 \item
@@ -203,62 +205,62 @@ After that they are generated to \texttt{stdin}.
   EolR - Strips EOLs
 \item
   FunctionsBlock - Checks that token is KEYWORD \texttt{func} and calls
-  \texttt{function} and \texttt{functionNext}, after that checks that
+  \texttt{function()} and \texttt{functionNext()}, after that checks that
   \texttt{main} function was found only once
 \item
-  Function - Checks that next token is IDENTIFIER, if so then it saves
+  Function - Checks that next tokens are KEYWORD \texttt{func} and IDENTIFIER, if so then it saves
   it's name to functions symtable. Then it looks for \texttt{(} and
-  calls \texttt{arguments} func. If \texttt{arguments} was successful
-  and current token is \texttt{)} it calls \texttt{functionReturn} and
-  \texttt{commandBlock}
+  calls \texttt{arguments()}. If \texttt{arguments()} was successful
+  and current token is \texttt{)} it calls \texttt{functionReturn()} and
+  \texttt{commandBlock()}
 \item
   FunctionNext - Checks if there are any other functions, if so, calls
-  \texttt{function} and \texttt{functionNext}
+  \texttt{function()} and \texttt{functionNext()}
 \item
   Arguments - Checks whether token is IDENTIFIER, if so calls
-  \texttt{type} and \texttt{argumentNext}
-\item
-  Type - Checks whether token equals to \texttt{int}, \texttt{float64},
-  \texttt{string} or \texttt{bool}
+  \texttt{type()} and \texttt{argumentNext()}
 \item
   ArgumentNext - If token is comma, then perform action as
-  \texttt{arguments} function
+  \texttt{arguments()} function
+\item
+  Type - Checks whether token equals to KEYWORD \texttt{int}, \texttt{float64},
+  \texttt{string} or \texttt{bool}
 \item
   FunctionReturn - If token is \texttt{(} calls
-  \texttt{functionReturnType}, otherwise return \texttt{0}, because
+  \texttt{functionReturnType()}, otherwise continue because
   return \texttt{()} could be omitted.
 \item
-  FunctionReturnType - If token equals to KEYWORD, calls \texttt{type}
-  and \texttt{functionReturnTypeNext} and then looks for \texttt{)}, if
+  FunctionReturnType - If token equals to KEYWORD, calls \texttt{type()}
+  and \texttt{functionReturnTypeNext()} and then looks for \texttt{)}, if
   it equals to \texttt{)}, continue with program
 \item
   FunctionReturnTypeNext - Checks that token is COMMA, another token
-  should be KEYWORD and calls \texttt{type} and
-  \texttt{functionReturnTypeNext}
+  should be KEYWORD and calls \texttt{type()} and
+  \texttt{functionReturnTypeNext()}
 \item
   CommandBlock - Checks that token is \texttt{\{}, then gets another
   which should be EOL, if so strips remaining EOLs. If next token does
-  not equal to \texttt{\}}, calls \texttt{commands} and then checks that
-  token equals to \texttt{\}}, then look for one required EOL and strip
-  remaining EOLs
+  not equal to \texttt{\}}, calls \texttt{commands()} and then checks that
+  token equals to \texttt{\}}, then look for one required EOL, if it's not after 
+  if statement, and strip remaining EOLs
 \item
-  Commands - Calls \texttt{command}, checks that command is ended with
+  Commands - Calls \texttt{command()}, checks that command is ended with
   EOL, strips remaining EOLs and then determines whether token equals to
-  \texttt{\}}, if so returns result, otherwise calls \texttt{commands}
+  \texttt{\}}, if so returns result, otherwise calls \texttt{commands()}
 \item
   Command - Contains switch statement which determines next action. If
-  token equals to IDENTIFIER calls \texttt{statement}. If token equals
+  token equals to IDENTIFIER calls \texttt{statement()}. If token equals
   to KEYWORD go to another switch statement determining what kind of
   action we should perform based on passed KEYWORD:
 
   \begin{itemize}[itemsep=-5pt]
   \item
-    IF - call \texttt{commandBlock} and \texttt{ifElse} functions.
+    IF - calls \texttt{commandBlock()} and \texttt{ifElse()} functions
   \item
-    FOR - call \texttt{forDefine} and then checks that token equals to
-    \texttt{;}
+    FOR - calls \texttt{forDefine()} and then checks that token equals to
+    \texttt{;}, after that calls \texttt{commandBlock()}
   \item
-    RETURN - call \texttt{returnCommand}
+    RETURN - calls \texttt{returnCommand()}
   \item
     default - invalid KEYWORD passed
   \end{itemize}
@@ -268,47 +270,40 @@ After that they are generated to \texttt{stdin}.
 
   \begin{itemize}[itemsep=-5pt]
   \item
-    \texttt{(} - calls \texttt{arguments} function and checks that token
-    equals to \texttt{)}
+    \texttt{(} - calls \texttt{funcCallArguments()} function and checks that token
+    equals to \texttt{EOL}
   \item
-    \texttt{=} - calls \texttt{assignment} function
+    \texttt{=} - calls \texttt{assignment()} function
   \item
-    \texttt{:=} - calls \texttt{assignment} function
+    \texttt{:=} - calls generator's and precedent's functions
   \item
     \texttt{+=}, \texttt{-=}, \texttt{*=}, \texttt{/=} - calls
-    \texttt{unary} function
+    \texttt{unary()} function
   \item
-    default - calls \texttt{multipleID}, then checks that token equals
-    to \texttt{=} and calls \texttt{assignment}
+    default - calls \texttt{multipleID()}, then checks that token equals
+    to \texttt{=} and calls \texttt{assignment()}
   \end{itemize}
 \item
   MultipleID - Checks that token equals to COMMA, increases number of
   IDs, then checks that next token is IDENTIFIER and calls
-  \texttt{multipleID}
+  \texttt{multipleID()}
 \item
-  Assignment - Contains switch that distinguishes between those token
-  types:
-
-  \begin{itemize}[itemsep=-5pt]
-  \item
-    IDENTIFIER - checks that next token is \texttt{(}, calls
-    \texttt{arguments} and checks that next token is \texttt{)}
-  \item
-    default - calls \texttt{expressionNext} function
-  \end{itemize}
+  Assignment - calls \texttt{expressionNext()} after some necessary checks
 \item
   Unary - Only checks that token is unary type
 \item
   ExpressionNext - Checks whether token equals to COMMA, then checks
   that number of IDs - 1 is greater than 0, then calls
-  \texttt{expresssionNext} function
+  \texttt{expresssionNext()} function
+\item
+  FuncCallArguments - performs some checks on arguments and then calls \texttt{expressionNext()}
 \item
   IfElse - If token is KEYWORD and equals to ELSE then it calls
-  \texttt{ifElseExpanded} function
+  \texttt{ifElseExpanded()} function
 \item
   IfElseExpanded - If token equals to IF KEYWORD then calls
-  \texttt{commandBlock} and \texttt{ifElse} functions, otherwise calls
-  \texttt{commandBlock} only
+  \texttt{commandBlock()} and \texttt{ifElse()} functions, otherwise calls
+  \texttt{commandBlock()} only
 \item
   ForDefine - Checks that token's type equals to IDENTIFIER, if so
   checks whether next token equals to \texttt{:=}
@@ -319,7 +314,7 @@ After that they are generated to \texttt{stdin}.
   ReturnCommand - Checks that token is KEYWORD RETURN and calls
   \texttt{returnStatement}
 \item
-  ReturnStatement - todo
+  ReturnStatement - loops through return values and assigns them
 \end{itemize}
 
 \subsection{Usage}\label{usage-1}
@@ -373,7 +368,7 @@ valid data types, valid return types and existence of passed
 identifiers. Semantic analysis is performed right away in parser, but when we evaluate function call we use \texttt{semantic\_analysis} function defined in \texttt{semantic.c} file.
 \subsection{Function}\label{function_sym}
 \begin{itemize}
-\item Semantic\_analysis - Check if is function is present in Global Stack, if so check if number of return values equals number of variables and then cycle through them and check their types, otherwise \textbf{TODO}.
+\item Semantic\_analysis - Check if is function is present in Global Stack, if so check if number of return values equals number of variables and then cycle through them and check their types, otherwise set number of IDs to 0
 \end{itemize}
 %%%%%%%%%%%% END SEMANTIC ANALYSIS %%%%%%%%%%%%%%%
 
@@ -423,6 +418,8 @@ run it.
   GenerateIfScope - generates \texttt{if}, \texttt{else\ if},
   \texttt{else} scope
 \item
+  GenerateIfScopeEnd - generates end for \texttt{if} statement}
+\item
   GenerateForBeginning - generates counter variable definition
 \item
   GenerateForExpression - generates assignment + expression of
@@ -437,6 +434,8 @@ run it.
   (after assignment is done)
 \item
   GenerateForScope - generates beginning of \texttt{for} loop scope
+\item
+  GenerateForScopeDefinitions - generates definitions of \texttt{for} loop
 \item
   GenerateForScopeEnd - generates end of \texttt{for} loop scope
 \item
@@ -453,6 +452,10 @@ run it.
 \item
   GeneratorPrintCheck - check that printArguments is true, if so pop +
   print the value to stdout, otherwise do nothing
+\item
+  GeneratorUnaryPrepare - pushes ID to local frame
+\item
+  GenerateUnaryExpression - generates instructions base on given unary type
 \item
   GenerateCodeInternal - generates internal code (internal function
   code, header)
