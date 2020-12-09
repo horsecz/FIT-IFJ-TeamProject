@@ -31,7 +31,7 @@ eRC semantic_analysis (char* functionName, stNodePtr stFunctions, stStack stack,
             if (i)
                 varType = stVarTypeLookUp(&stack, currentVarMul[i]);
 
-            if (retType[i] != varType) {
+            if (retType[i] != varType && (strcmp(currentVar, "_") || (currentVarMul[i] != NULL ? strcmp(currentVarMul[i], "_") : 0))) {
                 f_returnType = setErrorType(retType[i]);
                 v_type = setErrorType(varType);
                 snprintf(str, 254, "assigning return type %s to variable with type %s", f_returnType, v_type);
