@@ -1036,7 +1036,8 @@ eRC ifElseExpanded() {
         stInsert(&stVarsIf, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
         stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 2)
         
-        // TODO: Generator functions!!!
+        generateIfScope();
+        
         afterIf = true;
         result = commandBlock();
         if (result != RC_OK) return result;
@@ -1061,6 +1062,7 @@ eRC ifElseExpanded() {
         afterIf = false;
         result = commandBlock();
         if (result != RC_OK) return result;
+        generateIfScopeEnd();
 
         // TODO: Symtable check	
         #ifdef DEBUG
