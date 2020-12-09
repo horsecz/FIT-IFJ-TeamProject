@@ -258,6 +258,10 @@ int idkfunkce(symStack *stack, Token* token, TokenType* Type, stStack* Vars){
 					*Type = TYPE_BOOL;
 					return SYNTAX_OK;
 				}
+				else
+				{
+					return 7;
+				}
 				
 				return SYNTAX_OK;
 			}
