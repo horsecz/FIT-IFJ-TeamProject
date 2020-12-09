@@ -77,7 +77,7 @@ int sortStrings ( stID fst, stID snd ) {
     return strcmp(fst, snd);
 }
 
-int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarType datatype ) {
+int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarType datatype, int scope ) {
     stNodePtr new = (stNodePtr) calloc(sizeof(struct stNode), 1);
     if (!new) {
         return ST_ERROR; 
@@ -98,6 +98,7 @@ int stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarT
     } else if (nodeType == ST_N_VARIABLE) {
         new->fData = NULL;
         new->vData = calloc(sizeof(stVData), 1);
+        new->vData->scope = scope;
         new->vData->identifier = identificator;
         new->vData->type = datatype;
         new->vData->defined = false;
@@ -279,6 +280,12 @@ void stVarSetFncCall ( stNodePtr stNode, bool fncCall ) {
     }
 }
 
+void stVarSetScope ( stNodePtr stNode, int scope ) {
+    if (stNode && stNode->vData) {
+        stNode->vData->scope = scope;
+    }
+}
+
 stNType stGetNodeType ( stNodePtr stNode ) {
     if (stNode) {
         if (stNode->fData) {
@@ -337,6 +344,15 @@ stNodePtr* stFncGetInnerSt ( stNodePtr stNode) {
         return stNode->fData->innerSymtable;
     }
     return NULL;
+}
+
+char* stVarGetNameS ( stNodePtr stNode ) {
+    if (!stNode || !stNode->vData) {
+        return NULL;
+    }
+    char* string = NULL;
+    sprintf(string, "%s_%d\0", stNode->vData->identifier, stNode->vData->scope);
+    return string;
 }
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
@@ -406,9 +422,9 @@ stNodePtr stackPopSt ( stStack *stack ) {
     return (stack->top >= 0) ? stack->a[stack->top--] : NULL;
 }
 
-eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype ) {
+eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype, int scope ) {
     stNodePtr topSym = stackGetTopSt(stack);
-    stC status = stInsert(&topSym, identifier, nodeType, datatype);
+    stC status = stInsert(&topSym, identifier, nodeType, datatype, scope);
     if (status != ST_SUCCESS) {
         iPrint(RC_WRN_INTERNAL, false, "[SYMTABLE][STATUS] Something went wrong during stStackInsert call");
     }

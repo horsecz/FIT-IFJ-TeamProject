@@ -82,6 +82,7 @@ typedef struct stFunctionData {
  * @enum stData
  */
 typedef struct stVariableData {
+    int         scope;                  /**< Number of scope                        */
     stID        identifier;             /**< Variable ID                            */
     stVarType   type;                   /**< Variable type (int, string, float64)   */
     bool        defined;                /**< Is variable already defined?           */
@@ -138,11 +139,12 @@ void stDestruct ( stNodePtr *symtable );
  * @param identificator New node identificatior
  * @param nodeType Type of the node (function or variable)
  * @param datatype Datatype saved in the new node (variable type or function return type)
+ * @param scope Only for variables, set scope lvl
  * @return ST_SUCCESS Everything went OK, requested node was deleted
  * @return ST_ERROR Something went wrong (allocation problems or other)
  * @return ST_ID_EXISTS Node alredy exists in the symtbale
  */
-stC stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarType datatype );
+stC stInsert ( stNodePtr *symtable, stID identificator, stNType nodeType, stVarType datatype, int scope );
 
 /**
  * @brief Delete node from the symtable
@@ -217,6 +219,13 @@ void stFncSetInnerSt ( stNodePtr stNode, stNodePtr* symtable );
  */
 void stVarSetFncCall ( stNodePtr stNode, bool fncCall );
 
+/**
+ * @brief Set scope number
+ * @param stNode Pointer to node
+ * @param scope Number of the scope
+ */
+void stVarSetScope ( stNodePtr stNode,int scope );
+
  /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
   *   GETTERS                                                     *
   *** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***/
@@ -274,6 +283,13 @@ stVarType* stFncGetParams ( stNodePtr stNode );
  * @return stNodePtr* Pointer to inner symtable
  */
 stNodePtr* stFncGetInnerSt ( stNodePtr stNode);
+
+/**
+ * @brief Get name of the variable with scope identifier 
+ * @param stNode Pointer to the node
+ * @return char* Name of the variable with the scope identifier
+ */
+char* stVarGetNameS ( stNodePtr stNode );
 
 /*** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * ***
  *                                                               *
@@ -341,9 +357,10 @@ stNodePtr stackPopSt ( stStack *stack );
  * @param identifier Identifier of function or variable (char*)
  * @param nodeType Type of the node (FUNCTION, VARIABLE or UNDEFINED)
  * @param datatype Datatype of the variable (use UNKNOWN in case of working with FUNCTIONS)
+ * @param scope Only for variables, set scope lvl
  * @return eRC Return code (RC_OK || RC_WRN_INTERNAL || RC_ERR_INTERNAL)
  */
-eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype );
+eRC stStackInsert ( stStack *stack, stID identifier, stNType nodeType, stVarType datatype, int scope );
 
 /**
  * @brief Classic symtable delete function (using stack of symtable instead of symtable itself)

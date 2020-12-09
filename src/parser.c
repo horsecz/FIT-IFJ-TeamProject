@@ -75,6 +75,7 @@ char errText[MAX_ERR_MSG];      /**< Error text msg (if error occurs)           
 bool printLastToken;            /**< For error message - if last token may be printed      */
 bool fncDef = true;             /**< Parsing function definiton (for arguments)            */
 bool argRet = false;            /**< Arguments and returns switch for function parsing     */
+int scope = -1;                 /**< Scope lvl for variables                               */
 int numberOfIDs = 0;            /**< Counter of IDs on the left side of the assignment, this is needed to check correct number of expressions on the left side or correct number of returns from function call */
 int numberOfExp = 0;            /**< Temp helper value for expression compare              */
 bool funcCall = false;          /**< Detection of function call used in deciding whether do expression (count) check or not */
@@ -92,7 +93,7 @@ eRC parser(Token* tkn) {
 
     // Symtable & stack setup (this will probably cause serious trouble and segfault)
     stConstruct(&stFunctions);
-    stInsert(&stFunctions, "__funcRoot__", ST_N_UNDEFINED, UNKNOWN);
+    stInsert(&stFunctions, "__funcRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
     stackStInit(&stack , &stFunctions);
 
     // Variables setup
@@ -278,7 +279,7 @@ eRC function() {
         // Generate beginning of function
         generateFunction(strGetStr(&tk->attribute.string));
         // Add function GST (functions symtable -> always at the bottom of the symtable stack)
-        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN);
+        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_FUNCTION, UNKNOWN, scope);
         if (result != RC_OK) {
             setErrMsg("redefinition attempt");
             return RC_ERR_SEMANTIC_PROG_FUNC;
@@ -297,10 +298,11 @@ eRC function() {
         return RC_ERR_SYNTAX_ANALYSIS;
     }
     // TODO: Check this
+    scope++;
     stNodePtr stVars = NULL;
     stConstruct(&stVars);
-    stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
-    stInsert(&stVars, "_", ST_N_VARIABLE, UNDERSCORE);
+    stInsert(&stVars, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
+    stInsert(&stVars, "_", ST_N_VARIABLE, UNDERSCORE, scope);
     stackPushSt(&stack, &stVars);                       // Entering new scope (function)	
 
     fncDef = true;
@@ -378,7 +380,7 @@ eRC arguments() {
     // Get the token with the ID or others (eps)
     if (tk->type == TYPE_IDENTIFIER) {
         generatorSaveID(strGetStr(&tk->attribute.string));
-        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN, scope);// Save variable as defined	
         if (result != RC_OK) {
             setErrMsg("redefinition attempt");
             return RC_ERR_SEMANTIC_PROG_FUNC;
@@ -407,7 +409,7 @@ eRC argumentNext() {
         }
 
         generatorSaveID(strGetStr(&tk->attribute.string));
-        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN);// Save variable as defined	
+        result = stStackInsert(&stack, strGetStr(&tk->attribute.string), ST_N_VARIABLE, UNKNOWN, scope);// Save variable as defined	
         if (result != RC_OK) {
             setErrMsg("redefinition attempt");
             return RC_ERR_SEMANTIC_PROG_FUNC;
@@ -636,8 +638,9 @@ eRC command() {
                     }
 
                     // TODO: Check this
+                    scope++;
                     stNodePtr stVarsIf = NULL;
-                    stInsert(&stVarsIf, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+                    stInsert(&stVarsIf, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
                     stackPushSt(&stack, &stVarsIf);       // Entering new scope (if 1)
 
                     afterIf = true;
@@ -658,8 +661,9 @@ eRC command() {
                     debugPrint("<%s> -> for <for_definition> ; <expression> ; <for_assignment>", __func__);
 
                     // TODO: Check this
+                    scope++;
                     stNodePtr stVarsFor = NULL;
-                    stInsert(&stVarsFor, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN);
+                    stInsert(&stVarsFor, "__varsRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
                     stackPushSt(&stack, &stVarsFor);       // Entering new scope (for 1)
 
                     generateForBeginning();
@@ -730,7 +734,7 @@ eRC statement() {
             debugPrint("<%s> -> ( <arguments> )", __func__);
 
             // Try to inser function into GST (if already present run checks, if not insert and add arguments)
-            result = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN);
+            result = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN, scope);
             if (result == ST_ERROR) return RC_ERR_INTERNAL;
 
             result = funcCallArguments();                       // Parse arguments
@@ -758,7 +762,7 @@ eRC statement() {
                 iPrint(RC_ERR_SEMANTIC_PROG_FUNC, true, "redefinition attempt!");
                 return RC_ERR_SEMANTIC_PROG_FUNC;
             }
-            result = stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);	
+            result = stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN, scope);	
             if (result != RC_OK) {
                 setErrMsg("redefinition attempt");
                 return RC_ERR_SEMANTIC_PROG_FUNC;
@@ -1033,7 +1037,7 @@ eRC forDefine() {
     // rule: <for_definition> -> ID := <expression>
     if (tk->type == TYPE_IDENTIFIER) {
         currentVar = strGetStr(&tk->attribute.string);
-        result = stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN);
+        result = stStackInsert(&stack, currentVar, ST_N_VARIABLE, UNKNOWN, scope);
         if (result != RC_OK) {
             setErrMsg("redefinition attempt");
             return RC_ERR_SEMANTIC_PROG_FUNC;
