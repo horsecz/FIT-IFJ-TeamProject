@@ -316,6 +316,9 @@ eRC function() {
     argRet = true;                                      // Parsing arguments -> argRet = true
     result = functionReturn();                          // Parse function return types
     if (result != RC_OK) return result;
+
+    stFncSetDefined(stLookUp(&stFunctions, currentFnc), true);
+
     fncDef = false;
 
     result = commandBlock();                            // Parse command block of the function
@@ -732,9 +735,13 @@ eRC statement() {
         case TYPE_LEFT_BRACKET:                         // ( <arguments> )
             debugPrint("<%s> -> ( <arguments> )", __func__);
 
+            // Try to inser function into GST (if already present run checks, if not insert and add arguments)
+            result = stInsert(&stFunctions, currentVar, ST_N_FUNCTION, UNKNOWN);
+            if (result != ST_SUCCESS || result != ST_ID_EXISTS) return RC_ERR_INTERNAL;
+
             result = funcCallArguments();                       // Parse arguments
             if (result != RC_OK) return result;
-            if (!funcCall && tk->type != TYPE_RIGHT_BRACKET) {
+            if (tk->type != TYPE_RIGHT_BRACKET) {
                 setErrMsg("expected ')' after arguments [of func-call]");
                 return RC_ERR_SYNTAX_ANALYSIS;
             }
@@ -939,6 +946,7 @@ eRC expressionNext() {
 
 eRC funcCallArguments() {
     debugPrint("rule %s", __func__);
+    // TODO: Rework of this function to parse arguments against existing function or create new one
     // rule <arguments_fc> -> <expression
     eRC result = RC_OK;
     getToken(token, tk);                                    // Get the token with the ID or others (eps)
@@ -946,10 +954,19 @@ eRC funcCallArguments() {
     precRightBrace = true;
     result = precedent_analys(tk, &precType, &stack);// Evaluate expression
     if (result != RC_OK) return result;
+    if (!stLookUp(&stFunctions, currentVar)->fData->defined) {
+        stFncSetParam(stLookUp(&stFunctions, currentVar), precTypeToSymtableType(precType));
+    } else {
+        // TODO: Check arguments -> Add cycle through params (recursion call on this function or in expressionNext)
+        if (stFncGetParams(stLookUp(&stFunctions, currentVar))[0] != precTypeToSymtableType(precType)) {
+            setErrMsg("type of parameters of the function doesn't match");
+            return RC_ERR_SEMANTIC_PARAM;
+        }
+    }
     generatorPrintCheck(precType);
 
     funcCall = true;
-    result = expressionNext();
+    result = expressionNext();  // TODO: This will need to be changed and reworked most probably
     if (result != RC_OK) return result;
 
     return result;
