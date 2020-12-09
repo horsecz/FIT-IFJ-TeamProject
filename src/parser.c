@@ -93,7 +93,56 @@ eRC parser(Token* tkn) {
     stConstruct(&stFunctions);
     stInsert(&stFunctions, "__funcRoot__", ST_N_UNDEFINED, UNKNOWN, scope);
     stackStInit(&stack , &stFunctions);
-
+    // INBUILT FUNCTIONS HARDCODE
+    // - func inputs()(string, int)
+    stInsert(&stFunctions, "inputs", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetType(stLookUp(&stFunctions, "inputs"), STRING);
+    stFncSetType(stLookUp(&stFunctions, "inputs"), INT);
+    // - func inputi()(int, int)
+    stInsert(&stFunctions, "inputi", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetType(stLookUp(&stFunctions, "inputi"), INT);
+    stFncSetType(stLookUp(&stFunctions, "inputi"), INT);
+    // - func inputf()(float64, int)
+    stInsert(&stFunctions, "inputf", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetType(stLookUp(&stFunctions, "inputf"), FLOAT64);
+    stFncSetType(stLookUp(&stFunctions, "inputf"), INT);
+    // - func inputb()(bool, int)
+    stInsert(&stFunctions, "inputb", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetType(stLookUp(&stFunctions, "inputb"), BOOL);
+    stFncSetType(stLookUp(&stFunctions, "inputb"), INT);
+    // - func int2float(i int)(float64)
+    stInsert(&stFunctions, "int2float", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetParam(stLookUp(&stFunctions, "int2float"), INT);
+    stFncSetType(stLookUp(&stFunctions, "int2float"), FLOAT64);
+    // - func float2int(f float64)(int)
+    stInsert(&stFunctions, "float2int", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetParam(stLookUp(&stFunctions, "float2int"), FLOAT64);
+    stFncSetType(stLookUp(&stFunctions, "float2int"), INT);
+    // - func len(s string, i1 int, i2 int)(string, int)
+    stInsert(&stFunctions, "len", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetParam(stLookUp(&stFunctions, "len"), STRING);
+    stFncSetParam(stLookUp(&stFunctions, "len"), INT);
+    stFncSetParam(stLookUp(&stFunctions, "len"), INT);
+    stFncSetType(stLookUp(&stFunctions, "len"), STRING);
+    stFncSetType(stLookUp(&stFunctions, "len"), INT);
+    // - func substr(s string, i int)(string, int)
+    stInsert(&stFunctions, "substr", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetParam(stLookUp(&stFunctions, "substr"), STRING);
+    stFncSetParam(stLookUp(&stFunctions, "substr"), INT);
+    stFncSetType(stLookUp(&stFunctions, "substr"), STRING);
+    stFncSetType(stLookUp(&stFunctions, "substr"), INT);
+    // - func ord(s string, i int)(int, int)
+    stInsert(&stFunctions, "ord", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetParam(stLookUp(&stFunctions, "ord"), STRING);
+    stFncSetParam(stLookUp(&stFunctions, "ord"), INT);
+    stFncSetType(stLookUp(&stFunctions, "ord"), INT);
+    stFncSetType(stLookUp(&stFunctions, "ord"), INT);
+    // - func chr(i int)(string, int)
+    stInsert(&stFunctions, "chr", ST_N_FUNCTION, UNKNOWN, 0);
+    stFncSetParam(stLookUp(&stFunctions, "chr"), INT);
+    stFncSetType(stLookUp(&stFunctions, "chr"), STRING);
+    stFncSetType(stLookUp(&stFunctions, "chr"), INT);
+    
     // Variables setup
     eRC result = RC_OK;
     tk = tkn;
