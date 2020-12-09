@@ -1,11 +1,9 @@
 /**
- *  @note   IFJ: Implementace interpreta jazyka IFJ20
  *	@file	symtable.c
- *	@author Dominik Horky (xhorky32@stud.fit.vutbr.cz)
+ *	@author Dominik Horky (xhorky32@vutbr.cz)
  *  @author Roman Janiczek (xjanic25@vutbr.cz)
- *	@brief  Modul symtable je hlavnim modulem pracujicicm s binarnim stromem, ktery je ADT pro tabulku symbolu.
- *	@note	Reseni IFJ-proj, tabulka symbolu
- *	@note   Pro vypracovani tohoto modulu byly vyuzity funkce z IAL-DU2 (modul C402 - preddefinovane i mnou vypracovane)
+ *	@brief  Symtable implementation (BST), stack & helper functions
+ *	@note   We made use of IAL-DU2 (module C402)
  */
 
 #include "symtable.h"

@@ -1,3 +1,8 @@
+/**
+ * @file precedent.c
+ * @author Jan Pospisil (xpospi94@vutbr.cz)
+ * @brief Precedent & part semantic implementation
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

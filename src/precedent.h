@@ -1,5 +1,8 @@
-
-
+/**
+ * @file precedent.h
+ * @author Jan Pospisil (xpospi94@vutbr.cz)
+ * @brief Precedent & part semantic implementation
+ */
 #ifndef _PRECEDENT_H
 #define _PRECEDENT_H
 

@@ -1,6 +1,8 @@
-//
-// Created by horse on 08.12.20.
-//
+/**
+ * @file semantic.h
+ * @author Dominik Horky (xhorky32@vutbr.cz)
+ * @brief Semantic helper header
+ */
 
 #ifndef SEMANTIC_H
 #define SEMANTIC_H

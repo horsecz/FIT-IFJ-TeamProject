@@ -2,8 +2,6 @@
  * @file returns.h
  * @author Roman Janiczek (xjanic25@vutbr.cz)
  * @brief Header for return codes and helper functions
- * @version 0.1
- * @date 2020-11-14
  */
 #ifndef IFJ_PROJECT_RETURNS_H
 #define IFJ_PROJECT_RETURNS_H

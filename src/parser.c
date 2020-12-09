@@ -3,8 +3,6 @@
  * @author Roman Janiczek (xjanic25@vutbr.cz)
  * @author Dominik Horky (xhorky32@vutbr.cz)
  * @brief Parser implementation
- * @version 0.420
- * @date 2020-11-15
  *
  * @note after handling <expression>, getting next token is expected (aka I've got 1 token after expression)
  */

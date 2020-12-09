@@ -1,10 +1,8 @@
 /**
- *  @note   IFJ: Implementace interpreta jazyka IFJ20
  *	@file	symtable.h
- *	@author Dominik Horky (xhorky32@stud.fit.vutbr.cz)
+ *	@author Dominik Horky (xhorky32@vutbr.cz)
  *  @author Roman Janiczek (xjanic25@vutbr.cz)
- *	@brief  Hlavickovy soubor slouzici pro symtable.c
- *	@note	Reseni IFJ-proj, tabulka symbolu
+ *	@brief  Header file for symtable
  */
 
 #ifndef IFJ_PROJECT_SYMTABLE_H
